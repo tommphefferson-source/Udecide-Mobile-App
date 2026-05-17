@@ -1,0 +1,27 @@
+kind = "mobile"
+previewPath = "/"
+title = "UDecide"
+version = "1.0.0"
+id = "artifacts/udecide"
+router = "expo-domain"
+
+[[integratedSkills]]
+name = "expo"
+version = "1.0.0"
+
+[[services]]
+ensurePreviewReachable = "/status"
+name = "expo"
+paths = [ "/" ]
+localPort = 22043
+
+[services.development]
+run = "pnpm --filter @workspace/udecide run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/udecide", "run", "build" ]
+run = [ "pnpm", "--filter", "@workspace/udecide", "run", "serve" ]
+
+[services.env]
+PORT = "22043"
+BASE_PATH = "/"

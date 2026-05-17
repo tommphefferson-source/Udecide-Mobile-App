@@ -1,45 +1,95 @@
-# [Project name]
+# UDecide — Political & Voter App
 
-_Replace the heading above with the project's name, and this line with one sentence describing what this app does for users._
+A full-featured, nonpartisan political and voter information mobile app built with Expo/React Native.
 
 ## Run & Operate
 
-- `pnpm --filter @workspace/api-server run dev` — run the API server (port 5000)
+- Start the mobile app: restart the `artifacts/udecide: expo` workflow
+- Scan the QR code shown in the Expo workflow logs with Expo Go to test on your physical device
 - `pnpm run typecheck` — full typecheck across all packages
-- `pnpm run build` — typecheck + build all packages
-- `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
-- `pnpm --filter @workspace/db run push` — push DB schema changes (dev only)
-- Required env: `DATABASE_URL` — Postgres connection string
 
 ## Stack
 
-- pnpm workspaces, Node.js 24, TypeScript 5.9
-- API: Express 5
-- DB: PostgreSQL + Drizzle ORM
-- Validation: Zod (`zod/v4`), `drizzle-zod`
-- API codegen: Orval (from OpenAPI spec)
-- Build: esbuild (CJS bundle)
+- Expo SDK 54, Expo Router (file-based routing)
+- TypeScript, React Native
+- AsyncStorage for local persistence
+- @tanstack/react-query for server state
+- expo-linear-gradient, expo-haptics, expo-blur
+- Gemini AI for Fact Checker feature
 
-## Where things live
+## App Structure
 
-_Populate as you build — short repo map plus pointers to the source-of-truth file for DB schema, API contracts, theme files, etc._
+```
+artifacts/udecide/
+├── app/
+│   ├── _layout.tsx              # Root layout (AuthProvider + AddressProvider)
+│   ├── index.tsx                # Auth redirector
+│   ├── (auth)/                  # Auth stack
+│   │   ├── login.tsx
+│   │   ├── register.tsx
+│   │   ├── forgot-password.tsx
+│   │   └── profile-setup.tsx
+│   ├── (tabs)/                  # Main 5-tab navigation
+│   │   ├── index.tsx            # Dashboard (home)
+│   │   ├── representatives.tsx
+│   │   ├── elections.tsx
+│   │   ├── legislation.tsx
+│   │   └── more.tsx
+│   ├── voter-tools.tsx
+│   ├── parties.tsx
+│   ├── political-guide.tsx
+│   ├── polls.tsx
+│   ├── fact-checker.tsx         # Gemini AI chatbot
+│   ├── profile.tsx
+│   └── address-override.tsx
+├── components/                  # Shared components
+├── context/                     # AuthContext, AddressContext
+├── services/                    # API services (LegiScan, Congress.gov, Gemini)
+├── types/                       # TypeScript types
+└── utils/                       # Constants, formatters, validation
+```
 
-## Architecture decisions
+## Features
 
-_Populate as you build — non-obvious choices a reader couldn't infer from the code (3-5 bullets)._
+1. **Auth Flow** — Register/login with AsyncStorage persistence
+2. **Dashboard** — Card-based quick access to all features
+3. **Representatives** — Federal, state, county, city reps with voting records
+4. **Elections & Ballots** — Upcoming elections, candidates, voting deadlines
+5. **Legislation Tracker** — LegiScan API integration (mock fallback)
+6. **Voter Status Tools** — Registration info, polling place, absentee/early voting
+7. **Political Parties** — Nonpartisan party info and platform summaries
+8. **Political System Guide** — Civic education: 3 branches, lawmaking, Constitution
+9. **Political Polls** — Community polls with vote tracking
+10. **Fact Checker** — Gemini AI-powered nonpartisan fact-checking chatbot
+11. **Address Override** — View political data for any U.S. location
+12. **Profile** — Edit account info and address
 
-## Product
+## API Keys (Optional)
 
-_Describe the high-level user-facing capabilities of this app once they exist._
+Set in `.env` file in `artifacts/udecide/`:
 
-## User preferences
+```
+LEGISCAN_API_KEY=      # legiscan.com — state legislation
+CONGRESS_GOV_API_KEY=  # api.congress.gov — federal data
+GEMINI_API_KEY=        # Google Gemini — AI fact checker
+```
 
-_Populate as you build — explicit user instructions worth remembering across sessions._
+All features work with built-in mock data when keys are absent.
+
+## Architecture Decisions
+
+- **Frontend-only**: No backend needed — all data uses AsyncStorage + external APIs
+- **Mock-first**: All API services fall back to rich mock data when API keys are missing
+- **Nonpartisan design**: Neutrality notice, no party rankings, no candidate endorsements
+- **Address-aware**: AddressContext wraps the app so any screen can access effective location
+- **Liquid glass tabs**: Uses `expo-glass-effect` for iOS 26+ liquid glass tab bar with classic BlurView fallback
+
+## User Preferences
+
+_Populate as you build._
 
 ## Gotchas
 
-_Populate as you build — sharp edges, "always run X before Y" rules._
-
-## Pointers
-
-- See the `pnpm-workspace` skill for workspace structure, TypeScript setup, and package details
+- Do not restart the Expo workflow for normal code changes — Metro HMR handles those
+- Only restart when package.json changes or Metro crashes
+- Web preview may render fonts differently from native — test on device via Expo Go QR code

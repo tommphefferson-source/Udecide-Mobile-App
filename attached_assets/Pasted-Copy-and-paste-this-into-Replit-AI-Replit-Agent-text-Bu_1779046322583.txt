@@ -1,0 +1,422 @@
+Copy and paste this into Replit AI / Replit Agent:
+
+```text
+Build a cross-platform mobile application called “UDecide” with the subtitle “Political & Voter App.”
+
+The app should be a modern, unbiased, nonpartisan U.S. political and voter information mobile app for Android and iOS. It should help users understand elections, government, representatives, legislation, ballots, and voter participation tools.
+
+Use React Native with Expo unless another mobile framework is better supported in this Replit environment. Build a clean, production-ready project structure with reusable components, secure API handling, and responsive layouts for current Android and iOS versions.
+
+Use the attached screenshots as visual inspiration:
+- Deep navy/blue political-themed background
+- Red accent color
+- UDecide logo branding
+- Card-based interface
+- Login screen with email/password, Google sign-in, Facebook sign-in, and create account option
+- Political party list screen with icons, platform, leader, and weblink actions
+
+Important: The app must remain politically neutral and unbiased. Do not favor, rank, endorse, or recommend any candidate, party, policy, or ballot measure. Present factual information with source labels and timestamps.
+
+Core app name:
+UDecide
+
+Primary features to implement:
+
+1. Authentication
+Create a login and registration flow.
+Include:
+- Email/password login
+- Create account screen
+- Forgot password screen
+- Optional social login UI buttons for Google and Facebook
+- Profile setup after registration
+
+Profile fields:
+- Full name
+- Email
+- Residential address
+- City
+- State
+- ZIP code
+- Optional address override toggle
+- Override address fields for viewing political data in another location
+
+2. Home Dashboard
+Create a dashboard with quick access cards:
+- Voter Status Tools
+- Representatives
+- Elections & Ballots
+- Political System Guide
+- Political Polls
+- Legislation Tracker
+- Gemini Fact Checker
+- Profile / Address Override
+
+3. Voter Status Tools
+Build screens that allow users to:
+- Check voter registration status
+- Find polling place
+- Learn absentee voting rules
+- Learn early voting rules
+- View voter ID requirements by state
+- View registration deadlines by state
+
+Use placeholder/mock data where official voter APIs are unavailable, but structure the code so real API integration can be added later.
+
+Add clear disclaimers:
+“Election information should be verified with your official state or local election office.”
+
+4. Representatives
+Create a feature where users can view local, state, and federal representatives based on their profile address or address override.
+
+Show representative cards with:
+- Name
+- Office
+- Party affiliation
+- District
+- Phone
+- Email or contact form link
+- Official website
+- Social links if available
+- Recent voting record summaries when available
+- Source of data
+
+Support federal, state, county, and city-level representatives where data exists.
+
+5. Elections & Ballots
+Create a screen that lets users browse candidates running for office in their specific area.
+
+Include:
+- Upcoming elections
+- Offices on the ballot
+- Candidate list
+- Candidate party affiliation
+- Candidate website
+- Candidate social links
+- Ballot measure information
+- Election date
+- Registration deadline
+- Early voting dates
+- Absentee/mail ballot deadlines
+
+Do not rank candidates or recommend choices.
+
+6. Political System Guide
+Create an educational guide explaining:
+- The three branches of U.S. government
+- Executive Branch
+- Legislative Branch
+- Judicial Branch
+- Checks and balances
+- Federal vs state government
+- How a bill becomes law
+- The U.S. Constitution
+- Bill of Rights
+- Amendments
+- Voting rights history
+- Political parties
+- Primaries, caucuses, and general elections
+- Electoral College
+
+Use simple, neutral, educational language.
+
+7. Political Parties
+Create a party information section inspired by the screenshot.
+
+Include cards for:
+- Democratic Party
+- Republican Party
+- Libertarian Party
+- Green Party
+- Independent / No Party Preference
+
+Each card should include:
+- Logo/icon placeholder
+- Platform button
+- Leader button
+- Weblink button
+
+Do not describe parties in a biased way. Use sourced, factual descriptions.
+
+8. Political Polls
+Create a poll feature where users can:
+- View active polls about current events
+- Vote once per poll
+- View aggregated results after voting
+- See total number of responses
+- Filter polls by topic
+
+Poll topics may include:
+- Economy
+- Healthcare
+- Immigration
+- Education
+- Climate
+- Foreign policy
+- Technology
+- Voting access
+
+Add a disclaimer:
+“Polls are for informational engagement only and are not scientific unless explicitly stated.”
+
+Use local/mock data initially, but structure it so a backend database can store poll responses later.
+
+9. Address Override
+Allow users to change their active viewing address without changing their primary profile address.
+
+Use cases:
+- View elections in another state
+- View representatives in another district
+- Research legislation from another state
+
+Add a visible banner when override mode is active:
+“Viewing political data for: [override address]”
+
+Allow users to reset to profile address.
+
+10. LegiScan API Integration
+Integrate LegiScan API for legislative tracking and bill data.
+
+Create a service file:
+services/legiscanApi.ts
+
+Include functions for:
+- getMasterList(state)
+- getBill(billId)
+- searchBills(query, state)
+- getSessionList(state)
+- getDatasetList(state)
+
+Use environment variables for API keys:
+LEGISCAN_API_KEY
+
+Build UI screens:
+- State legislation tracker
+- Search bills
+- Bill details
+- Bill status
+- Sponsors
+- History
+- Votes
+- Text links
+- Last action date
+
+If the API key is missing, show helpful fallback mock data and a developer warning.
+
+11. Congress.gov API Integration
+Integrate Congress.gov API for congressional data, bills, members, and updates.
+
+Create a service file:
+services/congressApi.ts
+
+Use environment variables:
+CONGRESS_GOV_API_KEY
+
+Include functions for:
+- getMembers()
+- getMemberById(id)
+- searchBills(query)
+- getBill(congress, billType, billNumber)
+- getRecentBills()
+- getCommittees()
+- getVotes() if supported
+
+Build UI screens:
+- Congressional bills
+- Congressional members
+- Member details
+- Bill details
+- Recent congressional activity
+- Committee information
+
+If API key is missing, show mock data and a clear developer warning.
+
+12. Gemini AI Integration
+Add Gemini AI integration for intelligent political data assistance.
+
+Create a service file:
+services/geminiApi.ts
+
+Use environment variable:
+GEMINI_API_KEY
+
+Gemini should help users:
+- Summarize legislation in plain language
+- Explain political terms
+- Compare public claims against available source text
+- Help users understand government processes
+- Explain voting records neutrally
+- Generate source-based summaries
+
+Important Gemini rules:
+- The chatbot must remain neutral and nonpartisan.
+- It must not endorse candidates, parties, policies, or ballot measures.
+- It must cite or reference the source data being summarized when available.
+- It must say when it cannot verify something.
+- It must distinguish facts from claims.
+- It must avoid giving voting recommendations.
+
+13. Gemini Chatbot Fact Checker
+Create a chat screen called “Fact Checker.”
+
+User can enter:
+- Political claim
+- Legislation summary request
+- Public statement
+- Question about a candidate, representative, bill, or government process
+
+Chatbot response format:
+- Claim or question
+- Verification status:
+  - Verified
+  - Partially verified
+  - Not enough evidence
+  - False or misleading
+  - Opinion / cannot be fact-checked
+- Explanation
+- Sources used
+- Date checked
+- Neutral context
+
+Add suggested prompts:
+- “Summarize this bill in plain English”
+- “What does this representative’s voting record show?”
+- “Is this claim supported by public records?”
+- “Explain the Electoral College”
+- “What changed in this bill?”
+
+14. Performance, Stability, and UX
+Improve app performance and stability:
+- Use loading states
+- Use error boundaries
+- Use retry buttons for API failures
+- Use skeleton loaders where appropriate
+- Use pagination for large data lists
+- Cache API responses where useful
+- Avoid unnecessary re-renders
+- Use TypeScript
+- Validate forms
+- Make UI accessible
+- Use readable font sizes
+- Support dark-friendly political theme
+- Ensure compatibility with current Android and iOS versions
+
+15. Suggested Project Structure
+
+Create this structure:
+
+/app
+  /screens
+    LoginScreen.tsx
+    RegisterScreen.tsx
+    ForgotPasswordScreen.tsx
+    DashboardScreen.tsx
+    ProfileScreen.tsx
+    VoterToolsScreen.tsx
+    RepresentativesScreen.tsx
+    ElectionsScreen.tsx
+    PartiesScreen.tsx
+    PoliticalGuideScreen.tsx
+    PollsScreen.tsx
+    LegislationScreen.tsx
+    CongressScreen.tsx
+    FactCheckerScreen.tsx
+  /components
+    AppHeader.tsx
+    CardButton.tsx
+    RepresentativeCard.tsx
+    CandidateCard.tsx
+    BillCard.tsx
+    PollCard.tsx
+    LoadingState.tsx
+    ErrorState.tsx
+    AddressOverrideBanner.tsx
+  /services
+    legiscanApi.ts
+    congressApi.ts
+    geminiApi.ts
+    voterApi.ts
+    mockData.ts
+  /context
+    AuthContext.tsx
+    AddressContext.tsx
+  /types
+    politics.ts
+    user.ts
+  /utils
+    constants.ts
+    formatters.ts
+    validation.ts
+
+16. Design Requirements
+Use a patriotic but modern design:
+- Primary color: deep navy blue
+- Accent color: red
+- Secondary color: white/light gray
+- Rounded cards
+- Clean icons
+- Large touch targets
+- Mobile-first layout
+- Consistent spacing
+- UDecide logo placement on login and dashboard
+- Background image or gradient inspired by U.S. Capitol / flag imagery
+
+Include a placeholder UDecide logo if the uploaded logo cannot be directly used.
+
+17. Data and API Handling
+Use environment variables and do not hardcode API keys.
+
+Create a .env.example file with:
+
+LEGISCAN_API_KEY=
+CONGRESS_GOV_API_KEY=
+GEMINI_API_KEY=
+
+Add clear comments explaining where each key should be placed.
+
+When live APIs fail or keys are missing:
+- Do not crash
+- Show fallback mock data
+- Show a clear message to developers
+- Continue allowing users to browse the app
+
+18. Neutrality and Safety Requirements
+The app must:
+- Be politically neutral
+- Provide source-based summaries
+- Avoid endorsements
+- Avoid candidate rankings
+- Avoid partisan framing
+- Clearly label official vs third-party data
+- Include timestamps for API data
+- Include disclaimers where appropriate
+
+19. Deliverables
+Generate:
+- Full React Native / Expo project
+- TypeScript components
+- Navigation setup
+- Mock data
+- API service wrappers
+- Screens for all major features
+- Polished UI based on uploaded screenshots
+- Error handling
+- Loading states
+- README with setup instructions
+- .env.example
+- Instructions for running on Android and iOS
+
+20. README Requirements
+The README should include:
+- App overview
+- Features
+- Required API keys
+- How to run locally
+- How to test on Expo Go
+- How to build for Android and iOS
+- Notes about political neutrality
+- API limitations
+- Future improvements
+
+Start by creating the full app scaffold, then implement the UI screens, navigation, mock data, and service wrappers. Make sure the project runs successfully in Replit without missing imports or syntax errors.
+```

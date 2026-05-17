@@ -1,0 +1,369 @@
+import { MaterialIcons } from "@expo/vector-icons";
+import { LinearGradient } from "expo-linear-gradient";
+import { router } from "expo-router";
+import React, { useState } from "react";
+import {
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+  ActivityIndicator,
+} from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+
+import { useAuth } from "@/context/AuthContext";
+import { validateEmail, validatePassword } from "@/utils/validation";
+
+export default function LoginScreen() {
+  const insets = useSafeAreaInsets();
+  const { login } = useAuth();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [errors, setErrors] = useState<{ email?: string; password?: string; general?: string }>({});
+  const [loading, setLoading] = useState(false);
+
+  async function handleLogin() {
+    const emailErr = validateEmail(email);
+    const passErr = validatePassword(password);
+    if (emailErr || passErr) {
+      setErrors({ email: emailErr ?? undefined, password: passErr ?? undefined });
+      return;
+    }
+    setErrors({});
+    setLoading(true);
+    const result = await login(email.trim(), password);
+    setLoading(false);
+    if (!result.success) {
+      setErrors({ general: result.error });
+    } else {
+      router.replace("/(tabs)");
+    }
+  }
+
+  return (
+    <LinearGradient colors={["#0D1B2A", "#1B2D45", "#243A56"]} style={styles.gradient}>
+      <KeyboardAvoidingView
+        style={styles.flex}
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+      >
+        <ScrollView
+          contentContainerStyle={[
+            styles.container,
+            { paddingTop: insets.top + 40, paddingBottom: insets.bottom + 24 },
+          ]}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        >
+          {/* Logo */}
+          <View style={styles.logoSection}>
+            <View style={styles.logoMark}>
+              <Text style={styles.logoU}>U</Text>
+              <View style={styles.logoStar}>
+                <MaterialIcons name="star" size={14} color="#C41E3A" />
+              </View>
+            </View>
+            <Text style={styles.appName}>UDecide</Text>
+            <Text style={styles.tagline}>Political & Voter App</Text>
+          </View>
+
+          {/* Card */}
+          <View style={styles.card}>
+            <Text style={styles.cardTitle}>Sign In</Text>
+
+            {errors.general ? (
+              <View style={styles.errorBanner}>
+                <MaterialIcons name="error-outline" size={16} color="#C41E3A" />
+                <Text style={styles.errorBannerText}>{errors.general}</Text>
+              </View>
+            ) : null}
+
+            <View style={styles.field}>
+              <Text style={styles.label}>Email</Text>
+              <View style={[styles.inputWrap, errors.email ? styles.inputError : null]}>
+                <MaterialIcons name="email" size={18} color="#6B7A8D" />
+                <TextInput
+                  style={styles.input}
+                  placeholder="your@email.com"
+                  placeholderTextColor="#8892A0"
+                  value={email}
+                  onChangeText={setEmail}
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                />
+              </View>
+              {errors.email ? <Text style={styles.errorText}>{errors.email}</Text> : null}
+            </View>
+
+            <View style={styles.field}>
+              <Text style={styles.label}>Password</Text>
+              <View style={[styles.inputWrap, errors.password ? styles.inputError : null]}>
+                <MaterialIcons name="lock" size={18} color="#6B7A8D" />
+                <TextInput
+                  style={styles.input}
+                  placeholder="Enter password"
+                  placeholderTextColor="#8892A0"
+                  value={password}
+                  onChangeText={setPassword}
+                  secureTextEntry={!showPassword}
+                  autoCapitalize="none"
+                />
+                <Pressable onPress={() => setShowPassword((v) => !v)} hitSlop={8}>
+                  <MaterialIcons
+                    name={showPassword ? "visibility-off" : "visibility"}
+                    size={18}
+                    color="#6B7A8D"
+                  />
+                </Pressable>
+              </View>
+              {errors.password ? <Text style={styles.errorText}>{errors.password}</Text> : null}
+            </View>
+
+            <Pressable
+              style={styles.forgotLink}
+              onPress={() => router.push("/(auth)/forgot-password")}
+            >
+              <Text style={styles.forgotText}>Forgot password?</Text>
+            </Pressable>
+
+            <Pressable
+              style={({ pressed }) => [styles.loginBtn, { opacity: pressed || loading ? 0.85 : 1 }]}
+              onPress={handleLogin}
+              disabled={loading}
+            >
+              {loading ? (
+                <ActivityIndicator color="#FFF" />
+              ) : (
+                <Text style={styles.loginBtnText}>Sign In</Text>
+              )}
+            </Pressable>
+
+            <View style={styles.dividerRow}>
+              <View style={styles.divider} />
+              <Text style={styles.dividerText}>or continue with</Text>
+              <View style={styles.divider} />
+            </View>
+
+            <View style={styles.socialRow}>
+              <Pressable style={({ pressed }) => [styles.socialBtn, { opacity: pressed ? 0.7 : 1 }]}>
+                <MaterialIcons name="g-mobiledata" size={22} color="#4285F4" />
+                <Text style={styles.socialText}>Google</Text>
+              </Pressable>
+              <Pressable style={({ pressed }) => [styles.socialBtn, { opacity: pressed ? 0.7 : 1 }]}>
+                <MaterialIcons name="facebook" size={22} color="#1877F2" />
+                <Text style={styles.socialText}>Facebook</Text>
+              </Pressable>
+            </View>
+
+            <View style={styles.registerRow}>
+              <Text style={styles.registerPrompt}>Don't have an account?</Text>
+              <Pressable onPress={() => router.push("/(auth)/register")}>
+                <Text style={styles.registerLink}>Create Account</Text>
+              </Pressable>
+            </View>
+          </View>
+
+          <Text style={styles.neutralityNote}>
+            UDecide is nonpartisan and does not endorse any candidate or party.
+          </Text>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </LinearGradient>
+  );
+}
+
+const styles = StyleSheet.create({
+  gradient: { flex: 1 },
+  flex: { flex: 1 },
+  container: {
+    padding: 24,
+    gap: 24,
+    alignItems: "center",
+  },
+  logoSection: {
+    alignItems: "center",
+    gap: 6,
+  },
+  logoMark: {
+    width: 72,
+    height: 72,
+    borderRadius: 20,
+    backgroundColor: "rgba(255,255,255,0.1)",
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.2)",
+  },
+  logoU: {
+    fontSize: 36,
+    fontFamily: "Inter_700Bold",
+    color: "#FFF",
+  },
+  logoStar: {
+    position: "absolute",
+    bottom: 8,
+    right: 8,
+  },
+  appName: {
+    fontSize: 28,
+    fontFamily: "Inter_700Bold",
+    color: "#FFFFFF",
+    letterSpacing: 1,
+  },
+  tagline: {
+    fontSize: 14,
+    fontFamily: "Inter_400Regular",
+    color: "rgba(255,255,255,0.6)",
+    letterSpacing: 0.5,
+  },
+  card: {
+    width: "100%",
+    backgroundColor: "#FFFFFF",
+    borderRadius: 24,
+    padding: 24,
+    gap: 16,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.2,
+    shadowRadius: 24,
+    elevation: 8,
+  },
+  cardTitle: {
+    fontSize: 22,
+    fontFamily: "Inter_700Bold",
+    color: "#0D1B2A",
+    textAlign: "center",
+  },
+  errorBanner: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    backgroundColor: "#C41E3A15",
+    borderRadius: 10,
+    padding: 12,
+  },
+  errorBannerText: {
+    color: "#C41E3A",
+    fontSize: 13,
+    fontFamily: "Inter_500Medium",
+    flex: 1,
+  },
+  field: { gap: 6 },
+  label: {
+    fontSize: 13,
+    fontFamily: "Inter_600SemiBold",
+    color: "#0D1B2A",
+  },
+  inputWrap: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    borderWidth: 1.5,
+    borderColor: "#DDE1E7",
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    backgroundColor: "#F5F6F8",
+  },
+  inputError: {
+    borderColor: "#C41E3A",
+  },
+  input: {
+    flex: 1,
+    fontSize: 15,
+    fontFamily: "Inter_400Regular",
+    color: "#0D1B2A",
+  },
+  errorText: {
+    fontSize: 12,
+    fontFamily: "Inter_400Regular",
+    color: "#C41E3A",
+  },
+  forgotLink: {
+    alignSelf: "flex-end",
+    marginTop: -4,
+  },
+  forgotText: {
+    fontSize: 13,
+    fontFamily: "Inter_500Medium",
+    color: "#C41E3A",
+  },
+  loginBtn: {
+    backgroundColor: "#C41E3A",
+    borderRadius: 14,
+    paddingVertical: 15,
+    alignItems: "center",
+    justifyContent: "center",
+    minHeight: 50,
+  },
+  loginBtnText: {
+    color: "#FFF",
+    fontSize: 16,
+    fontFamily: "Inter_700Bold",
+    letterSpacing: 0.3,
+  },
+  dividerRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+  },
+  divider: {
+    flex: 1,
+    height: 1,
+    backgroundColor: "#DDE1E7",
+  },
+  dividerText: {
+    fontSize: 12,
+    fontFamily: "Inter_400Regular",
+    color: "#6B7A8D",
+  },
+  socialRow: {
+    flexDirection: "row",
+    gap: 12,
+  },
+  socialBtn: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    borderWidth: 1.5,
+    borderColor: "#DDE1E7",
+    borderRadius: 12,
+    paddingVertical: 12,
+    backgroundColor: "#F5F6F8",
+  },
+  socialText: {
+    fontSize: 14,
+    fontFamily: "Inter_500Medium",
+    color: "#0D1B2A",
+  },
+  registerRow: {
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    gap: 6,
+  },
+  registerPrompt: {
+    fontSize: 14,
+    fontFamily: "Inter_400Regular",
+    color: "#6B7A8D",
+  },
+  registerLink: {
+    fontSize: 14,
+    fontFamily: "Inter_700Bold",
+    color: "#C41E3A",
+  },
+  neutralityNote: {
+    fontSize: 11,
+    fontFamily: "Inter_400Regular",
+    color: "rgba(255,255,255,0.4)",
+    textAlign: "center",
+    fontStyle: "italic",
+  },
+});
