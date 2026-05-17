@@ -17,14 +17,11 @@ import { LoadingState } from "@/components/LoadingState";
 import { RepresentativeCard } from "@/components/RepresentativeCard";
 import { useAddress } from "@/context/AddressContext";
 import { useColors } from "@/hooks/useColors";
-import { getMembers } from "@/services/congressApi";
-import { MOCK_REPRESENTATIVES } from "@/services/mockData";
+import { getRepresentatives, isCivicMockMode } from "@/services/civicApi";
 import type { Representative } from "@/types/politics";
 import { REP_LEVELS } from "@/utils/constants";
 
 type Level = (typeof REP_LEVELS)[number];
-
-const HAS_CONGRESS_KEY = !!process.env.EXPO_PUBLIC_CONGRESS_GOV_API_KEY;
 
 export default function RepresentativesScreen() {
   const insets = useSafeAreaInsets();
@@ -43,17 +40,9 @@ export default function RepresentativesScreen() {
     setLoading(true);
     setError(false);
     try {
-      const state = effectiveAddress.state;
-
-      // ── Federal reps: Congress.gov API (real data when key present, mock fallback when not) ──
-      const federalReps = await getMembers(state || undefined);
-
-      // ── State / county / city: no free universal API — use curated mock data ──
-      // These are clearly labelled with "(sample data)" in their source field.
-      const localReps = MOCK_REPRESENTATIVES.filter((r) => r.level !== "federal");
-
-      setReps([...federalReps, ...localReps]);
-      setUsingLiveData(HAS_CONGRESS_KEY);
+      const result = await getRepresentatives(effectiveAddress);
+      setReps(result);
+      setUsingLiveData(!isCivicMockMode());
     } catch {
       setError(true);
     } finally {
@@ -63,7 +52,7 @@ export default function RepresentativesScreen() {
 
   useEffect(() => {
     loadReps();
-  }, [effectiveAddress.state]);
+  }, [effectiveAddress.address, effectiveAddress.city, effectiveAddress.state, effectiveAddress.zipCode]);
 
   const filtered = reps.filter((r) => {
     if (selectedLevel === "All") return true;
@@ -134,7 +123,7 @@ export default function RepresentativesScreen() {
             No Representatives Found
           </Text>
           <Text style={[styles.emptyText, { color: colors.mutedForeground }]}>
-            No representatives found for the selected level in your area.
+            No representatives found for the selected level in your area. Try entering a full street address in Address Settings.
           </Text>
         </View>
       ) : (
@@ -154,14 +143,14 @@ export default function RepresentativesScreen() {
                 {filtered.length} representative
                 {filtered.length !== 1 ? "s" : ""} found
               </Text>
-              <DataSourceBadge
-                usingLiveData={usingLiveData}
-                selectedLevel={selectedLevel}
-                colors={colors}
-              />
+              <DataSourceBadge usingLiveData={usingLiveData} colors={colors} />
             </View>
           }
-          ListFooterComponent={<DataSourceNote colors={colors} selectedLevel={selectedLevel} usingLiveData={usingLiveData} />}
+          ListFooterComponent={
+            !usingLiveData ? (
+              <DataSourceNote colors={colors} />
+            ) : null
+          }
         />
       )}
     </View>
@@ -170,16 +159,11 @@ export default function RepresentativesScreen() {
 
 function DataSourceBadge({
   usingLiveData,
-  selectedLevel,
   colors,
 }: {
   usingLiveData: boolean;
-  selectedLevel: Level;
   colors: ReturnType<typeof useColors>;
 }) {
-  const isFederal = selectedLevel === "Federal" || selectedLevel === "All";
-  if (!isFederal) return null;
-
   return (
     <View
       style={[
@@ -205,29 +189,15 @@ function DataSourceBadge({
           { color: usingLiveData ? "#16a34a" : "#d97706" },
         ]}
       >
-        {usingLiveData ? "Live · Congress.gov" : "Sample federal data · Add CONGRESS_GOV_API_KEY for live data"}
+        {usingLiveData
+          ? "Live · Google Civic Information API"
+          : "Sample data · Add CIVIC_API_KEY for live reps at all levels"}
       </Text>
     </View>
   );
 }
 
-function DataSourceNote({
-  colors,
-  selectedLevel,
-  usingLiveData,
-}: {
-  colors: ReturnType<typeof useColors>;
-  selectedLevel: Level;
-  usingLiveData: boolean;
-}) {
-  const showLocalNote =
-    selectedLevel === "All" ||
-    selectedLevel === "State" ||
-    selectedLevel === "County" ||
-    selectedLevel === "City";
-
-  if (!showLocalNote) return null;
-
+function DataSourceNote({ colors }: { colors: ReturnType<typeof useColors> }) {
   return (
     <View
       style={[
@@ -237,10 +207,7 @@ function DataSourceNote({
     >
       <MaterialIcons name="info-outline" size={13} color={colors.mutedForeground} />
       <Text style={[styles.footerNoteText, { color: colors.mutedForeground }]}>
-        {usingLiveData
-          ? "Federal reps are live from Congress.gov. "
-          : "Federal reps are sample data. "}
-        State, county and city reps are sample data — no free universal API covers all local officials. Contact your state legislature for accurate local data.
+        Showing sample representatives. To see your real officials at every level — federal, state, county and city — add a Google Civic Information API key.
       </Text>
     </View>
   );
