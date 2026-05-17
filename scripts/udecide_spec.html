@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>UDecide — Feature Specification</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+  @page {
+    size: A4;
+    margin: 2.2cm 2.4cm 2.4cm 2.4cm;
+    @bottom-center {
+      content: "UDecide Feature Specification  •  Page " counter(page) " of " counter(pages);
+      font-family: 'Inter', sans-serif;
+      font-size: 8pt;
+      color: #8899AA;
+    }
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-size: 10.5pt;
+    line-height: 1.65;
+    color: #1A2533;
+    background: white;
+  }
+
+  /* ── Cover page ──────────────────────────────── */
+  .cover {
+    page-break-after: always;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 250mm;
+    text-align: center;
+    background: linear-gradient(160deg, #0D1B2A 0%, #1B2D45 100%);
+    color: white;
+    padding: 60px 40px;
+    border-radius: 8px;
+  }
+  .cover-logo {
+    width: 80px; height: 80px;
+    background: #C41E3A;
+    border-radius: 20px;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 28px;
+    font-size: 40px;
+    color: white;
+    font-weight: 800;
+  }
+  .cover h1 { font-size: 38pt; font-weight: 800; letter-spacing: -1px; margin-bottom: 10px; }
+  .cover .subtitle {
+    font-size: 14pt; font-weight: 300; color: rgba(255,255,255,0.75);
+    margin-bottom: 40px; letter-spacing: 0.5px;
+  }
+  .cover .divider {
+    width: 60px; height: 3px;
+    background: #C41E3A;
+    margin: 0 auto 40px;
+    border-radius: 2px;
+  }
+  .cover .meta {
+    font-size: 9pt; color: rgba(255,255,255,0.5);
+    letter-spacing: 1px; text-transform: uppercase;
+  }
+  .cover .tag {
+    display: inline-block;
+    background: rgba(196,30,58,0.25);
+    border: 1px solid rgba(196,30,58,0.5);
+    color: #FF7090;
+    font-size: 8.5pt; font-weight: 500;
+    padding: 5px 14px;
+    border-radius: 20px;
+    margin-bottom: 32px;
+    letter-spacing: 0.5px;
+  }
+
+  /* ── TOC ──────────────────────────────────────── */
+  .toc-page { page-break-after: always; padding-top: 8px; }
+  .toc-title {
+    font-size: 18pt; font-weight: 700;
+    color: #0D1B2A; margin-bottom: 28px;
+    border-bottom: 3px solid #C41E3A;
+    padding-bottom: 10px;
+  }
+  .toc-item {
+    display: flex; justify-content: space-between; align-items: baseline;
+    padding: 7px 0;
+    border-bottom: 1px dotted #D8E0E8;
+    font-size: 10.5pt;
+  }
+  .toc-item.main { font-weight: 600; color: #0D1B2A; font-size: 11pt; }
+  .toc-item.sub { padding-left: 20px; color: #4A5568; font-size: 10pt; }
+  .toc-item .dots { flex: 1; border-bottom: 1px dotted #CBD5E0; margin: 0 10px; }
+  .toc-num { color: #8899AA; font-size: 9.5pt; }
+
+  /* ── Section layout ──────────────────────────── */
+  .section { page-break-before: always; }
+  .section:first-of-type { page-break-before: auto; }
+
+  .section-header {
+    background: linear-gradient(135deg, #0D1B2A 0%, #1B2D45 100%);
+    color: white;
+    padding: 22px 24px;
+    border-radius: 8px;
+    margin-bottom: 24px;
+  }
+  .section-number {
+    font-size: 8.5pt; font-weight: 600; letter-spacing: 2px;
+    text-transform: uppercase; color: #C41E3A; margin-bottom: 4px;
+  }
+  .section-title {
+    font-size: 18pt; font-weight: 700; margin-bottom: 6px;
+  }
+  .section-tagline { font-size: 10.5pt; color: rgba(255,255,255,0.7); }
+
+  /* ── Typography ──────────────────────────────── */
+  h2 { font-size: 13pt; font-weight: 700; color: #0D1B2A; margin: 24px 0 10px; }
+  h3 { font-size: 11pt; font-weight: 600; color: #1B2D45; margin: 18px 0 8px; }
+  p { margin-bottom: 10px; color: #2D3748; }
+
+  /* ── Feature cards ───────────────────────────── */
+  .feature-card {
+    background: #F7F9FC;
+    border: 1px solid #E2E8F0;
+    border-left: 4px solid #C41E3A;
+    border-radius: 6px;
+    padding: 16px 18px;
+    margin-bottom: 16px;
+    page-break-inside: avoid;
+  }
+  .feature-card h3 {
+    margin: 0 0 6px; font-size: 11.5pt; color: #0D1B2A;
+  }
+  .feature-card p { margin: 0; color: #4A5568; }
+
+  /* ── Step list ───────────────────────────────── */
+  .steps { list-style: none; margin: 12px 0 16px; }
+  .steps li {
+    display: flex; align-items: flex-start; gap: 12px;
+    padding: 8px 0; border-bottom: 1px solid #EEF2F7;
+    color: #2D3748;
+  }
+  .steps li:last-child { border-bottom: none; }
+  .step-num {
+    min-width: 24px; height: 24px;
+    background: #C41E3A; color: white;
+    border-radius: 50%; font-size: 8.5pt; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  /* ── Bullet list ─────────────────────────────── */
+  ul.bullets { margin: 8px 0 14px 0; padding-left: 0; list-style: none; }
+  ul.bullets li {
+    padding: 5px 0 5px 20px; position: relative; color: #2D3748;
+    border-bottom: 1px solid #F0F4F8;
+  }
+  ul.bullets li:last-child { border-bottom: none; }
+  ul.bullets li::before {
+    content: "▸"; position: absolute; left: 0;
+    color: #C41E3A; font-size: 9pt; top: 6px;
+  }
+
+  /* ── Two-column grid ─────────────────────────── */
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 16px; }
+  .mini-card {
+    background: #F7F9FC; border: 1px solid #E2E8F0;
+    border-radius: 6px; padding: 14px 16px;
+    page-break-inside: avoid;
+  }
+  .mini-card h4 { font-size: 10pt; font-weight: 600; color: #0D1B2A; margin-bottom: 4px; }
+  .mini-card p { font-size: 9.5pt; color: #4A5568; margin: 0; }
+
+  /* ── Info boxes ──────────────────────────────── */
+  .info-box {
+    background: #EBF4FF; border: 1px solid #BEE3F8; border-radius: 6px;
+    padding: 12px 16px; margin: 14px 0;
+  }
+  .info-box.warning { background: #FFFBEB; border-color: #F6E05E; }
+  .info-box.success { background: #F0FFF4; border-color: #9AE6B4; }
+  .info-box-title { font-size: 9.5pt; font-weight: 700; color: #2B6CB0; margin-bottom: 4px; }
+  .info-box.warning .info-box-title { color: #744210; }
+  .info-box.success .info-box-title { color: #22543D; }
+  .info-box p { font-size: 9.5pt; color: #2C5282; margin: 0; }
+  .info-box.warning p { color: #744210; }
+  .info-box.success p { color: #22543D; }
+
+  /* ── Badge pill ──────────────────────────────── */
+  .badge {
+    display: inline-block; font-size: 8pt; font-weight: 600;
+    padding: 2px 10px; border-radius: 12px; margin-right: 6px; margin-bottom: 4px;
+  }
+  .badge-navy { background: #0D1B2A; color: white; }
+  .badge-red { background: #C41E3A; color: white; }
+  .badge-blue { background: #2B6CB0; color: white; }
+  .badge-green { background: #276749; color: white; }
+  .badge-gray { background: #E2E8F0; color: #4A5568; }
+
+  /* ── Summary bar at top of each section ─────── */
+  .summary-bar {
+    background: white; border: 1px solid #E2E8F0;
+    border-radius: 6px; padding: 12px 18px; margin-bottom: 20px;
+    display: flex; align-items: center; gap: 16px;
+    font-size: 9.5pt; color: #4A5568;
+  }
+  .summary-bar strong { color: #0D1B2A; font-weight: 600; }
+
+  /* ── Page footer section label ───────────────── */
+  .section-label {
+    font-size: 8pt; letter-spacing: 1.5px; text-transform: uppercase;
+    color: #C41E3A; font-weight: 700; margin-bottom: 6px;
+  }
+
+  /* ── Separator ───────────────────────────────── */
+  hr { border: none; border-top: 1px solid #E2E8F0; margin: 20px 0; }
+
+  /* ── Intro page ──────────────────────────────── */
+  .intro { page-break-after: always; }
+  .intro-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 20px; }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════
+     COVER
+═══════════════════════════════════════ -->
+<div class="cover">
+  <div class="cover-logo">★</div>
+  <div class="tag">Nonpartisan Voter Information App</div>
+  <h1>UDecide</h1>
+  <div class="subtitle">Complete Feature Specification</div>
+  <div class="divider"></div>
+  <div class="meta">User Guide &amp; Feature Reference &nbsp;•&nbsp; May 2026</div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     TABLE OF CONTENTS
+═══════════════════════════════════════ -->
+<div class="toc-page">
+  <div class="toc-title">Table of Contents</div>
+
+  <div class="toc-item main"><span>Introduction &amp; Getting Started</span><span class="dots"></span><span class="toc-num">3</span></div>
+  <div class="toc-item sub"><span>What is UDecide?</span><span class="dots"></span><span class="toc-num">3</span></div>
+  <div class="toc-item sub"><span>Creating an Account</span><span class="dots"></span><span class="toc-num">3</span></div>
+  <div class="toc-item sub"><span>Setting Your Location</span><span class="dots"></span><span class="toc-num">3</span></div>
+
+  <div class="toc-item main" style="margin-top:8px"><span>1. Dashboard</span><span class="dots"></span><span class="toc-num">4</span></div>
+  <div class="toc-item main"><span>2. Representatives</span><span class="dots"></span><span class="toc-num">5</span></div>
+  <div class="toc-item main"><span>3. Elections &amp; Ballots</span><span class="dots"></span><span class="toc-num">6</span></div>
+  <div class="toc-item main"><span>4. Legislation Tracker</span><span class="dots"></span><span class="toc-num">7</span></div>
+  <div class="toc-item main"><span>5. Voter Status Tools</span><span class="dots"></span><span class="toc-num">8</span></div>
+  <div class="toc-item main"><span>6. Political Parties</span><span class="dots"></span><span class="toc-num">9</span></div>
+  <div class="toc-item main"><span>7. Political System Guide</span><span class="dots"></span><span class="toc-num">10</span></div>
+  <div class="toc-item main"><span>8. Political Polls</span><span class="dots"></span><span class="toc-num">11</span></div>
+  <div class="toc-item main"><span>9. AI Fact Checker</span><span class="dots"></span><span class="toc-num">12</span></div>
+  <div class="toc-item main"><span>10. Address Override</span><span class="dots"></span><span class="toc-num">13</span></div>
+  <div class="toc-item main"><span>11. Profile &amp; Settings</span><span class="dots"></span><span class="toc-num">14</span></div>
+  <div class="toc-item main" style="margin-top:8px"><span>Appendix: Navigation &amp; Design</span><span class="dots"></span><span class="toc-num">15</span></div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     INTRODUCTION
+═══════════════════════════════════════ -->
+<div class="intro">
+  <div class="section-label">Overview</div>
+  <h2 style="font-size:18pt; margin-bottom:14px;">Introduction &amp; Getting Started</h2>
+
+  <p>UDecide is a free, nonpartisan mobile app that puts all the political and civic information you need in one place. Whether you want to find your representatives, track upcoming elections, follow legislation, or fact-check a political claim, UDecide gives you reliable, unbiased information sourced from official government databases.</p>
+  <p>This document describes every feature in UDecide from a user's point of view — what each screen does, how to use it, and what to expect.</p>
+
+  <div class="info-box success">
+    <div class="info-box-title">Nonpartisan Promise</div>
+    <p>UDecide presents information from official sources without ranking, endorsing, or favoring any political party, candidate, or ideology. All perspectives are given equal treatment.</p>
+  </div>
+
+  <h2>Creating an Account</h2>
+  <ul class="steps">
+    <li><span class="step-num">1</span><span><strong>Open the app</strong> — you'll land on the Sign In screen with a deep-navy background.</span></li>
+    <li><span class="step-num">2</span><span><strong>Tap "Create Account"</strong> to open the registration form. Enter your first name, last name, email address, and a password (minimum 8 characters, at least one number).</span></li>
+    <li><span class="step-num">3</span><span><strong>Set up your profile</strong> — after registering you are taken to the Profile Setup screen where you enter your U.S. address (street, city, state, ZIP). This address is used to find your local representatives and elections.</span></li>
+    <li><span class="step-num">4</span><span><strong>Tap "Continue"</strong> to arrive at your personalised Dashboard.</span></li>
+  </ul>
+  <p>Your login credentials are stored securely on your device. You can sign out or change your address at any time from the Profile screen.</p>
+
+  <h2>Setting Your Location</h2>
+  <p>UDecide uses your address to show you the right representatives, elections, and local legislation. You set this when you register and can update it in your Profile. You can also temporarily switch to any other U.S. address using the <strong>Address Override</strong> feature (see Section 10) without permanently changing your account address.</p>
+
+  <div class="two-col">
+    <div class="mini-card">
+      <h4>Returning Users</h4>
+      <p>Enter your email and password on the Sign In screen. Tap "Forgot Password?" if you need to reset it.</p>
+    </div>
+    <div class="mini-card">
+      <h4>Password Reset</h4>
+      <p>Enter your registered email address and follow the on-screen instructions to create a new password.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     1. DASHBOARD
+═══════════════════════════════════════ -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-number">Feature 01</div>
+    <div class="section-title">Dashboard</div>
+    <div class="section-tagline">Your personalised civic home screen</div>
+  </div>
+
+  <p>The Dashboard is the first screen you see after signing in. It greets you by name and shows your current city and state so you know the app is tuned to your location. Below the greeting is a scrollable grid of cards — one for each major feature in UDecide.</p>
+
+  <h2>What You'll See</h2>
+  <ul class="bullets">
+    <li><strong>Welcome header</strong> — your first name and location chip (e.g., "Austin, TX") displayed prominently at the top.</li>
+    <li><strong>Quick-access cards</strong> — large, tappable tiles for each feature: Representatives, Elections, Legislation, Voter Tools, Political Parties, Political System Guide, Polls, and Fact Checker.</li>
+    <li><strong>Each card shows</strong> an icon, a title, and a short description of that feature.</li>
+  </ul>
+
+  <h2>How to Use It</h2>
+  <ul class="steps">
+    <li><span class="step-num">1</span><span>Scroll down to browse all available features.</span></li>
+    <li><span class="step-num">2</span><span>Tap any card to go directly to that feature.</span></li>
+    <li><span class="step-num">3</span><span>Use the tab bar at the bottom to jump between the five main sections at any time.</span></li>
+  </ul>
+
+  <div class="info-box">
+    <div class="info-box-title">Tip</div>
+    <p>The Dashboard is always accessible by tapping the home tab (house icon) at the bottom of the screen.</p>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     2. REPRESENTATIVES
+═══════════════════════════════════════ -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-number">Feature 02</div>
+    <div class="section-title">Representatives</div>
+    <div class="section-tagline">Find every official who represents you — from Congress to city hall</div>
+  </div>
+
+  <p>The Representatives screen shows every elected official who serves your address, organised by level of government. You can expand any card to see detailed information and contact details.</p>
+
+  <h2>Government Levels</h2>
+  <div class="two-col">
+    <div class="mini-card">
+      <h4>Federal</h4>
+      <p>Your two U.S. Senators and one U.S. House Representative for your congressional district.</p>
+    </div>
+    <div class="mini-card">
+      <h4>State</h4>
+      <p>Your state governor, state senator, and state house representative.</p>
+    </div>
+    <div class="mini-card">
+      <h4>County</h4>
+      <p>Your county commissioner or equivalent county-level official.</p>
+    </div>
+    <div class="mini-card">
+      <h4>City</h4>
+      <p>Your mayor and city council member for your district.</p>
+    </div>
+  </div>
+
+  <h2>What Each Card Shows</h2>
+  <ul class="bullets">
+    <li><strong>Name, title, and party</strong> — colour-coded party badge (blue for Democrat, red for Republican, yellow for Independent, etc.).</li>
+    <li><strong>State and district</strong> — the geographic area they represent.</li>
+    <li><strong>Years in office</strong> — how long they have served in their current role.</li>
+    <li><strong>Voting record summary</strong> — a short description of their recent legislative activity.</li>
+    <li><strong>Contact information</strong> — office phone number and official website (tap to open in your browser).</li>
+  </ul>
+
+  <h2>Using the Representatives Screen</h2>
+  <ul class="steps">
+    <li><span class="step-num">1</span><span>Scroll through the list — representatives are grouped by level (Federal, State, County, City) with a coloured header for each group.</span></li>
+    <li><span class="step-num">2</span><span>Tap a card to expand it and reveal full contact details and voting record.</span></li>
+    <li><span class="step-num">3</span><span>Tap the phone number or website link inside an expanded card to contact your representative.</span></li>
+  </ul>
+
+  <div class="info-box">
+    <div class="info-box-title">Data Source</div>
+    <p>Representative data is sourced from official government records and updated regularly. When an internet connection is unavailable, the app shows the most recently cached data.</p>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     3. ELECTIONS & BALLOTS
+═══════════════════════════════════════ -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-number">Feature 03</div>
+    <div class="section-title">Elections &amp; Ballots</div>
+    <div class="section-tagline">Never miss an election — dates, candidates, and deadlines in one place</div>
+  </div>
+
+  <p>The Elections screen lists every upcoming election relevant to your address: presidential, congressional, state, and local. Each election card shows the full timeline of important dates and lets you explore the candidates running for each office.</p>
+
+  <h2>What Each Election Card Shows</h2>
+  <ul class="bullets">
+    <li><strong>Election name and type</strong> — e.g., "General Election", "Primary Election", "Local Runoff".</li>
+    <li><strong>Election date</strong> — prominently displayed with a countdown or a "Today" indicator.</li>
+    <li><strong>Registration deadline</strong> — the last day to register to vote for this election.</li>
+    <li><strong>Early voting window</strong> — the start and end dates for in-person early voting.</li>
+    <li><strong>Absentee / mail-in ballot deadline</strong> — the last day to request or return an absentee ballot.</li>
+    <li><strong>Ballot status tags</strong> — colour-coded labels such as "Upcoming", "Early Voting Open", "Registration Open", or "Closed".</li>
+  </ul>
+
+  <h2>Viewing Candidates</h2>
+  <ul class="steps">
+    <li><span class="step-num">1</span><span>Tap an election card to expand it and see a list of contested offices (e.g., U.S. Senate, Governor, State House District 42).</span></li>
+    <li><span class="step-num">2</span><span>Tap an office name to see all candidates running for that position.</span></li>
+    <li><span class="step-num">3</span><span>Each candidate card shows their name, party, and a brief background note.</span></li>
+  </ul>
+
+  <div class="info-box warning">
+    <div class="info-box-title">Important</div>
+    <p>UDecide does not endorse any candidate. Candidates are listed in alphabetical order with equal prominence regardless of party affiliation.</p>
+  </div>
+
+  <h2>Staying on Top of Deadlines</h2>
+  <p>All key dates are shown for every election. If a deadline is approaching within seven days, it is highlighted in amber so it catches your eye. Check back regularly as dates can be updated by election authorities.</p>
+</div>
+
+<!-- ═══════════════════════════════════════
+     4. LEGISLATION TRACKER
+═══════════════════════════════════════ -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-number">Feature 04</div>
+    <div class="section-title">Legislation Tracker</div>
+    <div class="section-tagline">Follow bills in Congress and your state legislature</div>
+  </div>
+
+  <p>The Legislation Tracker lets you browse and search bills at both the federal and state level. Each bill entry shows its current status, a plain-English summary, and its journey through the legislative process.</p>
+
+  <h2>Browsing Bills</h2>
+  <ul class="bullets">
+    <li><strong>Filter tabs</strong> — switch between "Federal" and "State" to focus on the level of government you care about.</li>
+    <li><strong>Bill card</strong> — shows the bill number (e.g., HB 1234), a short title, the current status badge, and the date of the most recent action.</li>
+    <li><strong>Status badges</strong> — colour-coded indicators: Introduced (grey), In Committee (blue), Passed Chamber (amber), Enrolled (green), Signed into Law (dark green), Vetoed (red), Failed (light red).</li>
+  </ul>
+
+  <h2>Bill Detail View</h2>
+  <p>Tap any bill card to open the full detail view:</p>
+  <ul class="bullets">
+    <li><strong>Plain-English summary</strong> — a concise explanation of what the bill does, written to be accessible to everyone.</li>
+    <li><strong>Sponsor and co-sponsors</strong> — the legislator(s) who introduced the bill.</li>
+    <li><strong>Chamber of origin</strong> — whether the bill started in the House or Senate.</li>
+    <li><strong>Legislative timeline</strong> — a chronological list of every action taken on the bill (introduced, committee assignment, votes, presidential/gubernatorial action).</li>
+    <li><strong>Vote record</strong> — the most recent roll call vote showing the Yea/Nay breakdown.</li>
+    <li><strong>Full text link</strong> — a link to the official bill text on congress.gov or your state legislature's website.</li>
+  </ul>
+
+  <div class="info-box">
+    <div class="info-box-title">Data Sources</div>
+    <p>Federal bills are sourced from Congress.gov. State bills are sourced from LegiScan, which covers all 50 state legislatures. Both services require an internet connection; cached data is shown when offline.</p>
+  </div>
+
+  <h2>Searching Legislation</h2>
+  <ul class="steps">
+    <li><span class="step-num">1</span><span>Tap the search icon (magnifying glass) at the top of the Legislation screen.</span></li>
+    <li><span class="step-num">2</span><span>Type a keyword, bill number, or topic (e.g., "healthcare", "HB 452", "tax").</span></li>
+    <li><span class="step-num">3</span><span>Results update in real time as you type. Tap a result to open the bill detail.</span></li>
+  </ul>
+</div>
+
+<!-- ═══════════════════════════════════════
+     5. VOTER STATUS TOOLS
+═══════════════════════════════════════ -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-number">Feature 05</div>
+    <div class="section-title">Voter Status Tools</div>
+    <div class="section-tagline">Everything you need to know before you vote</div>
+  </div>
+
+  <p>The Voter Status Tools screen consolidates practical voting information for your specific state and address. Each card is a self-contained reference for a different aspect of the voting process.</p>
+
+  <div class="feature-card">
+    <h3>Registration Information</h3>
+    <p>Shows your state's voter registration rules: the deadline to register before the next election, whether your state offers same-day registration, and a direct link to your state's official registration portal.</p>
+  </div>
+
+  <div class="feature-card">
+    <h3>Polling Place Finder</h3>
+    <p>Displays the name and address of your assigned polling location based on your registered address. Includes the polling place hours for Election Day and a map link so you can get directions.</p>
+  </div>
+
+  <div class="feature-card">
+    <h3>Early Voting</h3>
+    <p>Shows whether your state offers early in-person voting, the dates of the early voting period, and the locations of nearby early voting sites.</p>
+  </div>
+
+  <div class="feature-card">
+    <h3>Absentee &amp; Mail-In Voting</h3>
+    <p>Explains your state's rules for voting by mail: whether you need an excuse, the request deadline, the return deadline, and whether ballot drop boxes are available.</p>
+  </div>
+
+  <div class="feature-card">
+    <h3>Voter ID Requirements</h3>
+    <p>Lists the specific ID documents your state accepts at the polls. Some states accept a wide range of documents; others have strict photo ID requirements. This card explains exactly what you need to bring.</p>
+  </div>
+
+  <div class="info-box success">
+    <div class="info-box-title">State-Specific</div>
+    <p>All information on this screen is tailored to your state's specific laws, which vary widely across the country. Always verify critical dates with your local election authority.</p>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     6. POLITICAL PARTIES
+═══════════════════════════════════════ -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-number">Feature 06</div>
+    <div class="section-title">Political Parties</div>
+    <div class="section-tagline">Understand the major and minor parties — without the spin</div>
+  </div>
+
+  <p>The Political Parties screen provides neutral, factual profiles of the main U.S. political parties. Parties are listed alphabetically with no implied ranking or preference.</p>
+
+  <h2>Parties Covered</h2>
+  <div class="two-col">
+    <div class="mini-card"><h4>Democratic Party</h4><p>Founded 1828 · Center-left</p></div>
+    <div class="mini-card"><h4>Republican Party</h4><p>Founded 1854 · Center-right</p></div>
+    <div class="mini-card"><h4>Libertarian Party</h4><p>Founded 1971 · Classical liberal</p></div>
+    <div class="mini-card"><h4>Green Party</h4><p>Founded 1984 · Progressive / eco</p></div>
+    <div class="mini-card"><h4>Independent</h4><p>No party affiliation — runs on individual platforms</p></div>
+    <div class="mini-card"><h4>Constitution Party</h4><p>Founded 1992 · Paleoconservative</p></div>
+  </div>
+
+  <h2>What Each Party Profile Contains</h2>
+  <ul class="bullets">
+    <li><strong>Short history</strong> — founding year and brief origin story.</li>
+    <li><strong>Core values</strong> — the principles the party states in its platform documents.</li>
+    <li><strong>Key policy positions</strong> — factual summaries of the party's stated stances on major issues (economy, healthcare, environment, foreign policy, social issues) drawn directly from official party platforms.</li>
+    <li><strong>Current leadership</strong> — national chair and prominent elected officials.</li>
+    <li><strong>Electoral performance</strong> — recent election results and seats currently held.</li>
+    <li><strong>Official website link</strong> — tap to visit the party's official site for more information.</li>
+  </ul>
+
+  <div class="info-box warning">
+    <div class="info-box-title">Editorial Policy</div>
+    <p>Platform summaries are paraphrased directly from each party's own official platform documents. UDecide does not add commentary, characterisations, or comparisons between parties.</p>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     7. POLITICAL SYSTEM GUIDE
+═══════════════════════════════════════ -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-number">Feature 07</div>
+    <div class="section-title">Political System Guide</div>
+    <div class="section-tagline">Civic education for every American — easy to understand, easy to share</div>
+  </div>
+
+  <p>The Political System Guide is an interactive civics reference that explains how the U.S. government works. It is written for everyone, from first-time voters to those who want a refresher.</p>
+
+  <h2>Topics Covered</h2>
+
+  <div class="feature-card">
+    <h3>The Three Branches of Government</h3>
+    <p>Explains the roles of the Legislative (Congress), Executive (President), and Judicial (Supreme Court and federal courts) branches, and how they are structured.</p>
+  </div>
+
+  <div class="feature-card">
+    <h3>Checks and Balances</h3>
+    <p>Describes how each branch limits the power of the others — for example, how Congress can override a presidential veto, and how the courts can strike down laws as unconstitutional.</p>
+  </div>
+
+  <div class="feature-card">
+    <h3>How a Bill Becomes a Law</h3>
+    <p>Step-by-step walkthrough: introduction in either chamber, committee review, floor debate, vote, conference committee (if needed), presidential action, and potential veto override.</p>
+  </div>
+
+  <div class="feature-card">
+    <h3>The U.S. Constitution</h3>
+    <p>Summary of the Constitution's structure — the Preamble, the seven original Articles, and the 27 Amendments — with plain-language explanations of what each part means.</p>
+  </div>
+
+  <div class="feature-card">
+    <h3>The Bill of Rights</h3>
+    <p>Plain-English explanation of the first ten Amendments: freedom of speech, right to bear arms, protection from unreasonable searches, right to a fair trial, and more.</p>
+  </div>
+
+  <div class="feature-card">
+    <h3>The Electoral College</h3>
+    <p>Explains what the Electoral College is, how electors are allocated per state, how the popular vote and electoral vote interact, and what happens if no candidate reaches 270 electoral votes.</p>
+  </div>
+
+  <div class="feature-card">
+    <h3>Voting Rights History</h3>
+    <p>Timeline of major voting rights milestones: the 15th Amendment (1870), 19th Amendment (1920), Voting Rights Act (1965), 26th Amendment (1971), and ongoing developments.</p>
+  </div>
+
+  <p>Each topic is presented as an expandable card. Tap a card header to reveal the full content. Tap again to collapse it.</p>
+</div>
+
+<!-- ═══════════════════════════════════════
+     8. POLITICAL POLLS
+═══════════════════════════════════════ -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-number">Feature 08</div>
+    <div class="section-title">Political Polls</div>
+    <div class="section-tagline">Have your say on civic topics — see how the community feels</div>
+  </div>
+
+  <p>The Polls screen hosts a rotating set of community polls on civic and political topics. All polls are nonpartisan and focus on policy issues, not partisan preferences.</p>
+
+  <h2>How Polls Work</h2>
+  <ul class="steps">
+    <li><span class="step-num">1</span><span>Browse the list of active polls. Each card shows the poll question, the number of votes cast, and — if you've already voted — a live results bar.</span></li>
+    <li><span class="step-num">2</span><span>Tap a poll card to open it. Read the question and any context provided.</span></li>
+    <li><span class="step-num">3</span><span>Tap your chosen answer. The results reveal immediately, showing the percentage breakdown across all options.</span></li>
+    <li><span class="step-num">4</span><span>Your vote is saved — you cannot vote on the same poll twice.</span></li>
+  </ul>
+
+  <h2>Filtering Polls</h2>
+  <p>Use the topic filter chips at the top of the screen to narrow polls by subject:</p>
+  <span class="badge badge-navy">All</span>
+  <span class="badge badge-blue">Economy</span>
+  <span class="badge badge-blue">Healthcare</span>
+  <span class="badge badge-green">Environment</span>
+  <span class="badge badge-red">Foreign Policy</span>
+  <span class="badge badge-gray">Education</span>
+  <span class="badge badge-gray">Infrastructure</span>
+
+  <h2>Results Display</h2>
+  <ul class="bullets">
+    <li>Animated horizontal bars show the percentage for each answer option.</li>
+    <li>The total vote count appears below the question.</li>
+    <li>Your chosen answer is highlighted with a checkmark.</li>
+    <li>Results update in real time as other users vote.</li>
+  </ul>
+
+  <div class="info-box warning">
+    <div class="info-box-title">About These Polls</div>
+    <p>Polls are not scientific surveys. They reflect the opinions of UDecide users who choose to participate and are not representative of the general population.</p>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     9. AI FACT CHECKER
+═══════════════════════════════════════ -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-number">Feature 09</div>
+    <div class="section-title">AI Fact Checker</div>
+    <div class="section-tagline">Ask any political question — get a nonpartisan, sourced answer</div>
+  </div>
+
+  <p>The Fact Checker is a conversational AI assistant powered by Google Gemini. It is designed to answer political and civic questions, check factual claims, and explain complex policy topics in plain language — all without political bias.</p>
+
+  <h2>What You Can Ask</h2>
+  <div class="two-col">
+    <div class="mini-card">
+      <h4>Fact Checking</h4>
+      <p>"Did Congress pass a budget last year?" or "Is it true that the minimum wage hasn't changed since 2009?"</p>
+    </div>
+    <div class="mini-card">
+      <h4>Bill Summaries</h4>
+      <p>"What does the Inflation Reduction Act actually do?" or "Summarise H.R. 1234 in plain English."</p>
+    </div>
+    <div class="mini-card">
+      <h4>Civics Questions</h4>
+      <p>"How does the filibuster work?" or "What is the difference between a resolution and a bill?"</p>
+    </div>
+    <div class="mini-card">
+      <h4>Policy Context</h4>
+      <p>"What are the main arguments for and against universal basic income?" (presented neutrally)</p>
+    </div>
+  </div>
+
+  <h2>Using the Fact Checker</h2>
+  <ul class="steps">
+    <li><span class="step-num">1</span><span>Tap the text input at the bottom of the screen and type your question.</span></li>
+    <li><span class="step-num">2</span><span>Tap the send button (arrow). The AI begins responding immediately — text streams in word-by-word so you don't have to wait.</span></li>
+    <li><span class="step-num">3</span><span>Read the response. You can ask follow-up questions to dig deeper.</span></li>
+    <li><span class="step-num">4</span><span>Tap the new conversation button (top right) to clear the chat and start fresh.</span></li>
+  </ul>
+
+  <div class="info-box">
+    <div class="info-box-title">Suggested Questions</div>
+    <p>If you're not sure what to ask, the screen shows a set of suggested starter questions. Tap any of them to send it instantly.</p>
+  </div>
+
+  <div class="info-box warning">
+    <div class="info-box-title">AI Limitations</div>
+    <p>The AI may occasionally make mistakes or have a knowledge cutoff date for recent events. Always verify important facts with primary sources such as congress.gov, your state legislature's website, or your local election authority. The AI will always present multiple perspectives on contested policy questions and will decline to express a partisan opinion.</p>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     10. ADDRESS OVERRIDE
+═══════════════════════════════════════ -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-number">Feature 10</div>
+    <div class="section-title">Address Override</div>
+    <div class="section-tagline">Explore political data for any U.S. address — without changing your account</div>
+  </div>
+
+  <p>Address Override lets you temporarily view the app as if you lived somewhere else. This is useful if you are researching elections in another district, helping a family member, or simply curious about how the political landscape differs in another city or state.</p>
+
+  <h2>How to Use It</h2>
+  <ul class="steps">
+    <li><span class="step-num">1</span><span>Go to the <strong>More</strong> tab, then tap <strong>"Address Override"</strong>.</span></li>
+    <li><span class="step-num">2</span><span>Enter any U.S. address in the form fields: street address, city, state, and ZIP code.</span></li>
+    <li><span class="step-num">3</span><span>Tap <strong>"Apply Override"</strong>. The entire app immediately switches to show data for that location.</span></li>
+    <li><span class="step-num">4</span><span>A gold banner appears at the top of every screen to remind you that you are viewing an overridden address, not your registered location.</span></li>
+    <li><span class="step-num">5</span><span>To return to your normal address, tap <strong>"Clear Override"</strong> in the banner or revisit the Address Override screen and tap the clear button.</span></li>
+  </ul>
+
+  <h2>What Changes When Override Is Active</h2>
+  <ul class="bullets">
+    <li><strong>Representatives</strong> — shows officials for the overridden address's district.</li>
+    <li><strong>Elections</strong> — shows elections relevant to the overridden state and district.</li>
+    <li><strong>Legislation</strong> — shows state legislation for the overridden state.</li>
+    <li><strong>Voter Tools</strong> — shows voting rules and deadlines for the overridden state.</li>
+  </ul>
+
+  <div class="info-box success">
+    <div class="info-box-title">Your Account is Safe</div>
+    <p>Address Override is temporary. It does not change your account's registered address. Your personal address is preserved and restored the moment you clear the override.</p>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     11. PROFILE & SETTINGS
+═══════════════════════════════════════ -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-number">Feature 11</div>
+    <div class="section-title">Profile &amp; Settings</div>
+    <div class="section-tagline">Manage your account and personal information</div>
+  </div>
+
+  <p>The Profile screen lets you view and update your account information. Access it by tapping the <strong>More</strong> tab and then <strong>"My Profile"</strong>, or by tapping your name at the top of the Dashboard.</p>
+
+  <h2>What You Can Do</h2>
+
+  <div class="feature-card">
+    <h3>Edit Your Name</h3>
+    <p>Update your first and last name. Your name appears in the Dashboard greeting and is used to personalise the app experience.</p>
+  </div>
+
+  <div class="feature-card">
+    <h3>Update Your Address</h3>
+    <p>Change your registered address at any time. When you save a new address, all location-dependent features (representatives, elections, voter tools) automatically refresh to reflect the new location.</p>
+  </div>
+
+  <div class="feature-card">
+    <h3>Account Information</h3>
+    <p>View your registered email address. Your email address cannot be changed after registration — it serves as your permanent login identifier.</p>
+  </div>
+
+  <div class="feature-card">
+    <h3>Sign Out</h3>
+    <p>Sign out of your account. Your data is preserved on the device — signing back in with the same credentials restores everything. Signing out on a shared device is recommended to protect your privacy.</p>
+  </div>
+
+  <h2>The "More" Tab</h2>
+  <p>The More tab (last tab in the navigation bar) also provides quick links to several features that don't have their own tab:</p>
+  <ul class="bullets">
+    <li><strong>Voter Tools</strong> — jump directly to the Voter Status Tools screen.</li>
+    <li><strong>Political Parties</strong> — open the party profiles screen.</li>
+    <li><strong>Political Guide</strong> — open the civics education guide.</li>
+    <li><strong>Polls</strong> — go to the community polls.</li>
+    <li><strong>Fact Checker</strong> — open the AI chatbot.</li>
+    <li><strong>Address Override</strong> — open the location switcher.</li>
+    <li><strong>My Profile</strong> — open the profile/settings screen.</li>
+  </ul>
+</div>
+
+<!-- ═══════════════════════════════════════
+     APPENDIX
+═══════════════════════════════════════ -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-number">Appendix</div>
+    <div class="section-title">Navigation &amp; App Design</div>
+    <div class="section-tagline">How to get around UDecide</div>
+  </div>
+
+  <h2>Tab Bar Navigation</h2>
+  <p>The bottom tab bar is always visible and provides instant access to the five main sections of UDecide:</p>
+
+  <div class="two-col">
+    <div class="mini-card"><h4>Home (House icon)</h4><p>Returns you to the Dashboard from anywhere in the app.</p></div>
+    <div class="mini-card"><h4>Representatives (People icon)</h4><p>Your elected officials at all levels of government.</p></div>
+    <div class="mini-card"><h4>Elections (Calendar icon)</h4><p>Upcoming elections, key dates, and candidates.</p></div>
+    <div class="mini-card"><h4>Legislation (Document icon)</h4><p>Track federal and state bills.</p></div>
+    <div class="mini-card"><h4>More (Grid icon)</h4><p>All other features: voter tools, parties, guide, polls, fact checker, and profile.</p></div>
+  </div>
+
+  <h2>Design &amp; Accessibility</h2>
+  <ul class="bullets">
+    <li><strong>Dark navy theme</strong> — the app uses a deep navy blue (#0D1B2A) as its primary background, which is easy on the eyes in both bright and low-light environments.</li>
+    <li><strong>Large touch targets</strong> — all buttons and cards are sized for easy tapping on any phone screen size.</li>
+    <li><strong>High contrast</strong> — white text on navy backgrounds and dark text on light cards both exceed WCAG AA contrast ratios.</li>
+    <li><strong>Haptic feedback</strong> — tapping important actions (voting in a poll, applying an address override) produces a subtle vibration to confirm your input.</li>
+    <li><strong>Offline support</strong> — the app caches data locally so you can browse representatives, legislation, and guides even without an internet connection. Polls and the Fact Checker require connectivity.</li>
+  </ul>
+
+  <h2>Privacy</h2>
+  <ul class="bullets">
+    <li>All account data (name, email, address, password) is stored securely on your device using encrypted local storage. No data is sent to external servers beyond the API requests needed to load content.</li>
+    <li>The app does not track your usage, sell your data, or show you targeted advertisements.</li>
+    <li>API requests to government data sources are anonymised — your personal address is never included in these requests.</li>
+  </ul>
+
+  <hr>
+
+  <div style="text-align:center; margin-top:32px; color:#8899AA; font-size:9pt;">
+    <strong style="color:#0D1B2A;">UDecide</strong> &nbsp;·&nbsp; Nonpartisan Political &amp; Voter App &nbsp;·&nbsp; Feature Specification v1.0 &nbsp;·&nbsp; May 2026<br>
+    Built with Expo / React Native &nbsp;·&nbsp; Data: Congress.gov, LegiScan, Google Gemini AI
+  </div>
+</div>
+
+</body>
+</html>
