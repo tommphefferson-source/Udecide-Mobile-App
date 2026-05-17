@@ -1,5 +1,4 @@
 import { GEMINI_SYSTEM_PROMPT } from "@/utils/constants";
-import { fetch } from "expo/fetch";
 
 const API_KEY = process.env.EXPO_PUBLIC_GEMINI_API_KEY;
 const BASE_URL =
@@ -59,7 +58,9 @@ export async function sendGeminiMessage(
     });
 
     if (!res.ok) {
-      throw new Error(`Gemini API error: ${res.status}`);
+      let body = "";
+      try { body = await res.text(); } catch { /* ignore */ }
+      throw new Error(`Gemini API error ${res.status}: ${body}`);
     }
 
     const data = (await res.json()) as {
@@ -70,10 +71,11 @@ export async function sendGeminiMessage(
     if (onChunk) onChunk(text);
     return { text };
   } catch (err) {
-    console.error("[Gemini]", err);
+    const msg = err instanceof Error ? err.message : String(err);
+    console.error("[Gemini]", msg);
     return {
       text: "",
-      error: "Unable to reach the AI service. Please check your API key or try again later.",
+      error: `AI service error: ${msg}`,
     };
   }
 }
