@@ -24,7 +24,7 @@ import { REP_LEVELS } from "@/utils/constants";
 
 type Level = (typeof REP_LEVELS)[number];
 
-const HAS_CONGRESS_KEY = !!process.env.CONGRESS_GOV_API_KEY;
+const HAS_CONGRESS_KEY = !!process.env.EXPO_PUBLIC_CONGRESS_GOV_API_KEY;
 
 export default function RepresentativesScreen() {
   const insets = useSafeAreaInsets();
