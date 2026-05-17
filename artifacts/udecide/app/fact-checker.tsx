@@ -53,7 +53,7 @@ export default function FactCheckerScreen() {
   const topPad = Platform.OS === "web" ? 67 : insets.top;
   const bottomPad = Platform.OS === "web" ? 34 : insets.bottom;
 
-  const apiKey = process.env.GEMINI_API_KEY;
+  const apiKey = process.env.EXPO_PUBLIC_GEMINI_API_KEY;
 
   async function handleSend() {
     const text = input.trim();
