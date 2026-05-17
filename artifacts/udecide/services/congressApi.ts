@@ -1,7 +1,7 @@
 import { MOCK_REPRESENTATIVES, MOCK_BILLS } from "./mockData";
 import type { Representative, Bill } from "@/types/politics";
 
-const API_KEY = process.env.CONGRESS_GOV_API_KEY;
+const API_KEY = process.env.EXPO_PUBLIC_CONGRESS_GOV_API_KEY;
 const BASE_URL = "https://api.congress.gov/v3";
 
 function isMockMode() {

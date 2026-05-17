@@ -1,7 +1,7 @@
 import { MOCK_BILLS } from "./mockData";
 import type { Bill } from "@/types/politics";
 
-const API_KEY = process.env.LEGISCAN_API_KEY;
+const API_KEY = process.env.EXPO_PUBLIC_LEGISCAN_API_KEY;
 const BASE_URL = "https://api.legiscan.com/";
 
 function isMockMode() {
