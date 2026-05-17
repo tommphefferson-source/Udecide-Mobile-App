@@ -4,6 +4,7 @@ import { router } from "expo-router";
 import React, { useState } from "react";
 import {
   ActivityIndicator,
+  Image,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -121,6 +122,11 @@ export default function RegisterScreen() {
           </Pressable>
 
           <View style={styles.header}>
+            <Image
+              source={require("@/assets/images/logo.png")}
+              style={styles.logoImage}
+              resizeMode="contain"
+            />
             <Text style={styles.title}>Create Account</Text>
             <Text style={styles.subtitle}>Join UDecide to access voter tools and political information</Text>
           </View>
@@ -207,7 +213,12 @@ const styles = StyleSheet.create({
     alignSelf: "flex-start",
     padding: 4,
   },
-  header: { gap: 6 },
+  header: { gap: 8, alignItems: "center" },
+  logoImage: {
+    width: 80,
+    height: 80,
+    marginBottom: 4,
+  },
   title: {
     fontSize: 28,
     fontFamily: "Inter_700Bold",

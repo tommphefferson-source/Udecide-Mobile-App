@@ -3,6 +3,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import React, { useState } from "react";
 import {
+  Image,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -61,12 +62,11 @@ export default function LoginScreen() {
         >
           {/* Logo */}
           <View style={styles.logoSection}>
-            <View style={styles.logoMark}>
-              <Text style={styles.logoU}>U</Text>
-              <View style={styles.logoStar}>
-                <MaterialIcons name="star" size={14} color="#C41E3A" />
-              </View>
-            </View>
+            <Image
+              source={require("@/assets/images/logo.png")}
+              style={styles.logoImage}
+              resizeMode="contain"
+            />
             <Text style={styles.appName}>UDecide</Text>
             <Text style={styles.tagline}>Political & Voter App</Text>
           </View>
@@ -187,27 +187,12 @@ const styles = StyleSheet.create({
   },
   logoSection: {
     alignItems: "center",
-    gap: 6,
+    gap: 8,
   },
-  logoMark: {
-    width: 72,
-    height: 72,
-    borderRadius: 20,
-    backgroundColor: "rgba(255,255,255,0.1)",
-    alignItems: "center",
-    justifyContent: "center",
-    borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.2)",
-  },
-  logoU: {
-    fontSize: 36,
-    fontFamily: "Inter_700Bold",
-    color: "#FFF",
-  },
-  logoStar: {
-    position: "absolute",
-    bottom: 8,
-    right: 8,
+  logoImage: {
+    width: 100,
+    height: 100,
+    marginBottom: 4,
   },
   appName: {
     fontSize: 28,
