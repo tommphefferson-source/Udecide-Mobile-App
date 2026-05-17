@@ -8,6 +8,21 @@ function isMockMode() {
   return !API_KEY;
 }
 
+const STATE_NAMES: Record<string, string> = {
+  AL: "Alabama", AK: "Alaska", AZ: "Arizona", AR: "Arkansas", CA: "California",
+  CO: "Colorado", CT: "Connecticut", DE: "Delaware", FL: "Florida", GA: "Georgia",
+  HI: "Hawaii", ID: "Idaho", IL: "Illinois", IN: "Indiana", IA: "Iowa",
+  KS: "Kansas", KY: "Kentucky", LA: "Louisiana", ME: "Maine", MD: "Maryland",
+  MA: "Massachusetts", MI: "Michigan", MN: "Minnesota", MS: "Mississippi",
+  MO: "Missouri", MT: "Montana", NE: "Nebraska", NV: "Nevada", NH: "New Hampshire",
+  NJ: "New Jersey", NM: "New Mexico", NY: "New York", NC: "North Carolina",
+  ND: "North Dakota", OH: "Ohio", OK: "Oklahoma", OR: "Oregon", PA: "Pennsylvania",
+  RI: "Rhode Island", SC: "South Carolina", SD: "South Dakota", TN: "Tennessee",
+  TX: "Texas", UT: "Utah", VT: "Vermont", VA: "Virginia", WA: "Washington",
+  WV: "West Virginia", WI: "Wisconsin", WY: "Wyoming", DC: "District of Columbia",
+  PR: "Puerto Rico",
+};
+
 // Congress.gov v3 /member response shapes
 interface CongressMemberItem {
   bioguideId?: string;
@@ -35,34 +50,42 @@ interface CongressBillItem {
  * Returns federal representatives (Senate + House) for a given U.S. state
  * abbreviation (e.g. "CA", "TX").  Falls back to mock data when no API key
  * is configured.
+ *
+ * Note: the /member list endpoint returns the state as a full name
+ * ("California") so we convert the abbreviation and filter client-side —
+ * the API's `state` query param is unreliable for filtering.
  */
 export async function getMembers(state?: string): Promise<Representative[]> {
   if (isMockMode()) {
     console.warn("[Congress.gov] No API key – using mock data");
     await new Promise((r) => setTimeout(r, 600));
-    let reps = MOCK_REPRESENTATIVES.filter((r) => r.level === "federal");
-    if (state) {
-      reps = reps.filter(
-        (r) =>
-          r.district.toUpperCase().includes(state.toUpperCase()) ||
-          r.source?.includes(state)
-      );
-    }
-    return reps;
+    return MOCK_REPRESENTATIVES.filter((r) => r.level === "federal");
   }
 
   try {
-    // Congress.gov /member?currentMember=true&state=XX returns current members for a state
-    const stateParam = state ? `&state=${state.toUpperCase()}` : "";
+    // Fetch all current members in one call (there are ~535 total).
+    // We filter client-side because the API's ?state= param uses full names
+    // ("California") while callers pass abbreviations ("CA").
     const res = await fetch(
-      `${BASE_URL}/member?api_key=${API_KEY}&limit=50&currentMember=true${stateParam}`
+      `${BASE_URL}/member?api_key=${API_KEY}&limit=250&currentMember=true`
     );
     if (!res.ok) throw new Error(`Congress.gov responded ${res.status}`);
     const data = (await res.json()) as { members?: CongressMemberItem[] };
-    return mapCongressMembers(data.members ?? []);
+    let members = data.members ?? [];
+
+    if (state) {
+      const abbr = state.toUpperCase();
+      const fullName = STATE_NAMES[abbr] ?? state;
+      members = members.filter(
+        (m) =>
+          m.state === fullName ||
+          m.state?.toUpperCase() === abbr
+      );
+    }
+
+    return mapCongressMembers(members, state?.toUpperCase());
   } catch (err) {
     console.error("[Congress.gov] getMembers failed:", err);
-    // Fall back to mock federal data so the screen is never empty
     return MOCK_REPRESENTATIVES.filter((r) => r.level === "federal");
   }
 }
@@ -127,13 +150,13 @@ export async function searchCongressBills(query: string): Promise<Bill[]> {
 
 // ── Mappers ───────────────────────────────────────────────────────────────────
 
-function mapCongressMembers(members: CongressMemberItem[]): Representative[] {
-  return members.map(mapCongressMember).filter(
+function mapCongressMembers(members: CongressMemberItem[], stateAbbr?: string): Representative[] {
+  return members.map((m) => mapCongressMember(m, stateAbbr)).filter(
     (r): r is Representative => r !== null
   );
 }
 
-function mapCongressMember(m: CongressMemberItem): Representative {
+function mapCongressMember(m: CongressMemberItem, stateAbbr?: string): Representative {
   // The most recent term entry determines current chamber
   const latestTerm = m.terms?.item?.at(-1);
   const chamber = latestTerm?.chamber ?? "";
@@ -144,11 +167,17 @@ function mapCongressMember(m: CongressMemberItem): Representative {
     chamber.toLowerCase().includes("representative");
   const office = isHouse ? "U.S. Representative" : "U.S. Senator";
 
-  // Build a human-readable district string
+  // Use abbreviation if passed in, otherwise derive from full state name
+  const abbr =
+    stateAbbr ??
+    (m.state
+      ? Object.keys(STATE_NAMES).find((k) => STATE_NAMES[k] === m.state) ?? m.state
+      : "");
+
   const districtStr =
     isHouse && m.district != null
-      ? `${m.state ?? ""} – District ${m.district}`
-      : (m.state ?? "At-Large");
+      ? `${abbr} – District ${m.district}`
+      : `${abbr} – At-Large`;
 
   return {
     id: m.bioguideId ?? String(Math.random()),
@@ -185,7 +214,7 @@ function normaliseParty(raw: string): string {
   if (lower.includes("democrat")) return "Democrat";
   if (lower.includes("republican")) return "Republican";
   if (lower.includes("libertarian")) return "Libertarian";
-  if (lower.includes("independent") || lower.includes("id")) return "Independent";
+  if (lower.includes("independent")) return "Independent";
   if (lower.includes("green")) return "Green";
   return raw || "Unknown";
 }
