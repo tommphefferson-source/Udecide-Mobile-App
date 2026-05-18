@@ -1,4 +1,4 @@
-# UDecide — Political & Voter App
+# UDecide App — Political & Voter App
 
 A full-featured, nonpartisan political and voter information mobile app built with Expo/React Native.
 
