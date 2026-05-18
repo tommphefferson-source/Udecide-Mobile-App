@@ -11,3 +11,63 @@ id = "VcMroXmQLBFb-5hjx2DWy"
 uri = "file://scripts/udecide_spec.pdf"
 type = "pdf"
 title = "UDecide Feature Specification (PDF)"
+
+[[outputs]]
+id = "6iazHjPiOEFQ_B-dFOnnR"
+uri = "file://screenshots/udecide-commercial-prompt.md"
+type = "text"
+title = "UDecide Commercial Prompt for ChatGPT"
+
+[[outputs]]
+id = "NIkmmCdFFr5j6hOZiI1dY"
+uri = "file://screenshots/udecide-login.jpg"
+type = "image"
+title = "Screen 1 — Login / Brand Reveal"
+
+[[outputs]]
+id = "n6jILSxwFLOYiBw4zbfnV"
+uri = "file://screenshots/udecide-dashboard.jpg"
+type = "image"
+title = "Screen 2 — Dashboard"
+
+[[outputs]]
+id = "qSAhwErrltMs2Iv_qjFyz"
+uri = "file://screenshots/udecide-reps.jpg"
+type = "image"
+title = "Screen 3 — Representatives"
+
+[[outputs]]
+id = "BZgRp5c0XdrgkRHNarJNZ"
+uri = "file://screenshots/udecide-elections.jpg"
+type = "image"
+title = "Screen 4 — Elections & Ballots"
+
+[[outputs]]
+id = "nTbwrOZmeEXgOc9Fj-dmO"
+uri = "file://screenshots/udecide-legislation.jpg"
+type = "image"
+title = "Screen 5 — Legislation Tracker"
+
+[[outputs]]
+id = "LinZ86chNquuMS9SnXTP9"
+uri = "file://screenshots/udecide-parties.jpg"
+type = "image"
+title = "Screen 6 — Political Parties"
+
+[[outputs]]
+id = "y7l3mrhuHeq1fIgRxgdlC"
+uri = "file://screenshots/udecide-votertools.jpg"
+type = "image"
+title = "Screen 7 — Voter Status Tools"
+
+[[outputs]]
+id = "5a7cpaPmOJQaCHxOsWcca"
+uri = "file://screenshots/udecide-factchecker.jpg"
+type = "image"
+title = "Screen 8 — Gemini Fact Checker"
+
+[[outputs]]
+id = "xcmvM8zVofAGSl-ebVooK"
+uri = "file://screenshots/udecide-more.jpg"
+type = "image"
+title = "Screen 9 — More Menu"
