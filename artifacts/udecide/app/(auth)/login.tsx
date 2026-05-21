@@ -47,7 +47,7 @@ export default function LoginScreen() {
   }
 
   return (
-    <LinearGradient colors={["#2A405E", "#2A405E", "#2D4362"]} style={styles.gradient}>
+    <LinearGradient colors={["#2A405E", "#2A405E"]} style={styles.gradient}>
       <KeyboardAvoidingView
         style={styles.flex}
         behavior={Platform.OS === "ios" ? "padding" : undefined}
