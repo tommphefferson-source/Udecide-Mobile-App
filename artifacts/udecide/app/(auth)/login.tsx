@@ -47,7 +47,7 @@ export default function LoginScreen() {
   }
 
   return (
-    <LinearGradient colors={["#0D1B2A", "#1B2D45", "#243A56"]} style={styles.gradient}>
+    <LinearGradient colors={["#2A405E", "#2A405E", "#2D4362"]} style={styles.gradient}>
       <KeyboardAvoidingView
         style={styles.flex}
         behavior={Platform.OS === "ios" ? "padding" : undefined}
@@ -190,8 +190,8 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   logoImage: {
-    width: 100,
-    height: 100,
+    width: 160,
+    height: 160,
     marginBottom: 4,
   },
   appName: {
