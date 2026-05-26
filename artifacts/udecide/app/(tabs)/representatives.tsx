@@ -190,8 +190,8 @@ function DataSourceBadge({
         ]}
       >
         {usingLiveData
-          ? "Live · Google Civic Information API"
-          : "Sample data · Add CIVIC_API_KEY for live reps at all levels"}
+          ? "Federal: Congress.gov · State/Local: Sample data"
+          : "Federal: Congress.gov · State/Local: Sample data"}
       </Text>
     </View>
   );
@@ -207,7 +207,7 @@ function DataSourceNote({ colors }: { colors: ReturnType<typeof useColors> }) {
     >
       <MaterialIcons name="info-outline" size={13} color={colors.mutedForeground} />
       <Text style={[styles.footerNoteText, { color: colors.mutedForeground }]}>
-        Showing sample representatives. To see your real officials at every level — federal, state, county and city — add a Google Civic Information API key.
+        Federal representatives are pulled live from Congress.gov. State, county, and city officials are representative samples — set your address for the most relevant results.
       </Text>
     </View>
   );
