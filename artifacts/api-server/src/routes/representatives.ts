@@ -2,10 +2,9 @@ import { Router, type IRouter } from "express";
 
 const router: IRouter = Router();
 
-// Server-only secret. The legacy EXPO_PUBLIC_* name is read as a fallback only
-// so the proxy keeps working until that client-exposed secret is removed.
-const CICERO_API_KEY =
-  process.env.CICERO_API_KEY ?? process.env.EXPO_PUBLIC_CICERO_API_KEY;
+// Server-only secret — never expose via an EXPO_PUBLIC_* name (that would bundle
+// it into the public mobile-app build).
+const CICERO_API_KEY = process.env.CICERO_API_KEY;
 const CICERO_URL = "https://app.cicerodata.com/v3.1/official";
 
 interface CiceroUpstream {

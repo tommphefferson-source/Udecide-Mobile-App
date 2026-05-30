@@ -2,3 +2,4 @@
 - [Expo web in-app browser & X-Frame-Options](expo-web-iframe-xframe.md) — react-native-webview has no web impl; XFO/CSP block iframes on web only, so open external sites in a new tab on web, keep WebView on native.
 - [LegiScan API response shapes](legiscan-response-shapes.md) — getMasterList→`masterlist`, getSearch→`searchresult`; differing field names + numeric status codes; one mapper must handle all or state bills come back empty.
 - [Mock-fallback honesty](mock-fallback-honesty.md) — UDecide API services are mock-first; in live mode (key present) no-result/error paths must return empty, never MOCK_* data shown under a "live" badge.
+- [Cicero / paid APIs proxy](cicero-and-paid-apis-proxy.md) — no-CORS/paid external APIs (Cicero reps data) must go through api-server, not the Expo client; never name paid keys EXPO_PUBLIC_* (Expo bundles them).
