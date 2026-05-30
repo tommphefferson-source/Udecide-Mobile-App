@@ -1,3 +1,4 @@
 - [Expo/Metro duplicate-dependency crashes](expo-metro-duplicate-deps.md) — intermittent "Unable to resolve module expo-router/expo" = orphaned old version dirs after `expo install --fix`; fix by rebuilding node_modules from the clean lockfile
 - [Expo web in-app browser & X-Frame-Options](expo-web-iframe-xframe.md) — react-native-webview has no web impl; XFO/CSP block iframes on web only, so open external sites in a new tab on web, keep WebView on native.
 - [LegiScan API response shapes](legiscan-response-shapes.md) — getMasterList→`masterlist`, getSearch→`searchresult`; differing field names + numeric status codes; one mapper must handle all or state bills come back empty.
+- [Mock-fallback honesty](mock-fallback-honesty.md) — UDecide API services are mock-first; in live mode (key present) no-result/error paths must return empty, never MOCK_* data shown under a "live" badge.

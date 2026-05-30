@@ -59,7 +59,7 @@ interface CivicVoterInfo {
  */
 export async function getElections(
   stateAbbr: string,
-  address: { address: string; city: string; state: string; zipCode: string }
+  address: { address: string; city: string; state: string; zipCode: string },
 ): Promise<Election[]> {
   if (isElectionsMockMode()) {
     console.warn("[Elections] No API key – using mock data");
@@ -73,7 +73,7 @@ export async function getElections(
     if (!listRes.ok) throw new Error(`Elections list error ${listRes.status}`);
     const listData = (await listRes.json()) as { elections?: CivicElection[] };
     const allElections = (listData.elections ?? []).filter(
-      (e) => e.id !== "2000" // skip the VIP test election
+      (e) => e.id !== "2000", // skip the VIP test election
     );
 
     // Step 2: filter to elections relevant to this state (state-specific + national)
@@ -86,18 +86,21 @@ export async function getElections(
       );
     });
 
-    if (relevant.length === 0) return MOCK_ELECTIONS;
+    // Live mode: if the feed has no election for this state, show an honest
+    // empty state rather than fabricated mock data.
+    if (relevant.length === 0) return [];
 
     // Step 3: for each relevant election, fetch voterinfo for admin links + contests
     const addressStr = buildAddressQuery(address);
     const results = await Promise.all(
-      relevant.slice(0, 6).map((e) => fetchVoterInfo(e, addressStr))
+      relevant.slice(0, 6).map((e) => fetchVoterInfo(e, addressStr)),
     );
 
     return results.filter((e): e is Election => e !== null);
   } catch (err) {
     console.error("[Elections] getElections failed:", err);
-    return MOCK_ELECTIONS;
+    // Live mode: surface the failure as an empty list, not fake elections.
+    return [];
   }
 }
 
@@ -105,7 +108,7 @@ export async function getElections(
 
 async function fetchVoterInfo(
   civicElection: CivicElection,
-  address: string
+  address: string,
 ): Promise<Election | null> {
   try {
     const url = `${BASE_URL}/voterinfo?key=${API_KEY}&electionId=${civicElection.id}&address=${encodeURIComponent(address)}`;
@@ -126,7 +129,7 @@ async function fetchVoterInfo(
 function mapElection(
   e: CivicElection,
   admin: CivicAdminBody,
-  contests: CivicContest[]
+  contests: CivicContest[],
 ): Election {
   const regUrl = admin.electionRegistrationUrl;
   const infoUrl = admin.electionInfoUrl ?? admin.ballotInfoUrl;
@@ -145,11 +148,15 @@ function mapElection(
     absenteeDeadline: admin.absenteeVotingInfoUrl
       ? `Absentee info: ${admin.absenteeVotingInfoUrl}`
       : undefined,
-    offices: contests.length > 0
-      ? mapContests(contests)
-      : buildOfficeStubs(infoUrl),
+    offices:
+      contests.length > 0 ? mapContests(contests) : buildOfficeStubs(infoUrl),
     // Store extra URLs for the UI to use
-    ...({ _registrationUrl: regUrl, _infoUrl: infoUrl, _ballotUrl: admin.ballotInfoUrl, _locationUrl: admin.votingLocationFinderUrl } as object),
+    ...({
+      _registrationUrl: regUrl,
+      _infoUrl: infoUrl,
+      _ballotUrl: admin.ballotInfoUrl,
+      _locationUrl: admin.votingLocationFinderUrl,
+    } as object),
   };
 }
 
@@ -172,14 +179,17 @@ function mapContests(contests: CivicContest[]): ElectionOffice[] {
       id: `contest-${i}`,
       title: c.office ?? "Unknown Office",
       district: c.district?.name,
-      candidates: (c.candidates ?? []).map((cand, j) => ({
-        id: `cand-${i}-${j}`,
-        name: cand.name,
-        party: normaliseParty(cand.party),
-        website: cand.candidateUrl,
-        twitter: cand.channels?.find((ch) => ch.type === "Twitter")?.id,
-        incumbentFlag: false,
-      } satisfies Candidate)),
+      candidates: (c.candidates ?? []).map(
+        (cand, j) =>
+          ({
+            id: `cand-${i}-${j}`,
+            name: cand.name,
+            party: normaliseParty(cand.party),
+            website: cand.candidateUrl,
+            twitter: cand.channels?.find((ch) => ch.type === "Twitter")?.id,
+            incumbentFlag: false,
+          }) satisfies Candidate,
+      ),
     }));
 }
 
@@ -209,7 +219,8 @@ function normaliseParty(raw?: string): string {
   if (lower.includes("libertarian")) return "Libertarian";
   if (lower.includes("independent")) return "Independent";
   if (lower.includes("green")) return "Green";
-  if (lower.includes("nonpartisan") || lower.includes("non-partisan")) return "Nonpartisan";
+  if (lower.includes("nonpartisan") || lower.includes("non-partisan"))
+    return "Nonpartisan";
   return raw;
 }
 
@@ -219,7 +230,9 @@ function buildAddressQuery(addr: {
   state: string;
   zipCode: string;
 }): string {
-  const parts = [addr.address, addr.city, addr.state, addr.zipCode].filter(Boolean);
+  const parts = [addr.address, addr.city, addr.state, addr.zipCode].filter(
+    Boolean,
+  );
   // Fallback: if no street, use city+state so voterinfo still returns state admin info
   return parts.length > 0 ? parts.join(", ") : `${addr.state}`;
 }
