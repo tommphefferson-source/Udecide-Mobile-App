@@ -2,7 +2,6 @@ import { MaterialIcons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import React, { useState } from "react";
-import * as WebBrowser from "expo-web-browser";
 import { Image, Platform, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -73,7 +72,12 @@ export default function PartiesScreen() {
           {selectedParty.website !== "N/A" && (
             <Pressable
               style={({ pressed }) => [styles.websiteBtn, { backgroundColor: selectedParty.color, opacity: pressed ? 0.85 : 1 }]}
-              onPress={() => WebBrowser.openBrowserAsync(selectedParty.website)}
+              onPress={() =>
+                router.push({
+                  pathname: "/web-view",
+                  params: { url: selectedParty.website, title: selectedParty.name },
+                })
+              }
             >
               <MaterialIcons name="language" size={18} color="#FFF" />
               <Text style={styles.websiteBtnText}>Official Website</Text>
@@ -141,7 +145,12 @@ export default function PartiesScreen() {
               {party.website !== "N/A" && (
                 <Pressable
                   style={({ pressed }) => [styles.partyBtn, { backgroundColor: colors.muted, opacity: pressed ? 0.7 : 1 }]}
-                  onPress={() => WebBrowser.openBrowserAsync(party.website)}
+                  onPress={() =>
+                    router.push({
+                      pathname: "/web-view",
+                      params: { url: party.website, title: party.name },
+                    })
+                  }
                 >
                   <MaterialIcons name="language" size={14} color={colors.mutedForeground} />
                   <Text style={[styles.partyBtnText, { color: colors.mutedForeground }]}>Website</Text>

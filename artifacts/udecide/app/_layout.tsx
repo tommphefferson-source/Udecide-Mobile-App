@@ -48,6 +48,7 @@ function RootLayoutNav() {
         <Stack.Screen name="fact-checker" options={{ presentation: "card" }} />
         <Stack.Screen name="profile" options={{ presentation: "card" }} />
         <Stack.Screen name="address-override" options={{ presentation: "card" }} />
+        <Stack.Screen name="web-view" options={{ presentation: "modal" }} />
       </Stack>
     </AddressProvider>
   );
