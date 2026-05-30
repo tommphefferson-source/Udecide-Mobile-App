@@ -2,12 +2,19 @@ import { MaterialIcons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import React, { useState } from "react";
-import { Linking, Platform, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Image, Linking, Platform, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useColors } from "@/hooks/useColors";
 import { MOCK_PARTIES } from "@/services/mockData";
 import type { PoliticalParty } from "@/types/politics";
+
+const PARTY_LOGOS: Record<string, number> = {
+  "1": require("@/assets/images/parties/democratic.png"),
+  "2": require("@/assets/images/parties/republican.png"),
+  "3": require("@/assets/images/parties/libertarian.png"),
+  "4": require("@/assets/images/parties/green.png"),
+};
 
 export default function PartiesScreen() {
   const insets = useSafeAreaInsets();
@@ -25,9 +32,15 @@ export default function PartiesScreen() {
             <MaterialIcons name="arrow-back" size={24} color="#FFF" />
           </Pressable>
           <View style={styles.partyHeaderRow}>
-            <View style={[styles.bigPartyBadge, { backgroundColor: selectedParty.color }]}>
-              <Text style={styles.bigPartyInitial}>{selectedParty.icon}</Text>
-            </View>
+            {PARTY_LOGOS[selectedParty.id] ? (
+              <View style={styles.bigPartyLogo}>
+                <Image source={PARTY_LOGOS[selectedParty.id]} style={styles.bigPartyLogoImg} resizeMode="contain" />
+              </View>
+            ) : (
+              <View style={[styles.bigPartyBadge, { backgroundColor: selectedParty.color }]}>
+                <Text style={styles.bigPartyInitial}>{selectedParty.icon}</Text>
+              </View>
+            )}
             <View>
               <Text style={styles.screenTitle}>{selectedParty.name}</Text>
               <Text style={styles.screenSubtitle}>Founded {selectedParty.founded}</Text>
@@ -90,9 +103,15 @@ export default function PartiesScreen() {
         {MOCK_PARTIES.map((party) => (
           <View key={party.id} style={[styles.partyCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
             <View style={styles.partyCardHeader}>
-              <View style={[styles.partyBadge, { backgroundColor: party.color }]}>
-                <Text style={styles.partyInitial}>{party.icon}</Text>
-              </View>
+              {PARTY_LOGOS[party.id] ? (
+                <View style={styles.partyLogo}>
+                  <Image source={PARTY_LOGOS[party.id]} style={styles.partyLogoImg} resizeMode="contain" />
+                </View>
+              ) : (
+                <View style={[styles.partyBadge, { backgroundColor: party.color }]}>
+                  <Text style={styles.partyInitial}>{party.icon}</Text>
+                </View>
+              )}
               <View style={styles.partyInfo}>
                 <Text style={[styles.partyName, { color: colors.foreground }]}>{party.name}</Text>
                 <Text style={[styles.partyFounded, { color: colors.mutedForeground }]}>
@@ -149,12 +168,16 @@ const styles = StyleSheet.create({
   partyHeaderRow: { flexDirection: "row", alignItems: "center", gap: 14 },
   bigPartyBadge: { width: 52, height: 52, borderRadius: 26, alignItems: "center", justifyContent: "center" },
   bigPartyInitial: { fontSize: 24, fontFamily: "Inter_700Bold", color: "#FFF" },
+  bigPartyLogo: { width: 52, height: 52, borderRadius: 26, backgroundColor: "#FFF", alignItems: "center", justifyContent: "center", padding: 7, overflow: "hidden" },
+  bigPartyLogoImg: { width: "100%", height: "100%" },
   screenTitle: { fontSize: 24, fontFamily: "Inter_700Bold", color: "#FFF" },
   screenSubtitle: { fontSize: 13, fontFamily: "Inter_400Regular", color: "rgba(255,255,255,0.6)" },
   partyCard: { borderRadius: 16, padding: 16, borderWidth: 1, gap: 12 },
   partyCardHeader: { flexDirection: "row", gap: 12, alignItems: "center" },
   partyBadge: { width: 44, height: 44, borderRadius: 22, alignItems: "center", justifyContent: "center" },
   partyInitial: { fontSize: 20, fontFamily: "Inter_700Bold", color: "#FFF" },
+  partyLogo: { width: 44, height: 44, borderRadius: 22, backgroundColor: "#FFF", alignItems: "center", justifyContent: "center", padding: 6, borderWidth: 1, borderColor: "rgba(0,0,0,0.06)", overflow: "hidden" },
+  partyLogoImg: { width: "100%", height: "100%" },
   partyInfo: { flex: 1 },
   partyName: { fontSize: 17, fontFamily: "Inter_700Bold" },
   partyFounded: { fontSize: 12, fontFamily: "Inter_400Regular" },
