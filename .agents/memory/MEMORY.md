@@ -1,0 +1,1 @@
+- [Expo/Metro duplicate-dependency crashes](expo-metro-duplicate-deps.md) — intermittent "Unable to resolve module expo-router/expo" = orphaned old version dirs after `expo install --fix`; fix by rebuilding node_modules from the clean lockfile
