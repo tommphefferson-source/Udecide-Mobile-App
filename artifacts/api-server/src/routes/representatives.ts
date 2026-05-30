@@ -34,6 +34,10 @@ router.get("/representatives", async (req, res) => {
   const params = new URLSearchParams({
     format: "json",
     search_country: "US",
+    // Cicero defaults to 40 results per candidate. The federal cabinet plus
+    // statewide executives can fill that window and crowd out county/city
+    // officials, so request the full set to guarantee local reps come through.
+    max: "200",
     key: CICERO_API_KEY,
   });
   if (typeof address === "string" && address)
