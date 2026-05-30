@@ -23,3 +23,9 @@ Restart the expo workflow afterward (clean cache rebuild).
 - Check Metro `Bundled ...` log lines for two different version hashes of the same package — that's the tell.
 - Confirm duplicates on disk: `ls -d node_modules/.pnpm/<pkg>@*`.
 - Transient `Unable to resolve` + `Failed to get SHA-1` errors during the `--clear` empty-cache rebuild window are EXPECTED and clear once bundling finishes; only a real problem if persistent after `Running application "main"`.
+
+## Stale Metro error overlay after a transient bad edit
+A syntax/JSX error saved mid-edit (even if fixed seconds later) makes Metro cache a `TransformError` and the Expo **web preview keeps showing that error overlay** until the bundle is reset. Symptom: repeated "artifact crashed with a runtime error" reports while screenshots/typecheck/the source are all clean, and the only error in browser console logs is an OLD timestamp.
+
+**Diagnosis:** compare the error's timestamp to the current source — if the source no longer has the error and typecheck passes, it's a stale overlay, not a live crash.
+**Fix:** restart the expo workflow (forces a fresh bundle + preview reconnect). A hard-refresh of the preview pane on the user's side also clears it.
