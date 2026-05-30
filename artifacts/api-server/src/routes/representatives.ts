@@ -59,6 +59,18 @@ router.get("/representatives", async (req, res) => {
     const officials =
       data.response?.results?.candidates?.flatMap((c) => c.officials ?? []) ??
       [];
+    const breakdown: Record<string, number> = {};
+    for (const o of officials as Array<{
+      office?: { district?: { district_type?: string; subtype?: string } };
+    }>) {
+      const d = o.office?.district;
+      const key = `${d?.district_type ?? "?"}/${d?.subtype ?? "-"}`;
+      breakdown[key] = (breakdown[key] ?? 0) + 1;
+    }
+    req.log.info(
+      { address, city, state, zip, total: officials.length, breakdown },
+      "Cicero reps diagnostic",
+    );
     res.json({ live: true, officials });
   } catch (err) {
     req.log.error({ err }, "Cicero proxy failed");
