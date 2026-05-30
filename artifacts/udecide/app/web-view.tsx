@@ -1,7 +1,7 @@
 import { MaterialIcons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { router, useLocalSearchParams } from "expo-router";
-import React, { useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { ActivityIndicator, Linking, Platform, Pressable, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { WebView } from "react-native-webview";
@@ -34,6 +34,9 @@ export default function WebViewScreen() {
   const [loading, setLoading] = useState(true);
   const [canGoBack, setCanGoBack] = useState(false);
   const [failed, setFailed] = useState(false);
+  const [reloadKey, setReloadKey] = useState(0);
+
+  const isWeb = Platform.OS === "web";
 
   const topPad = Platform.OS === "web" ? 16 : insets.top;
 
@@ -59,8 +62,21 @@ export default function WebViewScreen() {
   const reload = () => {
     setFailed(false);
     setLoading(true);
-    webRef.current?.reload();
+    if (isWeb) {
+      setReloadKey((k) => k + 1);
+    } else {
+      webRef.current?.reload();
+    }
   };
+
+  useEffect(() => {
+    if (!isWeb || !url || failed || !loading) return;
+    const timer = setTimeout(() => {
+      setLoading(false);
+      setFailed(true);
+    }, 20000);
+    return () => clearTimeout(timer);
+  }, [isWeb, url, loading, failed, reloadKey]);
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
@@ -113,23 +129,37 @@ export default function WebViewScreen() {
           </View>
         ) : (
           <>
-            <WebView
-              ref={webRef}
-              source={{ uri: url }}
-              style={styles.web}
-              onLoadStart={() => setLoading(true)}
-              onLoadEnd={() => setLoading(false)}
-              onError={() => {
-                setLoading(false);
-                setFailed(true);
-              }}
-              onHttpError={() => {
-                setLoading(false);
-                setFailed(true);
-              }}
-              onNavigationStateChange={(nav) => setCanGoBack(nav.canGoBack)}
-              startInLoadingState
-            />
+            {isWeb ? (
+              <iframe
+                key={reloadKey}
+                src={url}
+                title={title}
+                style={{ border: "none", width: "100%", height: "100%" }}
+                onLoad={() => setLoading(false)}
+                onError={() => {
+                  setLoading(false);
+                  setFailed(true);
+                }}
+              />
+            ) : (
+              <WebView
+                ref={webRef}
+                source={{ uri: url }}
+                style={styles.web}
+                onLoadStart={() => setLoading(true)}
+                onLoadEnd={() => setLoading(false)}
+                onError={() => {
+                  setLoading(false);
+                  setFailed(true);
+                }}
+                onHttpError={() => {
+                  setLoading(false);
+                  setFailed(true);
+                }}
+                onNavigationStateChange={(nav) => setCanGoBack(nav.canGoBack)}
+                startInLoadingState
+              />
+            )}
             {loading && (
               <View style={[styles.loadingOverlay, { backgroundColor: colors.background }]}>
                 <ActivityIndicator size="large" color={colors.navy} />
@@ -146,13 +176,15 @@ export default function WebViewScreen() {
             { backgroundColor: colors.card, borderTopColor: colors.border, paddingBottom: insets.bottom || 12 },
           ]}
         >
-          <Pressable style={styles.navBtn} onPress={() => webRef.current?.goBack()} disabled={!canGoBack} hitSlop={8}>
-            <MaterialIcons
-              name="arrow-back-ios"
-              size={20}
-              color={canGoBack ? colors.foreground : colors.mutedForeground}
-            />
-          </Pressable>
+          {!isWeb && (
+            <Pressable style={styles.navBtn} onPress={() => webRef.current?.goBack()} disabled={!canGoBack} hitSlop={8}>
+              <MaterialIcons
+                name="arrow-back-ios"
+                size={20}
+                color={canGoBack ? colors.foreground : colors.mutedForeground}
+              />
+            </Pressable>
+          )}
           <Pressable style={styles.navBtn} onPress={reload} hitSlop={8}>
             <MaterialIcons name="refresh" size={22} color={colors.foreground} />
           </Pressable>
