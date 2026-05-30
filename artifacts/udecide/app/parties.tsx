@@ -2,7 +2,8 @@ import { MaterialIcons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import React, { useState } from "react";
-import { Image, Linking, Platform, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import * as WebBrowser from "expo-web-browser";
+import { Image, Platform, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useColors } from "@/hooks/useColors";
@@ -72,7 +73,7 @@ export default function PartiesScreen() {
           {selectedParty.website !== "N/A" && (
             <Pressable
               style={({ pressed }) => [styles.websiteBtn, { backgroundColor: selectedParty.color, opacity: pressed ? 0.85 : 1 }]}
-              onPress={() => Linking.openURL(selectedParty.website)}
+              onPress={() => WebBrowser.openBrowserAsync(selectedParty.website)}
             >
               <MaterialIcons name="language" size={18} color="#FFF" />
               <Text style={styles.websiteBtnText}>Official Website</Text>
@@ -140,7 +141,7 @@ export default function PartiesScreen() {
               {party.website !== "N/A" && (
                 <Pressable
                   style={({ pressed }) => [styles.partyBtn, { backgroundColor: colors.muted, opacity: pressed ? 0.7 : 1 }]}
-                  onPress={() => Linking.openURL(party.website)}
+                  onPress={() => WebBrowser.openBrowserAsync(party.website)}
                 >
                   <MaterialIcons name="language" size={14} color={colors.mutedForeground} />
                   <Text style={[styles.partyBtnText, { color: colors.mutedForeground }]}>Website</Text>
