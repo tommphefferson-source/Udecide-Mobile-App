@@ -128,8 +128,11 @@ export default function RepresentativesScreen() {
             No Representatives Found
           </Text>
           <Text style={[styles.emptyText, { color: colors.mutedForeground }]}>
-            No representatives found for the selected level in your area. Try
-            entering a full street address in Address Settings.
+            {getEmptyMessage(
+              usingLiveData,
+              selectedLevel,
+              effectiveAddress.address,
+            )}
           </Text>
         </View>
       ) : (
@@ -161,6 +164,23 @@ export default function RepresentativesScreen() {
       )}
     </View>
   );
+}
+
+function getEmptyMessage(
+  usingLiveData: boolean,
+  level: Level,
+  street: string,
+): string {
+  if (!usingLiveData) {
+    return "No representatives found for the selected level in your area.";
+  }
+  if (!street) {
+    return "Enter a full street address (with house number) in Address Settings to load your local representatives.";
+  }
+  if (level === "County" || level === "City") {
+    return `Our data provider doesn't have ${level.toLowerCase()}-level officials mapped for this address. Coverage of local offices varies by town — federal and state officials are still available under those tabs.`;
+  }
+  return "No representatives found for the selected level at this address.";
 }
 
 function DataSourceBadge({
