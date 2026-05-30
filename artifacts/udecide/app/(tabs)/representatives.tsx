@@ -17,7 +17,7 @@ import { LoadingState } from "@/components/LoadingState";
 import { RepresentativeCard } from "@/components/RepresentativeCard";
 import { useAddress } from "@/context/AddressContext";
 import { useColors } from "@/hooks/useColors";
-import { getRepresentatives, isCivicMockMode } from "@/services/civicApi";
+import { getRepresentatives } from "@/services/civicApi";
 import type { Representative } from "@/types/politics";
 import { REP_LEVELS } from "@/utils/constants";
 
@@ -41,8 +41,8 @@ export default function RepresentativesScreen() {
     setError(false);
     try {
       const result = await getRepresentatives(effectiveAddress);
-      setReps(result);
-      setUsingLiveData(!isCivicMockMode());
+      setReps(result.reps);
+      setUsingLiveData(result.live);
     } catch {
       setError(true);
     } finally {
@@ -52,7 +52,12 @@ export default function RepresentativesScreen() {
 
   useEffect(() => {
     loadReps();
-  }, [effectiveAddress.address, effectiveAddress.city, effectiveAddress.state, effectiveAddress.zipCode]);
+  }, [
+    effectiveAddress.address,
+    effectiveAddress.city,
+    effectiveAddress.state,
+    effectiveAddress.zipCode,
+  ]);
 
   const filtered = reps.filter((r) => {
     if (selectedLevel === "All") return true;
@@ -123,7 +128,8 @@ export default function RepresentativesScreen() {
             No Representatives Found
           </Text>
           <Text style={[styles.emptyText, { color: colors.mutedForeground }]}>
-            No representatives found for the selected level in your area. Try entering a full street address in Address Settings.
+            No representatives found for the selected level in your area. Try
+            entering a full street address in Address Settings.
           </Text>
         </View>
       ) : (
@@ -139,7 +145,9 @@ export default function RepresentativesScreen() {
           showsVerticalScrollIndicator={false}
           ListHeaderComponent={
             <View style={styles.listHeader}>
-              <Text style={[styles.resultCount, { color: colors.mutedForeground }]}>
+              <Text
+                style={[styles.resultCount, { color: colors.mutedForeground }]}
+              >
                 {filtered.length} representative
                 {filtered.length !== 1 ? "s" : ""} found
               </Text>
@@ -147,9 +155,7 @@ export default function RepresentativesScreen() {
             </View>
           }
           ListFooterComponent={
-            !usingLiveData ? (
-              <DataSourceNote colors={colors} />
-            ) : null
+            !usingLiveData ? <DataSourceNote colors={colors} /> : null
           }
         />
       )}
@@ -189,9 +195,7 @@ function DataSourceBadge({
           { color: usingLiveData ? "#16a34a" : "#d97706" },
         ]}
       >
-        {usingLiveData
-          ? "Federal: Congress.gov · State/Local: Sample data"
-          : "Federal: Congress.gov · State/Local: Sample data"}
+        {usingLiveData ? "Live data · Cicero API" : "Sample data"}
       </Text>
     </View>
   );
@@ -205,9 +209,14 @@ function DataSourceNote({ colors }: { colors: ReturnType<typeof useColors> }) {
         { backgroundColor: colors.card, borderColor: colors.border },
       ]}
     >
-      <MaterialIcons name="info-outline" size={13} color={colors.mutedForeground} />
+      <MaterialIcons
+        name="info-outline"
+        size={13}
+        color={colors.mutedForeground}
+      />
       <Text style={[styles.footerNoteText, { color: colors.mutedForeground }]}>
-        Federal representatives are pulled live from Congress.gov. State, county, and city officials are representative samples — set your address for the most relevant results.
+        Showing sample representatives. Add a Cicero API key and set your full
+        address to see live federal, state, county, and city officials.
       </Text>
     </View>
   );
