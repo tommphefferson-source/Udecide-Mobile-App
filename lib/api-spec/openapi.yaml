@@ -10,6 +10,16 @@ servers:
 tags:
   - name: health
     description: Health operations
+  - name: elections
+    description: Elections and voter information (Google Civic backed)
+  - name: polls
+    description: Community polls
+  - name: home
+    description: App home metadata
+  - name: news
+    description: News feed
+  - name: civics
+    description: Quizzes, questionnaires, terminology and party reference data
 paths:
   /healthz:
     get:
@@ -24,6 +34,242 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /elections:
+    get:
+      operationId: getElections
+      tags: [elections]
+      summary: List available elections
+      description: Live Google Civic elections list.
+      responses:
+        "200":
+          description: Election list
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Elections"
+        "502":
+          description: Upstream provider error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+
+  /elections/voter-info:
+    get:
+      operationId: getVoterInfo
+      tags: [elections]
+      summary: Voter information for an address
+      description: Live Google Civic voter information for the supplied address and election.
+      parameters:
+        - name: address
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: electionId
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Voter information
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VoterInfo"
+        "400":
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "502":
+          description: Upstream provider error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+
+  /polls:
+    get:
+      operationId: listPolls
+      tags: [polls]
+      summary: List polls
+      responses:
+        "200":
+          description: Poll list
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PollList"
+
+  /polls/{pollId}/vote:
+    post:
+      operationId: votePoll
+      tags: [polls]
+      summary: Submit a vote for a poll
+      parameters:
+        - name: pollId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PollVoteInput"
+      responses:
+        "200":
+          description: Updated poll results
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PollResults"
+        "400":
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "404":
+          description: Poll or option not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+
+  /polls/{pollId}/results:
+    get:
+      operationId: getPollResults
+      tags: [polls]
+      summary: Get poll results
+      parameters:
+        - name: pollId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Poll results
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PollResults"
+        "404":
+          description: Poll not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+
+  /home:
+    get:
+      operationId: getHome
+      tags: [home]
+      summary: App home metadata
+      responses:
+        "200":
+          description: Home data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HomeData"
+
+  /news:
+    get:
+      operationId: getNews
+      tags: [news]
+      summary: News feed
+      responses:
+        "200":
+          description: News response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NewsResponse"
+
+  /quizzes:
+    get:
+      operationId: listQuizzes
+      tags: [civics]
+      summary: List quizzes / quiz menu
+      responses:
+        "200":
+          description: Quiz list
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/QuizList"
+
+  /quizzes/progress:
+    post:
+      operationId: submitQuizProgress
+      tags: [civics]
+      summary: Submit quiz progress
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/QuizProgressInput"
+      responses:
+        "200":
+          description: Progress recorded
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/QuizProgressResult"
+        "400":
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+
+  /questionnaires:
+    get:
+      operationId: listQuestionnaires
+      tags: [civics]
+      summary: List questionnaires
+      responses:
+        "200":
+          description: Questionnaire list
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/QuestionnaireList"
+
+  /terminology:
+    get:
+      operationId: listTerminology
+      tags: [civics]
+      summary: List political terminology
+      responses:
+        "200":
+          description: Terminology list
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TerminologyList"
+
+  /parties:
+    get:
+      operationId: listParties
+      tags: [civics]
+      summary: List political parties
+      responses:
+        "200":
+          description: Party list
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PartyList"
+
 components:
   schemas:
     HealthStatus:
@@ -34,3 +280,479 @@ components:
       required:
         - status
 
+    ApiError:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+        - error
+
+    Election:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        electionDay:
+          type: string
+        ocdDivisionId:
+          type: ["string", "null"]
+      required:
+        - id
+        - name
+        - electionDay
+
+    Elections:
+      type: object
+      properties:
+        elections:
+          type: array
+          items:
+            $ref: "#/components/schemas/Election"
+      required:
+        - elections
+
+    SocialChannel:
+      type: object
+      properties:
+        type:
+          type: string
+        id:
+          type: string
+      required:
+        - type
+        - id
+
+    Candidate:
+      type: object
+      properties:
+        name:
+          type: string
+        party:
+          type: ["string", "null"]
+        candidateUrl:
+          type: ["string", "null"]
+        phone:
+          type: ["string", "null"]
+        email:
+          type: ["string", "null"]
+        channels:
+          type: array
+          items:
+            $ref: "#/components/schemas/SocialChannel"
+      required:
+        - name
+        - channels
+
+    Contest:
+      type: object
+      properties:
+        type:
+          type: string
+        office:
+          type: ["string", "null"]
+        level:
+          type: ["string", "null"]
+        districtScope:
+          type: ["string", "null"]
+        candidates:
+          type: array
+          items:
+            $ref: "#/components/schemas/Candidate"
+      required:
+        - type
+        - candidates
+
+    CorrespondenceAddress:
+      type: object
+      properties:
+        line1:
+          type: ["string", "null"]
+        city:
+          type: ["string", "null"]
+        state:
+          type: ["string", "null"]
+        zip:
+          type: ["string", "null"]
+
+    StateAdministration:
+      type: object
+      properties:
+        name:
+          type: ["string", "null"]
+        electionInfoUrl:
+          type: ["string", "null"]
+        votingLocationFinderUrl:
+          type: ["string", "null"]
+        ballotInfoUrl:
+          type: ["string", "null"]
+        correspondenceAddress:
+          $ref: "#/components/schemas/CorrespondenceAddress"
+
+    PollingLocation:
+      type: object
+      properties:
+        name:
+          type: ["string", "null"]
+        address:
+          type: ["string", "null"]
+        hours:
+          type: ["string", "null"]
+      required: []
+
+    VoterInfo:
+      type: object
+      properties:
+        address:
+          type: string
+        electionId:
+          type: ["string", "null"]
+        state:
+          $ref: "#/components/schemas/StateAdministration"
+        contests:
+          type: array
+          items:
+            $ref: "#/components/schemas/Contest"
+        pollingLocations:
+          type: array
+          items:
+            $ref: "#/components/schemas/PollingLocation"
+      required:
+        - address
+        - contests
+        - pollingLocations
+
+    PollOption:
+      type: object
+      properties:
+        id:
+          type: string
+        label:
+          type: string
+        votes:
+          type: integer
+      required:
+        - id
+        - label
+        - votes
+
+    Poll:
+      type: object
+      properties:
+        id:
+          type: string
+        question:
+          type: string
+        description:
+          type: ["string", "null"]
+        category:
+          type: ["string", "null"]
+        totalVotes:
+          type: integer
+        options:
+          type: array
+          items:
+            $ref: "#/components/schemas/PollOption"
+      required:
+        - id
+        - question
+        - totalVotes
+        - options
+
+    PollList:
+      type: object
+      properties:
+        polls:
+          type: array
+          items:
+            $ref: "#/components/schemas/Poll"
+      required:
+        - polls
+
+    PollVoteInput:
+      type: object
+      properties:
+        optionId:
+          type: string
+          minLength: 1
+      required:
+        - optionId
+
+    PollResultOption:
+      type: object
+      properties:
+        id:
+          type: string
+        label:
+          type: string
+        votes:
+          type: integer
+        percentage:
+          type: number
+      required:
+        - id
+        - label
+        - votes
+        - percentage
+
+    PollResults:
+      type: object
+      properties:
+        pollId:
+          type: string
+        question:
+          type: string
+        totalVotes:
+          type: integer
+        options:
+          type: array
+          items:
+            $ref: "#/components/schemas/PollResultOption"
+      required:
+        - pollId
+        - question
+        - totalVotes
+        - options
+
+    HomeSection:
+      type: object
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        subtitle:
+          type: ["string", "null"]
+        route:
+          type: ["string", "null"]
+      required:
+        - id
+        - title
+
+    HomeData:
+      type: object
+      properties:
+        appName:
+          type: string
+        environment:
+          type: string
+        newsUrl:
+          type: string
+        lastUpdated:
+          type: string
+        sections:
+          type: array
+          items:
+            $ref: "#/components/schemas/HomeSection"
+      required:
+        - appName
+        - environment
+        - newsUrl
+        - lastUpdated
+        - sections
+
+    NewsArticle:
+      type: object
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+        source:
+          type: string
+        url:
+          type: string
+        publishedAt:
+          type: string
+      required:
+        - id
+        - title
+        - description
+        - source
+        - url
+        - publishedAt
+
+    NewsResponse:
+      type: object
+      properties:
+        newsUrl:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+        source:
+          type: string
+        articles:
+          type: array
+          items:
+            $ref: "#/components/schemas/NewsArticle"
+      required:
+        - newsUrl
+        - title
+        - description
+        - source
+        - articles
+
+    Quiz:
+      type: object
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        description:
+          type: ["string", "null"]
+        category:
+          type: string
+        questionCount:
+          type: integer
+      required:
+        - id
+        - title
+        - category
+        - questionCount
+
+    QuizList:
+      type: object
+      properties:
+        quizzes:
+          type: array
+          items:
+            $ref: "#/components/schemas/Quiz"
+      required:
+        - quizzes
+
+    QuizProgressInput:
+      type: object
+      properties:
+        quizId:
+          type: string
+          minLength: 1
+        userId:
+          type: string
+        score:
+          type: integer
+        completed:
+          type: boolean
+      required:
+        - quizId
+        - completed
+
+    QuizProgressResult:
+      type: object
+      properties:
+        success:
+          type: boolean
+        quizId:
+          type: string
+        recordedAt:
+          type: string
+      required:
+        - success
+        - quizId
+        - recordedAt
+
+    QuestionnaireQuestion:
+      type: object
+      properties:
+        id:
+          type: string
+        prompt:
+          type: string
+        options:
+          type: array
+          items:
+            type: string
+      required:
+        - id
+        - prompt
+        - options
+
+    Questionnaire:
+      type: object
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        description:
+          type: ["string", "null"]
+        questions:
+          type: array
+          items:
+            $ref: "#/components/schemas/QuestionnaireQuestion"
+      required:
+        - id
+        - title
+        - questions
+
+    QuestionnaireList:
+      type: object
+      properties:
+        questionnaires:
+          type: array
+          items:
+            $ref: "#/components/schemas/Questionnaire"
+      required:
+        - questionnaires
+
+    TerminologyItem:
+      type: object
+      properties:
+        id:
+          type: string
+        term:
+          type: string
+        definition:
+          type: string
+        category:
+          type: ["string", "null"]
+      required:
+        - id
+        - term
+        - definition
+
+    TerminologyList:
+      type: object
+      properties:
+        terms:
+          type: array
+          items:
+            $ref: "#/components/schemas/TerminologyItem"
+      required:
+        - terms
+
+    Party:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        abbreviation:
+          type: ["string", "null"]
+        description:
+          type: string
+        foundedYear:
+          type: ["integer", "null"]
+        website:
+          type: ["string", "null"]
+      required:
+        - id
+        - name
+        - description
+
+    PartyList:
+      type: object
+      properties:
+        parties:
+          type: array
+          items:
+            $ref: "#/components/schemas/Party"
+      required:
+        - parties

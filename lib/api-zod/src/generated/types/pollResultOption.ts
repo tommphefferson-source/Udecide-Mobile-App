@@ -6,6 +6,9 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export interface HealthStatus {
-  status: string;
+export interface PollResultOption {
+  id: string;
+  label: string;
+  votes: number;
+  percentage: number;
 }

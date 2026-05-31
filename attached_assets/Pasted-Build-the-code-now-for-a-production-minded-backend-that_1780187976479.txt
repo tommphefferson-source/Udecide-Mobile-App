@@ -1,0 +1,258 @@
+Build the code now for a **production-minded backend** that consolidates an older civic-information mobile app’s backend dependencies into one service.
+
+Choose **whatever tech stack is best suited** to implement the functionality cleanly and realistically in Replit. Do not limit yourself to any specific framework or language unless it is clearly the best choice for the requirements.
+
+I want a complete runnable project, not a plan.
+
+## Goal
+
+Create a new backend API that replaces a system currently split across:
+
+1. direct Google Civic API calls from an iOS app
+2. a legacy backend at `http://52.45.60.139/WS`
+
+The new backend should expose a clean REST API and be easy to extend.
+
+## Build requirements
+
+Generate the full codebase with:
+
+* a runnable backend app
+* modular route organization
+* service layer
+* provider/adapters layer where helpful
+* request/response models or schemas
+* environment-variable config
+* mock/local data for legacy endpoints that do not yet have live providers
+* README
+* example environment configuration
+* dependency manifest
+* basic error handling
+* healthcheck endpoint
+* API documentation if the chosen stack supports it well
+* clean project structure
+
+Use realistic code, not pseudocode.
+
+## Functional requirements
+
+### 1) Elections
+
+The old iOS app directly called Google Civic:
+
+* `https://www.googleapis.com/civicinfo/v2/elections`
+* `https://www.googleapis.com/civicinfo/v2/voterinfo`
+
+Implement:
+
+* `GET /api/elections`
+* `GET /api/elections/voter-info`
+
+Behavior:
+
+* call Google Civic API
+* use environment variable `GOOGLE_CIVIC_API_KEY`
+* accept address as a query param
+* for voter info also accept `election_id`
+* normalize response into clean app-facing JSON
+* include election list, contests, state election administration info, and relevant URLs when available
+
+### 2) Polls
+
+Old endpoints:
+
+* `/poll_listing`
+* `/poll_results`
+* `/polling`
+
+Implement:
+
+* `GET /api/polls`
+* `POST /api/polls/{poll_id}/vote`
+* `GET /api/polls/{poll_id}/results`
+
+Requirements:
+
+* back these with local mock data initially
+* support listing polls
+* support submitting a vote
+* support returning poll results
+* store vote submissions in-memory for now unless the chosen stack has a lightweight better option
+* return realistic JSON
+
+### 3) Home data
+
+Old endpoint:
+
+* `/home_data`
+
+Implement:
+
+* `GET /api/home`
+
+Return:
+
+* app home metadata
+* `news_url`
+* any other useful homepage metadata from a local data file or equivalent
+
+### 4) News
+
+The old app mainly used a `news_url` returned by home data.
+
+Implement:
+
+* `GET /api/news`
+
+Behavior:
+
+* return a structured response that includes:
+
+  * `news_url`
+  * `title`
+  * `description`
+  * `source`
+* back this from local data for now
+* keep the response expandable for future live article integrations
+
+### 5) Civics / quizzes / questionnaires
+
+Old endpoints:
+
+* `/quiz_menu_list`
+* `questionaires_listing`
+* `update_quiz_log`
+* `/political_terminology_list`
+* `/get_parties`
+
+Implement:
+
+* `GET /api/quizzes`
+* `GET /api/questionnaires`
+* `POST /api/quizzes/progress`
+* `GET /api/terminology`
+* `GET /api/parties`
+
+Requirements:
+
+* use local data files or equivalent mock-backed storage
+* include quiz categories/menu
+* include questionnaire questions
+* include terminology items
+* include party reference data
+* allow quiz progress submission and return a success response
+
+## API behavior requirements
+
+* all responses should be JSON
+* validate query params and request bodies
+* use a consistent error format
+* organize endpoints cleanly
+* prefix all app endpoints with `/api`
+* include `/health` endpoint
+* include CORS support suitable for local development
+
+## Response shape guidance
+
+### Elections list
+
+Return something like:
+
+```json id="fwrvhh"
+{
+  "elections": [
+    {
+      "id": "2000",
+      "name": "General Election",
+      "election_day": "2026-11-03"
+    }
+  ]
+}
+```
+
+### Voter info
+
+Return something like:
+
+```json id="mje55t"
+{
+  "address": "123 Main St, Denver, CO 80202",
+  "election_id": "2000",
+  "state": {
+    "name": "Colorado",
+    "election_info_url": "...",
+    "voting_location_finder_url": "...",
+    "ballot_info_url": "...",
+    "correspondence_address": {
+      "line1": "...",
+      "city": "...",
+      "state": "...",
+      "zip": "..."
+    }
+  },
+  "contests": [
+    {
+      "type": "General",
+      "office": "Governor",
+      "level": "administrativeArea1",
+      "district_scope": "statewide",
+      "candidates": [
+        {
+          "name": "...",
+          "party": "...",
+          "candidate_url": "...",
+          "phone": "...",
+          "email": "...",
+          "channels": [
+            {
+              "type": "Twitter",
+              "id": "..."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+```
+
+## Implementation guidance
+
+* create a reusable loader/helper for mock content
+* create a small wrapper around Google Civic API
+* keep route handlers/controllers thin and push logic into services
+* include clear naming and comments/docstrings where appropriate
+* create a custom error handler for upstream API failures
+* do not leave TODO stubs unless absolutely necessary
+* where live provider functionality is not yet available, implement complete mock-backed behavior
+
+## README requirements
+
+Include:
+
+* what the service does
+* setup instructions
+* how to run locally in Replit
+* required environment variables
+* example requests for each endpoint
+* explanation of which endpoints are live vs mock-backed
+* notes on how the old app functionality maps into the new service
+
+## Environment/config requirements
+
+Support at least:
+
+* application name
+* environment name
+* Google Civic API key
+* host
+* port
+
+Use the conventions of the chosen stack for config and dependency management.
+
+## Important
+
+Return the full project code with all files and contents.
+Do not just describe the architecture.
+Generate the implementation.
+Choose the best stack automatically based on the requirements and optimize for a clean working result in Replit.
