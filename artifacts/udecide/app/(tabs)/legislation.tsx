@@ -1,7 +1,7 @@
 import { MaterialIcons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   FlatList,
   Platform,
@@ -17,6 +17,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { BillCard } from "@/components/BillCard";
 import { ErrorState } from "@/components/ErrorState";
 import { LoadingState } from "@/components/LoadingState";
+import { useAddress } from "@/context/AddressContext";
 import { useColors } from "@/hooks/useColors";
 import { getRecentBills, searchCongressBills } from "@/services/congressApi";
 import { getMasterList, searchBills } from "@/services/legiscanApi";
@@ -30,14 +31,32 @@ export default function LegislationScreen() {
   const insets = useSafeAreaInsets();
   const colors = useColors();
   const router = useRouter();
+  const { effectiveAddress } = useAddress();
   const [activeTab, setActiveTab] = useState<Tab>("federal");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [bills, setBills] = useState<Bill[]>([]);
-  const [selectedState, setSelectedState] = useState("CA");
+  const [selectedState, setSelectedState] = useState(
+    effectiveAddress.state || "CA",
+  );
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedBill, setSelectedBill] = useState<Bill | null>(null);
   const [showStatePicker, setShowStatePicker] = useState(false);
+
+  // Keep the State tab anchored to the viewer's effective location (their own
+  // address, or an active address override). A manual pick in the state picker
+  // persists until the effective location itself changes, at which point we
+  // re-sync so the default always reflects "where the viewer is looking".
+  const lastEffectiveState = useRef(effectiveAddress.state);
+  useEffect(() => {
+    if (
+      effectiveAddress.state &&
+      effectiveAddress.state !== lastEffectiveState.current
+    ) {
+      lastEffectiveState.current = effectiveAddress.state;
+      setSelectedState(effectiveAddress.state);
+    }
+  }, [effectiveAddress.state]);
 
   const topPad = Platform.OS === "web" ? 67 : insets.top;
   const bottomPad = Platform.OS === "web" ? 110 : insets.bottom + 120;
