@@ -400,7 +400,18 @@ function mapResult(row: unknown): LegacyPollResult {
 
 /** Fetch the catalog of available polls (no vote totals). */
 export async function fetchPolls(token?: string): Promise<LegacyPoll[]> {
-  const rows = await wsPost("/poll_listing", {}, token);
+  let rows: unknown[];
+  try {
+    rows = await wsPost("/poll_listing", {}, token);
+  } catch (err) {
+    // The legacy backend returns success!=1 with a "No polls found." message
+    // when the catalog is empty. That is a no-result, not a failure — surface
+    // it as an empty list so the client shows its empty state, not an error.
+    if (err instanceof UpstreamError && /no polls?\s+found/i.test(err.message)) {
+      return [];
+    }
+    throw err;
+  }
   return rows.map(mapPoll).filter((p) => p.pollId);
 }
 
