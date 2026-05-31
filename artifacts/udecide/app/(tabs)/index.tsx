@@ -14,6 +14,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { AddressOverrideBanner } from "@/components/AddressOverrideBanner";
 import { CardButton } from "@/components/CardButton";
+import { NewsCard } from "@/components/NewsCard";
 import { useAuth } from "@/context/AuthContext";
 import { useColors } from "@/hooks/useColors";
 
@@ -92,6 +93,8 @@ export default function DashboardScreen() {
         contentContainerStyle={{ padding: 16, paddingBottom: bottomPad, gap: 16 }}
         showsVerticalScrollIndicator={false}
       >
+        <NewsCard />
+
         <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Quick Access</Text>
 
         <View style={styles.grid}>
