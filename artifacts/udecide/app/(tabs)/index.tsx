@@ -160,14 +160,14 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   greeting: {
-    fontSize: 13,
-    fontFamily: "Inter_400Regular",
-    color: "rgba(255,255,255,0.6)",
+    fontSize: 20,
+    fontFamily: "Inter_600SemiBold",
+    color: "rgba(255,255,255,0.92)",
   },
   headerSubtitle: {
-    fontSize: 13,
+    fontSize: 15,
     fontFamily: "Inter_400Regular",
-    color: "rgba(255,255,255,0.5)",
+    color: "rgba(255,255,255,0.6)",
   },
   profileBtn: {
     marginTop: 4,
