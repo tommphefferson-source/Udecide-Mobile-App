@@ -7,7 +7,6 @@ import {
   FlatList,
   Platform,
   Pressable,
-  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -16,6 +15,7 @@ import {
 import { KeyboardAvoidingView } from "react-native-keyboard-controller";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { HorizontalScroller } from "@/components/HorizontalScroller";
 import { useColors } from "@/hooks/useColors";
 import { sendGeminiMessage } from "@/services/geminiApi";
 import type { GeminiMessage } from "@/services/geminiApi";
@@ -172,11 +172,7 @@ export default function FactCheckerScreen() {
         {messages.length === 1 && (
           <View style={styles.suggestedRow}>
             <Text style={[styles.suggestedLabel, { color: colors.mutedForeground }]}>Suggested:</Text>
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={{ gap: 8, paddingHorizontal: 16 }}
-            >
+            <HorizontalScroller contentContainerStyle={{ gap: 8, paddingHorizontal: 16 }}>
               {SUGGESTED_PROMPTS.map((item) => (
                 <Pressable
                   key={item}
@@ -189,7 +185,7 @@ export default function FactCheckerScreen() {
                   <Text style={[styles.suggestedChipText, { color: colors.foreground }]}>{item}</Text>
                 </Pressable>
               ))}
-            </ScrollView>
+            </HorizontalScroller>
           </View>
         )}
 

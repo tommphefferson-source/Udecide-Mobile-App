@@ -1,19 +1,26 @@
 ---
 name: Horizontal chip/filter rows in UDecide
-description: Why horizontal filter/category chip rows must use ScrollView, not FlatList or flexWrap
+description: How horizontal filter/category chip rows must scroll on web and native
 ---
 
 UDecide filter/category chip rows (issue questionnaire categories, poll topics,
-fact-checker suggested prompts, representatives level filter) must be a
-**`ScrollView horizontal`**, not a horizontal `FlatList` and not a `flexWrap` View.
+fact-checker suggested prompts, representatives level filter) must use the shared
+**`components/HorizontalScroller.tsx`** wrapper, not a bare `ScrollView horizontal`,
+a horizontal `FlatList`, or a `flexWrap` View.
 
 **Why:**
-- A horizontal `FlatList` (VirtualizedList) does not reliably enable horizontal
-  drag-scroll on React Native Web — chips past the right edge become unreachable.
+- On React Native Web a horizontal `ScrollView`/`FlatList` only scrolls with a
+  *horizontal* gesture (trackpad swipe / shift+wheel). A desktop user with a plain
+  vertical mouse wheel cannot reach overflowing chips even though a real scroll
+  region exists — the row looks "stuck". This was the actual user-reported bug; a
+  prior fix that just switched FlatList→ScrollView did NOT solve it.
+- `HorizontalScroller` is a `ScrollView horizontal` that adds a web-only `wheel`
+  listener (via `getScrollableNode()`) translating vertical wheel delta into
+  `scrollLeft`, while leaving real horizontal trackpad gestures alone. No-op on
+  native (touch already scrolls).
 - A plain `View` with `flexWrap:"wrap"` wraps onto multiple lines instead of
-  scrolling. These chip sets are tiny, so virtualization buys nothing.
+  scrolling; these chip sets are tiny so virtualization (FlatList) buys nothing.
 
-**How to apply:** render chips by mapping inside `<ScrollView horizontal
-showsHorizontalScrollIndicator={false} contentContainerStyle={{flexDirection:"row",
-gap, paddingHorizontal}}>`. Put horizontal padding + gap on the content style, not
-the outer container, so the first/last chip get spacing and scrolling works.
+**How to apply:** `<HorizontalScroller contentContainerStyle={{ gap, paddingHorizontal }}>`
+then map the chips inside. Keep horizontal padding + gap on the content style (not
+the outer container) so the first/last chip get spacing.

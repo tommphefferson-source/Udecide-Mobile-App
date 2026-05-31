@@ -5,7 +5,6 @@ import {
   FlatList,
   Platform,
   Pressable,
-  ScrollView,
   StyleSheet,
   Text,
   View,
@@ -14,6 +13,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { AddressOverrideBanner } from "@/components/AddressOverrideBanner";
 import { ErrorState } from "@/components/ErrorState";
+import { HorizontalScroller } from "@/components/HorizontalScroller";
 import { LoadingState } from "@/components/LoadingState";
 import { RepresentativeCard } from "@/components/RepresentativeCard";
 import { useAddress } from "@/context/AddressContext";
@@ -86,11 +86,7 @@ export default function RepresentativesScreen() {
           { backgroundColor: colors.card, borderBottomColor: colors.border },
         ]}
       >
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.filterRowContent}
-        >
+        <HorizontalScroller contentContainerStyle={styles.filterRowContent}>
           {REP_LEVELS.map((level) => (
             <Pressable
               key={level}
@@ -114,7 +110,7 @@ export default function RepresentativesScreen() {
               </Text>
             </Pressable>
           ))}
-        </ScrollView>
+        </HorizontalScroller>
       </View>
 
       {loading ? (

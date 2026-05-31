@@ -13,6 +13,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { ErrorState } from "@/components/ErrorState";
+import { HorizontalScroller } from "@/components/HorizontalScroller";
 import { LoadingState } from "@/components/LoadingState";
 import { useAuth } from "@/context/AuthContext";
 import { useColors } from "@/hooks/useColors";
@@ -106,11 +107,7 @@ export default function IssueQuestionnaireScreen() {
               { backgroundColor: colors.card, borderBottomColor: colors.border },
             ]}
           >
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={{ gap: 6, paddingHorizontal: 12 }}
-            >
+            <HorizontalScroller contentContainerStyle={{ gap: 6, paddingHorizontal: 12 }}>
               {questionnaires.map((item) => {
                 const active = item.id === selectedId;
                 return (
@@ -137,7 +134,7 @@ export default function IssueQuestionnaireScreen() {
                   </Pressable>
                 );
               })}
-            </ScrollView>
+            </HorizontalScroller>
           </View>
 
           <ScrollView

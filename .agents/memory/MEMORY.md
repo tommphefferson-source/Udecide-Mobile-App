@@ -4,6 +4,6 @@
 - [Mock-fallback honesty](mock-fallback-honesty.md) — UDecide API services are mock-first; in live mode (key present) no-result/error paths must return empty, never MOCK_* data shown under a "live" badge.
 - [Cicero / paid APIs proxy](cicero-and-paid-apis-proxy.md) — no-CORS/paid external APIs (Cicero reps data) must go through api-server, not the Expo client; never name paid keys EXPO_PUBLIC_* (Expo bundles them).
 - [Legacy /home_data link fields](legacy-home-data-links.md) — reference links (news_url, town_url, etc.) often lack a scheme; prepend https:// before opening. No article list — Political News is one CTA.
-- [Horizontal chip/filter rows](horizontal-chip-rows.md) — use ScrollView horizontal, not FlatList (won't drag-scroll on web) or flexWrap View (wraps); put padding+gap on contentContainerStyle.
+- [Horizontal chip/filter rows](horizontal-chip-rows.md) — use shared HorizontalScroller (adds web wheel→scrollLeft); bare ScrollView/FlatList horizontal won't scroll with a vertical mouse wheel on web.
 - [AUTHTOKEN auth flow](auth-token-flow.md) — legacy uses custom AUTHTOKEN header (=login auth_token), not bearer; route authed reqs through apiFetch; 401/LegacyAuthError(AppError 401) → clear session + redirect to login.
 - [Legacy WS auth & questionnaires](legacy-auth-and-questionnaires.md) — login/signup are JSON + no AUTHTOKEN; signup needs city/zip + state_id="0" placeholder and is slow (~30s); questionaires_listing is stance data, not a knowledge quiz.
