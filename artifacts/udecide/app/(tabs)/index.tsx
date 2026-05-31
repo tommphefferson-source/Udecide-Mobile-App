@@ -65,7 +65,6 @@ export default function DashboardScreen() {
             />
             <View style={styles.brandText}>
               <Text style={styles.greeting}>{timeGreeting}, {firstName}</Text>
-              <Text style={styles.headerSubtitle}>Political & Voter App</Text>
             </View>
           </View>
           <Pressable
@@ -158,8 +157,8 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   logo: {
-    width: 84,
-    height: 84,
+    width: 126,
+    height: 126,
   },
   brandText: {
     flex: 1,
