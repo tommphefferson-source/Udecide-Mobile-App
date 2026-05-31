@@ -53,6 +53,11 @@ export default function MoreScreen() {
         colors={[colors.navy, colors.navyLight]}
         style={[styles.header, { paddingTop: topPad + 16 }]}
       >
+        {router.canGoBack() && (
+          <Pressable style={styles.backBtn} onPress={() => router.back()}>
+            <MaterialIcons name="arrow-back" size={24} color="#FFF" />
+          </Pressable>
+        )}
         <Text style={styles.screenTitle}>More</Text>
         <Text style={styles.screenSubtitle}>Tools, guides, and settings</Text>
       </LinearGradient>
@@ -120,6 +125,7 @@ export default function MoreScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   header: { paddingHorizontal: 20, paddingBottom: 16, gap: 4 },
+  backBtn: { marginBottom: 8 },
   screenTitle: { fontSize: 24, fontFamily: "Inter_700Bold", color: "#FFF" },
   screenSubtitle: { fontSize: 13, fontFamily: "Inter_400Regular", color: "rgba(255,255,255,0.6)" },
   section: { gap: 6 },
