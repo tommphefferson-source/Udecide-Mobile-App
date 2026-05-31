@@ -17,3 +17,10 @@ description: Shapes/quirks of legacy backend auth (login/signup) and questionair
 - form-urlencoded + `AUTHTOKEN`; **requires `category_id`** (omit → "Please enter a value for the category_id field.").
 - Returns stance/opinion questions: each row has `question_id`, `question`, and an `answers[]` array of `{answer_id, answer}`. There is **no correct answer and no explanation**, and some answer rows are UI affordances (e.g. "Add your own stance", "Read more stances submitted by users").
 - **Implication:** this is the app's *questionnaires* feature (issue categories from `/quiz_menu_list`), NOT the Civics-101 knowledge quiz (which needs answerIndex + explanation). Do not force this data into the Civics-101 quiz UI.
+- `/quiz_menu_list` (categories) needs `AUTHTOKEN`, NO body. Rows: `category_id`, `category` (display name), `status`. Live questionnaires = N+1 (one questions call per category); run them in parallel and drop categories that yield no questions.
+
+# Per-user token forwarding for live data (decision)
+
+- Data endpoints can be served live using the **logged-in user's** legacy `auth_token` forwarded from the Expo client, instead of (or in addition to) the shared app-level `LEGACY_WS_AUTHTOKEN` secret. The client sends `AUTHTOKEN: <token>`; the api-server route reads it (`AUTHTOKEN` header or `Authorization: Bearer`) and passes it to `wsPost(..., tokenOverride)`. `tokenOverride ?? requireToken()` so the shared token still works when no per-user token is present.
+- **Why:** `LEGACY_WS_AUTHTOKEN` is a missing secret in this env, so the shared-token path serves only mock. Forwarding the user token makes features genuinely live without that secret, reusing the token we already get at login.
+- **How to apply:** when adding a new live legacy-backed feature, prefer forwarding the user token. Guard against empty tokens: trim header values and treat `""` as undefined, or an `Authorization: Bearer ` with no value suppresses the shared-token fallback and silently forces mock mode.

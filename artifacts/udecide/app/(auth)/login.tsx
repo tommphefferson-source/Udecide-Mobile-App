@@ -221,7 +221,7 @@ const styles = StyleSheet.create({
   cardTitle: {
     fontSize: 22,
     fontFamily: "Inter_700Bold",
-    color: "#0D1B2A",
+    color: "#1F3E63",
     textAlign: "center",
   },
   errorBanner: {
@@ -242,7 +242,7 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 13,
     fontFamily: "Inter_600SemiBold",
-    color: "#0D1B2A",
+    color: "#1F3E63",
   },
   inputWrap: {
     flexDirection: "row",
@@ -262,7 +262,7 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 15,
     fontFamily: "Inter_400Regular",
-    color: "#0D1B2A",
+    color: "#1F3E63",
   },
   errorText: {
     fontSize: 12,
@@ -326,7 +326,7 @@ const styles = StyleSheet.create({
   socialText: {
     fontSize: 14,
     fontFamily: "Inter_500Medium",
-    color: "#0D1B2A",
+    color: "#1F3E63",
   },
   registerRow: {
     flexDirection: "row",

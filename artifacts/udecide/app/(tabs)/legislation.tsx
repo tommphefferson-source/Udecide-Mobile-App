@@ -280,7 +280,7 @@ export default function LegislationScreen() {
             <MaterialIcons
               name="account-balance"
               size={14}
-              color={activeTab === "federal" ? "#0D1B2A" : "rgba(255,255,255,0.7)"}
+              color={activeTab === "federal" ? "#1F3E63" : "rgba(255,255,255,0.7)"}
             />
             <Text
               style={[
@@ -301,7 +301,7 @@ export default function LegislationScreen() {
             <MaterialIcons
               name="flag"
               size={14}
-              color={activeTab === "state" ? "#0D1B2A" : "rgba(255,255,255,0.7)"}
+              color={activeTab === "state" ? "#1F3E63" : "rgba(255,255,255,0.7)"}
             />
             <Text
               style={[
@@ -487,7 +487,7 @@ const styles = StyleSheet.create({
     color: "rgba(255,255,255,0.7)",
   },
   tabBtnTextActive: {
-    color: "#0D1B2A",
+    color: "#1F3E63",
   },
   controls: { padding: 12, gap: 8, borderBottomWidth: 1 },
   statePicker: {

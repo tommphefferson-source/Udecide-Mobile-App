@@ -11,7 +11,7 @@
     "splash": {
       "image": "./assets/images/icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#0D1B2A"
+      "backgroundColor": "#1F3E63"
     },
     "ios": {
       "supportsTablet": false,
@@ -20,7 +20,7 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/icon.png",
-        "backgroundColor": "#0D1B2A"
+        "backgroundColor": "#1F3E63"
       },
       "package": "com.udecide.app"
     },

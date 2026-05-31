@@ -16,8 +16,8 @@ export function AddressOverrideBanner() {
 
   return (
     <View style={[styles.banner, { backgroundColor: colors.gold ?? "#D4AF37" }]}>
-      <MaterialIcons name="location-on" size={16} color="#0D1B2A" />
-      <Text style={[styles.text, { color: "#0D1B2A" }]} numberOfLines={1}>
+      <MaterialIcons name="location-on" size={16} color="#1F3E63" />
+      <Text style={[styles.text, { color: "#1F3E63" }]} numberOfLines={1}>
         Viewing data for: {location || override.address}
       </Text>
       <Pressable
@@ -25,14 +25,14 @@ export function AddressOverrideBanner() {
         hitSlop={8}
         style={({ pressed }) => [styles.clearBtn, { opacity: pressed ? 0.6 : 1 }]}
       >
-        <MaterialIcons name="close" size={16} color="#0D1B2A" />
+        <MaterialIcons name="close" size={16} color="#1F3E63" />
       </Pressable>
       <Pressable
         onPress={() => router.push("/address-override" as never)}
         hitSlop={8}
         style={({ pressed }) => [{ opacity: pressed ? 0.6 : 1 }]}
       >
-        <MaterialIcons name="edit" size={16} color="#0D1B2A" />
+        <MaterialIcons name="edit" size={16} color="#1F3E63" />
       </Pressable>
     </View>
   );

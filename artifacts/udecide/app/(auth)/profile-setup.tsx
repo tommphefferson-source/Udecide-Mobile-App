@@ -52,7 +52,7 @@ export default function ProfileSetupScreen() {
   }
 
   return (
-    <LinearGradient colors={["#0D1B2A", "#1B2D45", "#243A56"]} style={styles.gradient}>
+    <LinearGradient colors={["#1F3E63", "#2A4E7A", "#355F8E"]} style={styles.gradient}>
       <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === "ios" ? "padding" : undefined}>
         <ScrollView
           contentContainerStyle={[
@@ -135,14 +135,14 @@ const styles = StyleSheet.create({
   subtitle: { fontSize: 14, fontFamily: "Inter_400Regular", color: "rgba(255,255,255,0.6)", textAlign: "center", lineHeight: 20 },
   card: { width: "100%", backgroundColor: "#FFF", borderRadius: 24, padding: 24, gap: 14 },
   field: { gap: 6 },
-  label: { fontSize: 13, fontFamily: "Inter_600SemiBold", color: "#0D1B2A" },
+  label: { fontSize: 13, fontFamily: "Inter_600SemiBold", color: "#1F3E63" },
   inputWrap: {
     flexDirection: "row", alignItems: "center", gap: 10,
     borderWidth: 1.5, borderColor: "#DDE1E7", borderRadius: 12,
     paddingHorizontal: 14, paddingVertical: 12, backgroundColor: "#F5F6F8",
   },
   inputError: { borderColor: "#C41E3A" },
-  input: { flex: 1, fontSize: 15, fontFamily: "Inter_400Regular", color: "#0D1B2A" },
+  input: { flex: 1, fontSize: 15, fontFamily: "Inter_400Regular", color: "#1F3E63" },
   errorText: { fontSize: 12, fontFamily: "Inter_400Regular", color: "#C41E3A" },
   saveBtn: { backgroundColor: "#C41E3A", borderRadius: 14, paddingVertical: 15, alignItems: "center", justifyContent: "center", minHeight: 50, marginTop: 4 },
   saveBtnText: { color: "#FFF", fontSize: 16, fontFamily: "Inter_700Bold" },

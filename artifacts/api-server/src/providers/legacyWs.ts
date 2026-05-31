@@ -92,8 +92,11 @@ function asNumber(value: unknown): number {
 async function wsPost(
   path: string,
   params: Record<string, string>,
+  tokenOverride?: string,
 ): Promise<unknown[]> {
-  const token = requireToken();
+  // A per-user token (forwarded from an authenticated client) takes precedence
+  // over the shared app token; requireToken throws only when neither exists.
+  const token = tokenOverride ?? requireToken();
 
   let res: Response;
   try {
@@ -276,4 +279,70 @@ export async function votePoll(
   const rows = await wsPost("/polling", { poll_id: pollId, answer });
   const first = rows[0];
   return first ? mapResult(first) : null;
+}
+
+export interface LegacyIssueCategory {
+  categoryId: string;
+  category: string;
+  status: string | null;
+}
+
+export interface LegacyIssueAnswer {
+  answerId: string;
+  answer: string;
+}
+
+export interface LegacyIssueQuestion {
+  questionId: string;
+  question: string;
+  answers: LegacyIssueAnswer[];
+}
+
+function mapIssueCategory(row: unknown): LegacyIssueCategory {
+  const o = (row ?? {}) as Record<string, unknown>;
+  return {
+    categoryId: asString(o.category_id) ?? "",
+    category: asString(o.category) ?? "",
+    status: asString(o.status),
+  };
+}
+
+function mapIssueQuestion(row: unknown): LegacyIssueQuestion {
+  const o = (row ?? {}) as Record<string, unknown>;
+  const rawAnswers = Array.isArray(o.answers) ? o.answers : [];
+  const answers: LegacyIssueAnswer[] = rawAnswers
+    .map((a) => {
+      const ao = (a ?? {}) as Record<string, unknown>;
+      return {
+        answerId: asString(ao.answer_id) ?? "",
+        answer: asString(ao.answer) ?? "",
+      };
+    })
+    .filter((a) => a.answerId && a.answer);
+  return {
+    questionId: asString(o.question_id) ?? "",
+    question: asString(o.question) ?? "",
+    answers,
+  };
+}
+
+/** Fetch the list of issue categories (from `/quiz_menu_list`). */
+export async function fetchIssueCategories(
+  token?: string,
+): Promise<LegacyIssueCategory[]> {
+  const rows = await wsPost("/quiz_menu_list", {}, token);
+  return rows.map(mapIssueCategory).filter((c) => c.categoryId && c.category);
+}
+
+/** Fetch the stance questions for a single issue category. */
+export async function fetchIssueQuestions(
+  categoryId: string,
+  token?: string,
+): Promise<LegacyIssueQuestion[]> {
+  const rows = await wsPost(
+    "/questionaires_listing",
+    { category_id: categoryId },
+    token,
+  );
+  return rows.map(mapIssueQuestion).filter((q) => q.questionId && q.question);
 }

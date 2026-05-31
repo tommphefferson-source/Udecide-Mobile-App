@@ -29,7 +29,7 @@ export default function ForgotPasswordScreen() {
   }
 
   return (
-    <LinearGradient colors={["#0D1B2A", "#1B2D45", "#243A56"]} style={styles.gradient}>
+    <LinearGradient colors={["#1F3E63", "#2A4E7A", "#355F8E"]} style={styles.gradient}>
       <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === "ios" ? "padding" : undefined}>
         <View style={[styles.container, { paddingTop: insets.top + 20, paddingBottom: insets.bottom + 24 }]}>
           <Pressable style={styles.backBtn} onPress={() => router.back()}>
@@ -109,7 +109,7 @@ const styles = StyleSheet.create({
   subtitle: { fontSize: 14, fontFamily: "Inter_400Regular", color: "rgba(255,255,255,0.6)", lineHeight: 20 },
   card: { backgroundColor: "#FFF", borderRadius: 24, padding: 24, gap: 16 },
   field: { gap: 6 },
-  label: { fontSize: 13, fontFamily: "Inter_600SemiBold", color: "#0D1B2A" },
+  label: { fontSize: 13, fontFamily: "Inter_600SemiBold", color: "#1F3E63" },
   inputWrap: {
     flexDirection: "row",
     alignItems: "center",
@@ -122,7 +122,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#F5F6F8",
   },
   inputError: { borderColor: "#C41E3A" },
-  input: { flex: 1, fontSize: 15, fontFamily: "Inter_400Regular", color: "#0D1B2A" },
+  input: { flex: 1, fontSize: 15, fontFamily: "Inter_400Regular", color: "#1F3E63" },
   errorText: { fontSize: 12, fontFamily: "Inter_400Regular", color: "#C41E3A" },
   submitBtn: {
     backgroundColor: "#C41E3A",
@@ -140,7 +140,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#2E7D3215",
     alignItems: "center", justifyContent: "center",
   },
-  successTitle: { fontSize: 20, fontFamily: "Inter_700Bold", color: "#0D1B2A" },
+  successTitle: { fontSize: 20, fontFamily: "Inter_700Bold", color: "#1F3E63" },
   successText: { fontSize: 14, fontFamily: "Inter_400Regular", color: "#6B7A8D", textAlign: "center", lineHeight: 20 },
   backToLoginBtn: {
     backgroundColor: "#C41E3A",

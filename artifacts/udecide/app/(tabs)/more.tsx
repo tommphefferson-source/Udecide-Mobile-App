@@ -21,6 +21,7 @@ const MORE_SECTIONS = [
     items: [
       { label: "Political Parties", icon: "flag", route: "/parties", color: "#1A4A8A" },
       { label: "Political System Guide", icon: "account-balance", route: "/political-guide", color: "#D4AF37" },
+      { label: "Issue Questionnaire", icon: "ballot", route: "/issue-questionnaire", color: "#5E35B1" },
       { label: "Political Polls", icon: "poll", route: "/polls", color: "#7B1FA2" },
     ],
   },
@@ -33,7 +34,7 @@ const MORE_SECTIONS = [
   {
     title: "Account",
     items: [
-      { label: "My Profile", icon: "account-circle", route: "/profile", color: "#0D1B2A" },
+      { label: "My Profile", icon: "account-circle", route: "/profile", color: "#1F3E63" },
     ],
   },
 ];
