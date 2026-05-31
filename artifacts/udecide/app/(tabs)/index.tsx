@@ -39,7 +39,10 @@ export default function DashboardScreen() {
   const topPad = Platform.OS === "web" ? 67 : insets.top;
   const bottomPad = Platform.OS === "web" ? 34 : insets.bottom + 90;
 
-  const firstName = user?.fullName?.split(" ")[0] ?? "Voter";
+  const rawFirstName = user?.fullName?.split(" ")[0] ?? "Voter";
+  const firstName = rawFirstName
+    ? rawFirstName.charAt(0).toUpperCase() + rawFirstName.slice(1).toLowerCase()
+    : "Voter";
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
@@ -57,7 +60,6 @@ export default function DashboardScreen() {
             />
             <View style={styles.brandText}>
               <Text style={styles.greeting}>Good day, {firstName}</Text>
-              <Text style={styles.headerTitle}>UDecide</Text>
               <Text style={styles.headerSubtitle}>Political & Voter App</Text>
             </View>
           </View>
@@ -151,8 +153,8 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   logo: {
-    width: 56,
-    height: 56,
+    width: 84,
+    height: 84,
   },
   brandText: {
     flex: 1,
@@ -161,12 +163,6 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontFamily: "Inter_400Regular",
     color: "rgba(255,255,255,0.6)",
-  },
-  headerTitle: {
-    fontSize: 28,
-    fontFamily: "Inter_700Bold",
-    color: "#FFFFFF",
-    letterSpacing: 0.5,
   },
   headerSubtitle: {
     fontSize: 13,
