@@ -68,7 +68,6 @@ export default function LoginScreen() {
               resizeMode="contain"
             />
             <Text style={styles.appName}>UDecide</Text>
-            <Text style={styles.tagline}>Political & Voter App</Text>
           </View>
 
           {/* Card */}
@@ -190,8 +189,8 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   logoImage: {
-    width: 160,
-    height: 160,
+    width: 240,
+    height: 240,
     marginBottom: 4,
   },
   appName: {
@@ -199,12 +198,6 @@ const styles = StyleSheet.create({
     fontFamily: "Inter_700Bold",
     color: "#FFFFFF",
     letterSpacing: 1,
-  },
-  tagline: {
-    fontSize: 14,
-    fontFamily: "Inter_400Regular",
-    color: "rgba(255,255,255,0.6)",
-    letterSpacing: 0.5,
   },
   card: {
     width: "100%",
