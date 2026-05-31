@@ -4,6 +4,7 @@
 - [Mock-fallback honesty](mock-fallback-honesty.md) — UDecide API services are mock-first; in live mode (key present) no-result/error paths must return empty, never MOCK_* data shown under a "live" badge.
 - [Legacy /edit_profile partial response](legacy-edit-profile-partial-response.md) — legacy edit echo omits last_name/state_id; never adopt it wholesale or you wipe just-saved fields; overlay non-empty server values onto what you sent.
 - [Cicero / paid APIs proxy](cicero-and-paid-apis-proxy.md) — no-CORS/paid external APIs (Cicero reps data) must go through api-server, not the Expo client; never name paid keys EXPO_PUBLIC_* (Expo bundles them).
+- [Google Sign-In](google-signin.md) — server-mediated OAuth (not Replit connectors, not native); needs GOOGLE_CLIENT_ID/SECRET + Google-console redirect URI `${publicOrigin}/api/auth/google/callback`; re-add prod domain on deploy.
 - [Profile photo upload contract](profile-photo-upload.md) — multipart field is `photo` client→api-server but `user_profile` api-server→legacy; endpoint hand-written (not in OpenAPI) by design; never set multipart Content-Type manually.
 - [News RSS feed parsing](news-rss-feed-parsing.md) — news_url is an RSS feed parsed server-side into in-app articles; NPR 403s without a User-Agent; feeds carry teasers only, not full bodies.
 - [Legacy WS edit_profile quirks](legacy-ws-edit-profile.md) — state is numeric state_id (not code); WS silently drops unknown state codes and still returns 200, so api-server must map+validate codes server-side and reject with 400.
