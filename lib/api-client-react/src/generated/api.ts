@@ -22,6 +22,7 @@ import type {
 import type {
   ApiError,
   AuthLoginInput,
+  AuthProfileUpdateInput,
   AuthResponse,
   AuthSignUpInput,
   CivicsQuiz,
@@ -661,6 +662,77 @@ export const useSignup = <TError = ErrorType<ApiError>,
         TContext
       > => {
       return useMutation(getSignupMutationOptions(options));
+    }
+
+export const getUpdateProfileUrl = () => {
+
+
+
+
+  return `/api/auth/profile`
+}
+
+/**
+ * @summary Update the authenticated user's profile on the legacy server
+ */
+export const updateProfile = async (authProfileUpdateInput: AuthProfileUpdateInput, options?: RequestInit): Promise<AuthResponse> => {
+
+  return customFetch<AuthResponse>(getUpdateProfileUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      authProfileUpdateInput,)
+  }
+);}
+
+
+
+
+export const getUpdateProfileMutationOptions = <TError = ErrorType<ApiError>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateProfile>>, TError,{data: BodyType<AuthProfileUpdateInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateProfile>>, TError,{data: BodyType<AuthProfileUpdateInput>}, TContext> => {
+
+const mutationKey = ['updateProfile'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateProfile>>, {data: BodyType<AuthProfileUpdateInput>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  updateProfile(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateProfileMutationResult = NonNullable<Awaited<ReturnType<typeof updateProfile>>>
+    export type UpdateProfileMutationBody = BodyType<AuthProfileUpdateInput>
+    export type UpdateProfileMutationError = ErrorType<ApiError>
+
+    /**
+ * @summary Update the authenticated user's profile on the legacy server
+ */
+export const useUpdateProfile = <TError = ErrorType<ApiError>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateProfile>>, TError,{data: BodyType<AuthProfileUpdateInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof updateProfile>>,
+        TError,
+        {data: BodyType<AuthProfileUpdateInput>},
+        TContext
+      > => {
+      return useMutation(getUpdateProfileMutationOptions(options));
     }
 
 export const getGetHomeUrl = () => {

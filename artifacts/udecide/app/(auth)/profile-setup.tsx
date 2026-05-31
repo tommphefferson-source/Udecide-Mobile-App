@@ -41,13 +41,23 @@ export default function ProfileSetupScreen() {
     if (Object.keys(newErrors).length > 0) { setErrors(newErrors); return; }
     setErrors({});
     setLoading(true);
-    await setupProfile({ address, city, state: state.toUpperCase(), zipCode });
+    const result = await setupProfile({ address, city, state: state.toUpperCase(), zipCode });
     setLoading(false);
+    if (!result.success) {
+      setErrors({ general: result.error ?? "Unable to save your profile. Please try again." });
+      return;
+    }
     router.replace("/(tabs)");
   }
 
   async function handleSkip() {
-    await setupProfile({ address: "", city: "", state: "CA", zipCode: "" });
+    setLoading(true);
+    const result = await setupProfile({ address: "", city: "", state: "CA", zipCode: "" });
+    setLoading(false);
+    if (!result.success) {
+      setErrors({ general: result.error ?? "Unable to save your profile. Please try again." });
+      return;
+    }
     router.replace("/(tabs)");
   }
 
@@ -73,6 +83,12 @@ export default function ProfileSetupScreen() {
           </View>
 
           <View style={styles.card}>
+            {errors.general ? (
+              <View style={styles.errorBanner}>
+                <MaterialIcons name="error-outline" size={18} color="#C41E3A" />
+                <Text style={styles.errorBannerText}>{errors.general}</Text>
+              </View>
+            ) : null}
             {[
               { label: "Street Address", key: "address", value: address, onChangeText: setAddress, placeholder: "123 Main Street", icon: "home" },
               { label: "City", key: "city", value: city, onChangeText: setCity, placeholder: "Your city", icon: "location-city" },
@@ -144,6 +160,15 @@ const styles = StyleSheet.create({
   inputError: { borderColor: "#C41E3A" },
   input: { flex: 1, fontSize: 15, fontFamily: "Inter_400Regular", color: "#1F3E63" },
   errorText: { fontSize: 12, fontFamily: "Inter_400Regular", color: "#C41E3A" },
+  errorBanner: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    backgroundColor: "#C41E3A15",
+    borderRadius: 10,
+    padding: 12,
+  },
+  errorBannerText: { color: "#C41E3A", fontSize: 13, fontFamily: "Inter_500Medium", flex: 1 },
   saveBtn: { backgroundColor: "#C41E3A", borderRadius: 14, paddingVertical: 15, alignItems: "center", justifyContent: "center", minHeight: 50, marginTop: 4 },
   saveBtnText: { color: "#FFF", fontSize: 16, fontFamily: "Inter_700Bold" },
   skipBtn: { alignItems: "center", paddingVertical: 4 },

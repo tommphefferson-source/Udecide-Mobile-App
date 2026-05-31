@@ -225,6 +225,37 @@ paths:
               schema:
                 $ref: "#/components/schemas/ApiError"
 
+  /auth/profile:
+    post:
+      operationId: updateProfile
+      tags: [auth]
+      summary: Update the authenticated user's profile on the legacy server
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AuthProfileUpdateInput"
+      responses:
+        "200":
+          description: Updated user with token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "400":
+          description: Invalid request or update rejected
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "401":
+          description: Missing or rejected auth token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+
   /home:
     get:
       operationId: getHome
@@ -370,6 +401,8 @@ components:
           type: string
         lastName:
           type: string
+        address:
+          type: string
         city:
           type: string
         state:
@@ -449,6 +482,28 @@ components:
         - stateId
         - city
         - zipCode
+
+    AuthProfileUpdateInput:
+      type: object
+      description: >-
+        Partial profile update for the authenticated user. `state` is the
+        2-letter US abbreviation; the server maps it to the legacy numeric
+        state id. All fields are optional so partial updates are allowed.
+      properties:
+        firstName:
+          type: string
+        lastName:
+          type: string
+        address:
+          type: string
+        city:
+          type: string
+        state:
+          type: string
+        zipCode:
+          type: string
+        phone:
+          type: string
 
     Election:
       type: object

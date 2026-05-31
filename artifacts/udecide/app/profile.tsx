@@ -17,7 +17,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuth } from "@/context/AuthContext";
 import { useColors } from "@/hooks/useColors";
 import { US_STATES } from "@/utils/constants";
-import { validateRequired, validateState, validateZipCode } from "@/utils/validation";
+import { validateName, validateRequired, validateState, validateZipCode } from "@/utils/validation";
 
 export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
@@ -26,7 +26,8 @@ export default function ProfileScreen() {
 
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [fullName, setFullName] = useState(user?.fullName ?? "");
+  const [firstName, setFirstName] = useState(user?.firstName ?? "");
+  const [lastName, setLastName] = useState(user?.lastName ?? "");
   const [address, setAddress] = useState(user?.address ?? "");
   const [city, setCity] = useState(user?.city ?? "");
   const [state, setState] = useState(user?.state ?? "");
@@ -38,10 +39,14 @@ export default function ProfileScreen() {
 
   async function handleSave() {
     const newErrors: Record<string, string> = {};
+    const firstErr = validateName(firstName);
+    const lastErr = validateName(lastName);
     const addrErr = validateRequired(address, "Address");
     const cityErr = validateRequired(city, "City");
     const stateErr = validateState(state);
     const zipErr = validateZipCode(zipCode);
+    if (firstErr) newErrors.firstName = firstErr;
+    if (lastErr) newErrors.lastName = lastErr;
     if (addrErr) newErrors.address = addrErr;
     if (cityErr) newErrors.city = cityErr;
     if (stateErr) newErrors.state = stateErr;
@@ -49,8 +54,19 @@ export default function ProfileScreen() {
     if (Object.keys(newErrors).length > 0) { setErrors(newErrors); return; }
     setErrors({});
     setSaving(true);
-    await updateProfile({ fullName, address, city, state: state.toUpperCase(), zipCode });
+    const result = await updateProfile({
+      firstName: firstName.trim(),
+      lastName: lastName.trim(),
+      address,
+      city,
+      state: state.toUpperCase(),
+      zipCode,
+    });
     setSaving(false);
+    if (!result.success) {
+      setErrors({ general: result.error ?? "Unable to save your profile. Please try again." });
+      return;
+    }
     setEditing(false);
   }
 
@@ -64,9 +80,9 @@ export default function ProfileScreen() {
         </Pressable>
         <View style={styles.avatarSection}>
           <View style={[styles.avatar, { backgroundColor: colors.accent }]}>
-            <Text style={styles.avatarText}>{user?.fullName?.charAt(0)?.toUpperCase() ?? "U"}</Text>
+            <Text style={styles.avatarText}>{user?.firstName?.charAt(0)?.toUpperCase() ?? "U"}</Text>
           </View>
-          <Text style={styles.userName}>{user?.fullName ?? "User"}</Text>
+          <Text style={styles.userName}>{`${user?.firstName ?? ""} ${user?.lastName ?? ""}`.trim() || "User"}</Text>
           <Text style={styles.userEmail}>{user?.email ?? ""}</Text>
         </View>
       </LinearGradient>
@@ -84,8 +100,15 @@ export default function ProfileScreen() {
 
           {editing ? (
             <View style={styles.editForm}>
+              {errors.general ? (
+                <View style={styles.errorBanner}>
+                  <MaterialIcons name="error-outline" size={16} color="#C41E3A" />
+                  <Text style={styles.errorBannerText}>{errors.general}</Text>
+                </View>
+              ) : null}
               {[
-                { label: "Full Name", key: "fullName", value: fullName, onChangeText: setFullName, icon: "person" },
+                { label: "First Name", key: "firstName", value: firstName, onChangeText: setFirstName, icon: "person" },
+                { label: "Last Name", key: "lastName", value: lastName, onChangeText: setLastName, icon: "person-outline" },
                 { label: "Street Address", key: "address", value: address, onChangeText: setAddress, icon: "home" },
                 { label: "City", key: "city", value: city, onChangeText: setCity, icon: "location-city" },
                 { label: "State (2-letter)", key: "state", value: state, onChangeText: (v: string) => setState(v.toUpperCase()), icon: "flag", maxLength: 2 },
@@ -126,7 +149,8 @@ export default function ProfileScreen() {
           ) : (
             <View style={styles.profileFields}>
               {[
-                { label: "Full Name", value: user?.fullName, icon: "person" },
+                { label: "First Name", value: user?.firstName || "Not set", icon: "person" },
+                { label: "Last Name", value: user?.lastName || "Not set", icon: "person-outline" },
                 { label: "Email", value: user?.email, icon: "email" },
                 { label: "Address", value: user?.address || "Not set", icon: "home" },
                 { label: "City", value: user?.city || "Not set", icon: "location-city" },
@@ -204,6 +228,15 @@ const styles = StyleSheet.create({
   inputError: { borderColor: "#C41E3A" },
   input: { flex: 1, fontSize: 14, fontFamily: "Inter_400Regular" },
   errorText: { fontSize: 11, fontFamily: "Inter_400Regular", color: "#C41E3A" },
+  errorBanner: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    backgroundColor: "#C41E3A15",
+    borderRadius: 10,
+    padding: 12,
+  },
+  errorBannerText: { color: "#C41E3A", fontSize: 13, fontFamily: "Inter_500Medium", flex: 1 },
   editActions: { flexDirection: "row", gap: 10, marginTop: 4 },
   cancelBtn: { flex: 1, borderWidth: 1, borderRadius: 10, padding: 12, alignItems: "center" },
   cancelBtnText: { fontSize: 14, fontFamily: "Inter_600SemiBold" },

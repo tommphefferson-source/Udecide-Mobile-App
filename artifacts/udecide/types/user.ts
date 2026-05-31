@@ -1,6 +1,7 @@
 export interface UserProfile {
   id: string;
-  fullName: string;
+  firstName: string;
+  lastName: string;
   email: string;
   address: string;
   city: string;
@@ -21,7 +22,8 @@ export interface LoginForm {
 }
 
 export interface RegisterForm {
-  fullName: string;
+  firstName: string;
+  lastName: string;
   email: string;
   password: string;
   confirmPassword: string;

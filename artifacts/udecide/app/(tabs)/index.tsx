@@ -39,7 +39,7 @@ export default function DashboardScreen() {
   const topPad = Platform.OS === "web" ? 67 : insets.top;
   const bottomPad = Platform.OS === "web" ? 110 : insets.bottom + 120;
 
-  const rawFirstName = user?.fullName?.split(" ")[0] ?? "Voter";
+  const rawFirstName = user?.firstName || "Voter";
   const firstName = rawFirstName
     ? rawFirstName.charAt(0).toUpperCase() + rawFirstName.slice(1).toLowerCase()
     : "Voter";

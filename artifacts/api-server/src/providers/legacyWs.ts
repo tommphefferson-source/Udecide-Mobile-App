@@ -24,6 +24,7 @@ export interface LegacyAuthUser {
   email: string;
   firstName: string;
   lastName: string;
+  address: string;
   city: string;
   state: string;
   stateId: string;
@@ -42,6 +43,45 @@ export interface LegacySignUpInput {
   city: string;
   zipCode: string;
   phone?: string;
+}
+
+export interface LegacyProfileUpdate {
+  firstName?: string;
+  lastName?: string;
+  address?: string;
+  city?: string;
+  /** 2-letter US state abbreviation; mapped to the legacy numeric state id. */
+  state?: string;
+  zipCode?: string;
+  phone?: string;
+}
+
+/**
+ * Maps a 2-letter US state abbreviation to the legacy server's numeric
+ * `state_id`. The legacy `/states_list` table stores US states as a
+ * contiguous alphabetical block; this snapshot avoids an extra round-trip on
+ * every signup/profile update. `state` in responses is derived back from this.
+ */
+const US_STATE_CODE_TO_ID: Record<string, string> = {
+  AL: "3614", AK: "3615", AZ: "3617", AR: "3618", CA: "3625", CO: "3626",
+  CT: "3627", DE: "3628", DC: "3629", FL: "3631", GA: "3632", HI: "3634",
+  ID: "3635", IL: "3636", IN: "3637", IA: "3638", KS: "3639", KY: "3640",
+  LA: "3641", ME: "3642", MD: "3644", MA: "3645", MI: "3646", MN: "3647",
+  MS: "3648", MO: "3649", MT: "3650", NE: "3651", NV: "3652", NH: "3653",
+  NJ: "3654", NM: "3655", NY: "3656", NC: "3657", ND: "3658", OH: "3660",
+  OK: "3661", OR: "3662", PA: "3664", RI: "3666", SC: "3667", SD: "3668",
+  TN: "3669", TX: "3670", UT: "3671", VT: "3672", VA: "3674", WA: "3675",
+  WV: "3676", WI: "3677", WY: "3678",
+};
+
+const US_STATE_ID_TO_CODE: Record<string, string> = Object.fromEntries(
+  Object.entries(US_STATE_CODE_TO_ID).map(([code, id]) => [id, code]),
+);
+
+/** Resolve a 2-letter US abbreviation to a legacy numeric state id, or null. */
+export function stateCodeToId(code: string | undefined): string | null {
+  if (!code) return null;
+  return US_STATE_CODE_TO_ID[code.trim().toUpperCase()] ?? null;
 }
 
 /**
@@ -198,15 +238,21 @@ async function wsPostJson(
 
 function mapAuthUser(row: unknown): LegacyAuthUser {
   const o = (row ?? {}) as Record<string, unknown>;
+  const stateId = asString(o.state_id) ?? "";
+  // The legacy `state` field is the full state NAME ("California"); the app
+  // works in 2-letter codes, so derive the abbreviation from the numeric id.
+  const stateCode = US_STATE_ID_TO_CODE[stateId] ?? "";
   return {
     authToken: asString(o.auth_token) ?? "",
     userId: asString(o.user_id) ?? "",
     email: asString(o.user_email) ?? "",
     firstName: asString(o.first_name) ?? "",
     lastName: asString(o.last_name) ?? "",
+    // Legacy stores the street address in the `location` column.
+    address: asString(o.location) ?? "",
     city: asString(o.city) ?? "",
-    state: asString(o.state) ?? "",
-    stateId: asString(o.state_id) ?? "",
+    state: stateCode,
+    stateId,
     zipCode: asString(o.zip_code) ?? "",
     phoneNumber: asString(o.phone_number) ?? "",
     profileImage: asString(o.user_profile) ?? "",
@@ -253,6 +299,40 @@ export async function userSignUp(
   // Some legacy deployments omit the token on signup; fall back to a login.
   if (user && user.authToken) return user;
   return userLogin(input.email, input.password);
+}
+
+/**
+ * Update the authenticated user's profile via the legacy `/edit_profile`
+ * endpoint (form-urlencoded + AUTHTOKEN). The legacy field names differ from
+ * ours: street address is `location`, ZIP is `zipcode`, and state is the
+ * numeric `state_id` (mapped from the 2-letter abbreviation here). Only
+ * provided fields are sent so partial updates leave other columns untouched.
+ */
+export async function editProfile(
+  update: LegacyProfileUpdate,
+  token: string,
+): Promise<LegacyAuthUser> {
+  const params: Record<string, string> = {};
+  if (update.firstName !== undefined) params.first_name = update.firstName;
+  if (update.lastName !== undefined) params.last_name = update.lastName;
+  if (update.address !== undefined) params.location = update.address;
+  if (update.city !== undefined) params.city = update.city;
+  if (update.zipCode !== undefined) params.zipcode = update.zipCode;
+  if (update.phone !== undefined) params.phone_number = update.phone;
+  if (update.state !== undefined) {
+    const stateId = stateCodeToId(update.state);
+    if (stateId) params.state_id = stateId;
+  }
+
+  const rows = await wsPost("/edit_profile", params, token);
+  const user = rows[0] ? mapAuthUser(rows[0]) : null;
+  if (!user) {
+    throw new UpstreamError("Legacy /edit_profile returned no user");
+  }
+  // The edit_profile response omits auth_token; preserve the caller's token so
+  // the client keeps its session.
+  if (!user.authToken) user.authToken = token;
+  return user;
 }
 
 function mapPoll(row: unknown): LegacyPoll {

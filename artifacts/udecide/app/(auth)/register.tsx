@@ -29,7 +29,8 @@ import {
 export default function RegisterScreen() {
   const insets = useSafeAreaInsets();
   const { register } = useAuth();
-  const [fullName, setFullName] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -40,7 +41,8 @@ export default function RegisterScreen() {
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   async function handleRegister() {
-    const nameErr = validateName(fullName);
+    const firstErr = validateName(firstName);
+    const lastErr = validateName(lastName);
     const emailErr = validateEmail(email);
     const passErr = validatePassword(password);
     const confirmErr = validateConfirmPassword(password, confirmPassword);
@@ -48,7 +50,8 @@ export default function RegisterScreen() {
     const zipErr = validateZipCode(zipCode);
 
     const newErrors: Record<string, string> = {};
-    if (nameErr) newErrors.fullName = nameErr;
+    if (firstErr) newErrors.firstName = firstErr;
+    if (lastErr) newErrors.lastName = lastErr;
     if (emailErr) newErrors.email = emailErr;
     if (passErr) newErrors.password = passErr;
     if (confirmErr) newErrors.confirmPassword = confirmErr;
@@ -61,7 +64,7 @@ export default function RegisterScreen() {
     }
     setErrors({});
     setLoading(true);
-    const result = await register(fullName.trim(), email.trim(), password, city.trim(), zipCode.trim());
+    const result = await register(firstName.trim(), lastName.trim(), email.trim(), password, city.trim(), zipCode.trim());
     setLoading(false);
     if (!result.success) {
       setErrors({ general: result.error ?? "Registration failed" });
@@ -151,12 +154,20 @@ export default function RegisterScreen() {
             ) : null}
 
             <Field
-              label="Full Name"
-              value={fullName}
-              onChangeText={setFullName}
+              label="First Name"
+              value={firstName}
+              onChangeText={setFirstName}
               icon="person"
-              placeholder="Jane Smith"
-              errorKey="fullName"
+              placeholder="Jane"
+              errorKey="firstName"
+            />
+            <Field
+              label="Last Name"
+              value={lastName}
+              onChangeText={setLastName}
+              icon="person-outline"
+              placeholder="Smith"
+              errorKey="lastName"
             />
             <Field
               label="Email"

@@ -1,6 +1,8 @@
 // Authentication is handled by the API Server, which proxies the legacy
 // UDecide web service (/user_login, /user_sign_up) and returns a per-user
 // auth token. Mirrors the API_BASE pattern used by the other services.
+import { apiFetch } from "./apiClient";
+
 const API_BASE = process.env.EXPO_PUBLIC_DOMAIN
   ? `https://${process.env.EXPO_PUBLIC_DOMAIN}/api`
   : "/api";
@@ -10,6 +12,7 @@ export interface AuthUser {
   email: string;
   firstName: string;
   lastName: string;
+  address: string;
   city: string;
   state: string;
   stateId: string;
@@ -17,6 +20,17 @@ export interface AuthUser {
   phoneNumber: string;
   profileImage: string;
   status: string;
+}
+
+export interface ProfileUpdateInput {
+  firstName?: string;
+  lastName?: string;
+  address?: string;
+  city?: string;
+  /** 2-letter US state abbreviation. */
+  state?: string;
+  zipCode?: string;
+  phone?: string;
 }
 
 export interface AuthResult {
@@ -59,6 +73,23 @@ export async function login(email: string, password: string): Promise<AuthResult
 
 export async function signup(input: SignUpInput): Promise<AuthResult> {
   const res = await fetch(`${API_BASE}/auth/signup`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(input),
+  });
+  if (!res.ok) {
+    throw new Error(await parseError(res));
+  }
+  return (await res.json()) as AuthResult;
+}
+
+/**
+ * Persist a profile update to the backend (which proxies the legacy
+ * `/edit_profile`). Authenticated: the AUTHTOKEN header is attached by
+ * `apiFetch`, which also clears the session and routes to login on a 401.
+ */
+export async function updateProfile(input: ProfileUpdateInput): Promise<AuthResult> {
+  const res = await apiFetch("/auth/profile", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(input),

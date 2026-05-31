@@ -18,6 +18,7 @@ export interface AuthUser {
   email: string;
   firstName: string;
   lastName: string;
+  address?: string;
   city?: string;
   state?: string;
   stateId?: string;
@@ -55,6 +56,19 @@ export interface AuthSignUpInput {
   city: string;
   /** @minLength 1 */
   zipCode: string;
+  phone?: string;
+}
+
+/**
+ * Partial profile update for the authenticated user. `state` is the 2-letter US abbreviation; the server maps it to the legacy numeric state id. All fields are optional so partial updates are allowed.
+ */
+export interface AuthProfileUpdateInput {
+  firstName?: string;
+  lastName?: string;
+  address?: string;
+  city?: string;
+  state?: string;
+  zipCode?: string;
   phone?: string;
 }
 

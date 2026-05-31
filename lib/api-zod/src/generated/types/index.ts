@@ -8,6 +8,7 @@
 
 export * from './apiError';
 export * from './authLoginInput';
+export * from './authProfileUpdateInput';
 export * from './authResponse';
 export * from './authSignUpInput';
 export * from './authUser';

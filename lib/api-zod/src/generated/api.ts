@@ -168,6 +168,7 @@ export const LoginResponse = zod.object({
   "email": zod.string(),
   "firstName": zod.string(),
   "lastName": zod.string(),
+  "address": zod.string().optional(),
   "city": zod.string().optional(),
   "state": zod.string().optional(),
   "stateId": zod.string().optional(),
@@ -212,6 +213,42 @@ export const SignupResponse = zod.object({
   "email": zod.string(),
   "firstName": zod.string(),
   "lastName": zod.string(),
+  "address": zod.string().optional(),
+  "city": zod.string().optional(),
+  "state": zod.string().optional(),
+  "stateId": zod.string().optional(),
+  "zipCode": zod.string().optional(),
+  "phoneNumber": zod.string().optional(),
+  "profileImage": zod.string().optional(),
+  "status": zod.string().optional()
+})
+})
+
+
+/**
+ * @summary Update the authenticated user's profile on the legacy server
+ */
+export const UpdateProfileBody = zod.object({
+  "firstName": zod.string().optional(),
+  "lastName": zod.string().optional(),
+  "address": zod.string().optional(),
+  "city": zod.string().optional(),
+  "state": zod.string().optional(),
+  "zipCode": zod.string().optional(),
+  "phone": zod.string().optional()
+}).describe('Partial profile update for the authenticated user. `state` is the 2-letter US abbreviation; the server maps it to the legacy numeric state id. All fields are optional so partial updates are allowed.')
+
+
+
+
+export const UpdateProfileResponse = zod.object({
+  "authToken": zod.string().min(1),
+  "user": zod.object({
+  "userId": zod.string(),
+  "email": zod.string(),
+  "firstName": zod.string(),
+  "lastName": zod.string(),
+  "address": zod.string().optional(),
   "city": zod.string().optional(),
   "state": zod.string().optional(),
   "stateId": zod.string().optional(),

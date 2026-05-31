@@ -2,7 +2,12 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { router } from "expo-router";
 import React, { createContext, useCallback, useContext, useEffect, useState } from "react";
 
-import { login as apiLogin, signup as apiSignup, type AuthUser } from "@/services/authApi";
+import {
+  login as apiLogin,
+  signup as apiSignup,
+  updateProfile as apiUpdateProfile,
+  type AuthUser,
+} from "@/services/authApi";
 import {
   setSessionToken,
   setUnauthorizedHandler,
@@ -16,15 +21,16 @@ interface AuthContextValue {
   isAuthenticated: boolean;
   login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
   register: (
-    fullName: string,
+    firstName: string,
+    lastName: string,
     email: string,
     password: string,
     city: string,
     zipCode: string
   ) => Promise<{ success: boolean; error?: string }>;
-  setupProfile: (profile: Partial<UserProfile>) => Promise<void>;
+  setupProfile: (profile: Partial<UserProfile>) => Promise<{ success: boolean; error?: string }>;
   logout: () => Promise<void>;
-  updateProfile: (updates: Partial<UserProfile>) => Promise<void>;
+  updateProfile: (updates: Partial<UserProfile>) => Promise<{ success: boolean; error?: string }>;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -36,9 +42,10 @@ const AUTH_TOKEN_KEY = "@udecide_auth_token";
 function toUserProfile(u: AuthUser): UserProfile {
   return {
     id: u.userId,
-    fullName: `${u.firstName} ${u.lastName}`.trim(),
+    firstName: u.firstName,
+    lastName: u.lastName,
     email: u.email.toLowerCase(),
-    address: "",
+    address: u.address,
     city: u.city,
     state: u.state,
     zipCode: u.zipCode,
@@ -103,20 +110,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const register = useCallback(
     async (
-      fullName: string,
+      firstName: string,
+      lastName: string,
       email: string,
       password: string,
       city: string,
       zipCode: string
     ): Promise<{ success: boolean; error?: string }> => {
       try {
-        const parts = fullName.trim().split(/\s+/);
-        const firstName = parts[0] ?? "";
-        const lastName = parts.slice(1).join(" ") || firstName;
-        // state_id "0" is the legacy placeholder for the simplified signup path.
+        // state_id "0" is the legacy placeholder for the simplified signup path;
+        // the real state is sent right after, from the profile-setup step.
         const { authToken: token, user: legacyUser } = await apiSignup({
-          firstName,
-          lastName,
+          firstName: firstName.trim(),
+          lastName: lastName.trim(),
           email: email.trim(),
           password,
           stateId: "0",
@@ -145,27 +151,59 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     []
   );
 
-  const setupProfile = useCallback(async (profile: Partial<UserProfile>) => {
-    if (!user) return;
-    const updated = { ...user, ...profile };
-    setUser(updated);
-    await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
-    await AsyncStorage.setItem(
-      STORAGE_KEY + "_" + user.id,
-      JSON.stringify(updated)
-    );
-  }, [user]);
+  /**
+   * Push a profile change to the backend (legacy /edit_profile) and persist the
+   * authoritative response locally. The server returns the canonical user
+   * (e.g. 2-letter state derived from the saved state id), so we store that
+   * rather than the optimistic local merge.
+   */
+  const persistProfile = useCallback(
+    async (changes: Partial<UserProfile>): Promise<{ success: boolean; error?: string }> => {
+      if (!user) return { success: false, error: "You must be signed in to save your profile." };
+      const merged = { ...user, ...changes };
+      // Optimistic update so the UI reflects the change immediately.
+      setUser(merged);
 
-  const updateProfile = useCallback(async (updates: Partial<UserProfile>) => {
-    if (!user) return;
-    const updated = { ...user, ...updates };
-    setUser(updated);
-    await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
-    await AsyncStorage.setItem(
-      STORAGE_KEY + "_" + user.id,
-      JSON.stringify(updated)
-    );
-  }, [user]);
+      try {
+        const { user: legacyUser } = await apiUpdateProfile({
+          firstName: merged.firstName,
+          lastName: merged.lastName,
+          address: merged.address,
+          city: merged.city,
+          state: merged.state,
+          zipCode: merged.zipCode,
+        });
+        // Adopt the server's canonical fields (e.g. 2-letter state derived from
+        // the saved state id); preserve the original createdAt.
+        const toStore = { ...toUserProfile(legacyUser), createdAt: user.createdAt };
+        setUser(toStore);
+        await AsyncStorage.multiSet([
+          [STORAGE_KEY, JSON.stringify(toStore)],
+          [STORAGE_KEY + "_" + user.id, JSON.stringify(toStore)],
+        ]);
+        return { success: true };
+      } catch (err) {
+        // The backend rejected the change: roll back the optimistic update so
+        // local state never diverges from what the server actually stored.
+        setUser(user);
+        return {
+          success: false,
+          error: err instanceof Error ? err.message : "Unable to save your profile. Please try again.",
+        };
+      }
+    },
+    [user]
+  );
+
+  const setupProfile = useCallback(
+    (profile: Partial<UserProfile>) => persistProfile(profile),
+    [persistProfile]
+  );
+
+  const updateProfile = useCallback(
+    (updates: Partial<UserProfile>) => persistProfile(updates),
+    [persistProfile]
+  );
 
   const logout = useCallback(async () => {
     const keys = [STORAGE_KEY, AUTH_TOKEN_KEY];
