@@ -69,7 +69,7 @@ export default function DashboardScreen() {
       {/* Header */}
       <LinearGradient
         colors={[colors.navy, colors.navyLight]}
-        style={[styles.header, { paddingTop: topPad + 16 }]}
+        style={[styles.header, { paddingTop: topPad + 4 }]}
       >
         <View style={styles.headerContent}>
           <View style={styles.brandRow}>
@@ -159,8 +159,8 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   header: {
     paddingHorizontal: 20,
-    paddingBottom: 16,
-    gap: 12,
+    paddingBottom: 10,
+    gap: 8,
   },
   dateTime: {
     position: "absolute",
