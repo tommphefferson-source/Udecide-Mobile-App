@@ -1,5 +1,6 @@
 import { MaterialIcons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
+import { useRouter } from "expo-router";
 import React, { useCallback, useEffect, useState } from "react";
 import {
   FlatList,
@@ -28,6 +29,7 @@ type Tab = "federal" | "state";
 export default function LegislationScreen() {
   const insets = useSafeAreaInsets();
   const colors = useColors();
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState<Tab>("federal");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -251,6 +253,14 @@ export default function LegislationScreen() {
         colors={[colors.navy, colors.navyLight]}
         style={[styles.header, { paddingTop: topPad + 16 }]}
       >
+        <Pressable
+          style={styles.backBtn}
+          onPress={() =>
+            router.canGoBack() ? router.back() : router.replace("/(tabs)")
+          }
+        >
+          <MaterialIcons name="arrow-back" size={24} color="#FFF" />
+        </Pressable>
         <Text style={styles.screenTitle}>Legislation Tracker</Text>
         <Text style={styles.screenSubtitle}>
           {activeTab === "federal"
