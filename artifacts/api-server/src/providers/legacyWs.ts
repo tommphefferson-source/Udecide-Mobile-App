@@ -444,17 +444,6 @@ export async function uploadProfilePhoto(
 
   const rows = Array.isArray(envelope.data) ? envelope.data : [];
   const user = rows[0] ? mapAuthUser(rows[0]) : null;
-  // [photo diag] TEMPORARY: capture the raw user_profile value the legacy
-  // backend returns so we can confirm the stored path/URL format. Remove once
-  // upload is verified end-to-end on a device.
-  const rawProfile =
-    rows[0] && typeof rows[0] === "object"
-      ? (rows[0] as Record<string, unknown>).user_profile
-      : undefined;
-  logger.info(
-    { rawUserProfile: rawProfile, resolved: user?.profileImage ?? null },
-    "[photo diag] /edit_profile photo upload result",
-  );
   if (!user) {
     throw new UpstreamError("Legacy /edit_profile returned no user");
   }

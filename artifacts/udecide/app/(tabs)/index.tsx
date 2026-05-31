@@ -84,7 +84,11 @@ export default function DashboardScreen() {
             style={({ pressed }) => [styles.profileBtn, { opacity: pressed ? 0.7 : 1 }]}
             onPress={() => router.push("/profile" as never)}
           >
-            <MaterialIcons name="account-circle" size={36} color="rgba(255,255,255,0.8)" />
+            {user?.profileImage ? (
+              <Image source={{ uri: user.profileImage }} style={styles.profilePhoto} />
+            ) : (
+              <MaterialIcons name="account-circle" size={36} color="rgba(255,255,255,0.8)" />
+            )}
           </Pressable>
         </View>
 
@@ -198,6 +202,13 @@ const styles = StyleSheet.create({
   },
   profileBtn: {
     marginTop: 4,
+  },
+  profilePhoto: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.5)",
   },
   overrideRow: {
     flexDirection: "row",
