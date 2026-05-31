@@ -29,7 +29,10 @@ export default function VoterToolsScreen() {
 
   async function handleCheckRegistration() {
     const { url } = await checkRegistrationStatus(effectiveAddress.state || "CA");
-    Linking.openURL(url);
+    router.push({
+      pathname: "/web-view",
+      params: { url, title: "Check Registration Status" },
+    });
   }
 
   async function handleFindPolling() {
