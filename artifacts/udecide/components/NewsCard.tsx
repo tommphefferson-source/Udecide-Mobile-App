@@ -24,7 +24,7 @@ export function NewsCard() {
     setLoading(true);
     setError(false);
     try {
-      setFeed(await getNews(authToken));
+      setFeed(await getNews());
     } catch {
       setError(true);
     } finally {

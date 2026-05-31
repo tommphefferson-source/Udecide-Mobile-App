@@ -1,7 +1,12 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { router } from "expo-router";
 import React, { createContext, useCallback, useContext, useEffect, useState } from "react";
 
 import { login as apiLogin, signup as apiSignup, type AuthUser } from "@/services/authApi";
+import {
+  setSessionToken,
+  setUnauthorizedHandler,
+} from "@/services/session";
 import type { UserProfile } from "@/types/user";
 
 interface AuthContextValue {
@@ -57,7 +62,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         AsyncStorage.getItem(AUTH_TOKEN_KEY),
       ]);
       if (stored) setUser(JSON.parse(stored));
-      if (token) setAuthToken(token);
+      if (token) {
+        setAuthToken(token);
+        // Mirror the persisted auth_token into the session store so the API
+        // client can attach the AUTHTOKEN header immediately on app launch.
+        setSessionToken(token);
+      }
     } catch {
       // ignore
     } finally {
@@ -72,6 +82,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const userProfile = toUserProfile(legacyUser);
         setUser(userProfile);
         setAuthToken(token);
+        // auth_token (returned by login/signup) becomes the AUTHTOKEN header
+        // value for subsequent authenticated requests.
+        setSessionToken(token);
         await AsyncStorage.multiSet([
           [STORAGE_KEY, JSON.stringify(userProfile)],
           [STORAGE_KEY + "_" + userProfile.id, JSON.stringify(userProfile)],
@@ -113,6 +126,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const userProfile = toUserProfile(legacyUser);
         setUser(userProfile);
         setAuthToken(token);
+        // auth_token (returned by login/signup) becomes the AUTHTOKEN header
+        // value for subsequent authenticated requests.
+        setSessionToken(token);
         await AsyncStorage.multiSet([
           [STORAGE_KEY, JSON.stringify(userProfile)],
           [STORAGE_KEY + "_" + userProfile.id, JSON.stringify(userProfile)],
@@ -156,8 +172,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (user) keys.push(STORAGE_KEY + "_" + user.id);
     setUser(null);
     setAuthToken(null);
+    setSessionToken(null);
     await AsyncStorage.multiRemove(keys);
   }, [user]);
+
+  // Centralized session-expiry handling: when any authenticated request is
+  // rejected (missing/expired/invalid AUTHTOKEN), the API client invokes this
+  // handler to clear the session and route the user back to login.
+  useEffect(() => {
+    setUnauthorizedHandler(() => {
+      void logout();
+      router.replace("/(auth)/login");
+    });
+    return () => setUnauthorizedHandler(null);
+  }, [logout]);
 
   return (
     <AuthContext.Provider

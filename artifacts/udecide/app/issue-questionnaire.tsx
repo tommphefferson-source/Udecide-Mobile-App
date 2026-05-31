@@ -41,7 +41,7 @@ export default function IssueQuestionnaireScreen() {
     setLoading(true);
     setError(false);
     try {
-      const data = await getQuestionnaires(authToken);
+      const data = await getQuestionnaires();
       setQuestionnaires(data);
       setSelectedId((prev) =>
         prev && data.some((q) => q.id === prev) ? prev : (data[0]?.id ?? null),

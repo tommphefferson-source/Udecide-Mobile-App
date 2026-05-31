@@ -1,9 +1,8 @@
 // Issue questionnaires are served by the API Server, which proxies the legacy
 // web service live when an auth token is forwarded (and falls back to mock data
-// otherwise). Mirrors the quiz/polls service pattern.
-const API_BASE = process.env.EXPO_PUBLIC_DOMAIN
-  ? `https://${process.env.EXPO_PUBLIC_DOMAIN}/api`
-  : "/api";
+// otherwise). Requests go through the shared apiFetch wrapper, which attaches the
+// AUTHTOKEN header (the auth_token saved at login/signup) automatically.
+import { apiFetch } from "./apiClient";
 
 export interface IssueQuestion {
   id: string;
@@ -18,12 +17,8 @@ export interface IssueQuestionnaire {
   questions: IssueQuestion[];
 }
 
-export async function getQuestionnaires(
-  token?: string | null,
-): Promise<IssueQuestionnaire[]> {
-  const res = await fetch(`${API_BASE}/questionnaires`, {
-    headers: token ? { AUTHTOKEN: token } : undefined,
-  });
+export async function getQuestionnaires(): Promise<IssueQuestionnaire[]> {
+  const res = await apiFetch("/questionnaires");
   if (!res.ok) {
     throw new Error(`Failed to load questionnaires (${res.status})`);
   }

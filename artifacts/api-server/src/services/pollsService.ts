@@ -4,13 +4,14 @@ import { AppError } from "../lib/errors";
 import * as legacy from "../providers/legacyWs";
 
 /**
- * Polls are served live from the legacy web service when an AUTHTOKEN is
- * configured (config.legacyWsAuthToken); otherwise they fall back to local mock
- * data. In live mode, no-result and error paths surface empty/upstream errors —
- * mock data is never shown alongside live data.
+ * Polls are served live from the legacy web service when a token is available —
+ * either a per-user token forwarded by an authenticated client (the AUTHTOKEN
+ * header) or the shared app token (config.legacyWsAuthToken). Otherwise they
+ * fall back to local mock data. In live mode, no-result and error paths surface
+ * empty/upstream errors — mock data is never shown alongside live data.
  */
-function isLive(): boolean {
-  return Boolean(config.legacyWsAuthToken);
+function isLive(token?: string): boolean {
+  return Boolean(token ?? config.legacyWsAuthToken);
 }
 
 interface ApiPollOption {
@@ -67,12 +68,12 @@ function resultToApi(r: legacy.LegacyPollResult): ApiResults {
   };
 }
 
-async function listPollsLive(): Promise<ApiPoll[]> {
+async function listPollsLive(token?: string): Promise<ApiPoll[]> {
   const [list, results] = await Promise.all([
-    legacy.fetchPolls(),
+    legacy.fetchPolls(token),
     // Results enrich the list with real vote totals; if unavailable the list
     // still renders with zero counts rather than failing entirely.
-    legacy.fetchPollResults().catch(() => [] as legacy.LegacyPollResult[]),
+    legacy.fetchPollResults(token).catch(() => [] as legacy.LegacyPollResult[]),
   ]);
   const byId = new Map(results.map((r) => [r.pollId, r]));
 
@@ -101,8 +102,11 @@ async function listPollsLive(): Promise<ApiPoll[]> {
   });
 }
 
-async function getResultsLive(pollId: string): Promise<ApiResults> {
-  const results = await legacy.fetchPollResults();
+async function getResultsLive(
+  pollId: string,
+  token?: string,
+): Promise<ApiResults> {
+  const results = await legacy.fetchPollResults(token);
   const found = results.find((r) => r.pollId === pollId);
   if (!found) throw new AppError(404, `Poll "${pollId}" not found`);
   return resultToApi(found);
@@ -111,6 +115,7 @@ async function getResultsLive(pollId: string): Promise<ApiResults> {
 async function recordVoteLive(
   pollId: string,
   optionId: string,
+  token?: string,
 ): Promise<ApiResults> {
   if (optionId !== "option1" && optionId !== "option2") {
     throw new AppError(
@@ -118,8 +123,8 @@ async function recordVoteLive(
       `Option "${optionId}" not found in poll "${pollId}"`,
     );
   }
-  const result = await legacy.votePoll(pollId, optionId);
-  return result ? resultToApi(result) : getResultsLive(pollId);
+  const result = await legacy.votePoll(pollId, optionId, token);
+  return result ? resultToApi(result) : getResultsLive(pollId, token);
 }
 
 // ── Mock (local in-memory) ───────────────────────────────────────────────────
@@ -203,19 +208,25 @@ function recordVoteMock(pollId: string, optionId: string): ApiResults {
 
 // ── Public API ───────────────────────────────────────────────────────────────
 
-export async function listPolls(): Promise<ApiPoll[]> {
-  return isLive() ? listPollsLive() : listPollsMock();
+export async function listPolls(token?: string): Promise<ApiPoll[]> {
+  return isLive(token) ? listPollsLive(token) : listPollsMock();
 }
 
-export async function getResults(pollId: string): Promise<ApiResults> {
-  return isLive() ? getResultsLive(pollId) : buildResultsMock(pollId);
+export async function getResults(
+  pollId: string,
+  token?: string,
+): Promise<ApiResults> {
+  return isLive(token)
+    ? getResultsLive(pollId, token)
+    : buildResultsMock(pollId);
 }
 
 export async function recordVote(
   pollId: string,
   optionId: string,
+  token?: string,
 ): Promise<ApiResults> {
-  return isLive()
-    ? recordVoteLive(pollId, optionId)
+  return isLive(token)
+    ? recordVoteLive(pollId, optionId, token)
     : recordVoteMock(pollId, optionId);
 }

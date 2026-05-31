@@ -1,10 +1,11 @@
+import { apiFetch } from "./apiClient";
 import type { Poll } from "@/types/politics";
 
-// Polls are proxied through the API Server, which serves live data from the
-// legacy web service when configured and mock data otherwise.
-const API_BASE = process.env.EXPO_PUBLIC_DOMAIN
-  ? `https://${process.env.EXPO_PUBLIC_DOMAIN}/api`
-  : "/api";
+// Polls are proxied through the API Server to the legacy poll endpoints
+// (/poll_listing, /poll_results, /polling). Every request goes through the
+// shared apiFetch wrapper, which automatically attaches the AUTHTOKEN header
+// (the auth_token saved at login/signup) and clears the session + redirects to
+// login if the token is rejected.
 
 const DISCLAIMER =
   "Community poll — results reflect app users and are not a scientific sample.";
@@ -52,7 +53,7 @@ function toPoll(p: ApiPoll): Poll {
 }
 
 export async function getPolls(): Promise<Poll[]> {
-  const res = await fetch(`${API_BASE}/polls`);
+  const res = await apiFetch("/polls");
   if (!res.ok) {
     throw new Error(`Failed to load polls (${res.status})`);
   }
@@ -70,14 +71,11 @@ export async function votePoll(
   pollId: string,
   optionId: string,
 ): Promise<PollResults> {
-  const res = await fetch(
-    `${API_BASE}/polls/${encodeURIComponent(pollId)}/vote`,
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ optionId }),
-    },
-  );
+  const res = await apiFetch(`/polls/${encodeURIComponent(pollId)}/vote`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ optionId }),
+  });
   if (!res.ok) {
     throw new Error(`Failed to record vote (${res.status})`);
   }

@@ -1,5 +1,5 @@
 import { config } from "../config";
-import { UpstreamError } from "../lib/errors";
+import { AppError, UpstreamError } from "../lib/errors";
 
 /**
  * Provider for the legacy UDecide web service (CodeIgniter backend at
@@ -44,8 +44,18 @@ export interface LegacySignUpInput {
   phone?: string;
 }
 
-/** Raised when the legacy server rejects credentials or a registration. */
-export class LegacyAuthError extends Error {}
+/**
+ * Raised when the legacy server rejects credentials, a registration, or an
+ * AUTHTOKEN (expired/invalid session). Extends AppError with HTTP 401 so any
+ * route that doesn't catch it explicitly still returns 401 — letting an
+ * authenticated client clear its session and route back to login.
+ */
+export class LegacyAuthError extends AppError {
+  constructor(message: string) {
+    super(401, message);
+    this.name = "LegacyAuthError";
+  }
+}
 
 export interface LegacyPoll {
   pollId: string;
@@ -113,6 +123,12 @@ async function wsPost(
     throw new UpstreamError(`Failed to reach legacy endpoint ${path}`);
   }
 
+  // A rejected/expired AUTHTOKEN typically comes back as a 401/403; surface it
+  // as an auth error (HTTP 401) so authenticated clients clear their session.
+  if (res.status === 401 || res.status === 403) {
+    throw new LegacyAuthError("Authentication token was rejected");
+  }
+
   const text = await res.text().catch(() => "");
   let envelope: WsEnvelope;
   try {
@@ -122,9 +138,19 @@ async function wsPost(
   }
 
   if (envelope.settings?.success !== "1") {
-    throw new UpstreamError(
-      envelope.settings?.message ?? `Legacy endpoint ${path} failed`,
-    );
+    const message = envelope.settings?.message ?? `Legacy endpoint ${path} failed`;
+    // Some legacy deployments return a 200 with an auth-flavored failure message
+    // instead of a 401. Match only explicit token/session-auth phrases so a
+    // generic business error (e.g. "this poll has expired") is NOT misread as an
+    // auth rejection and does not force the user to re-login.
+    if (
+      /unauthor|invalid token|invalid auth|token expired|expired token|not logged|login again|invalid session/i.test(
+        message,
+      )
+    ) {
+      throw new LegacyAuthError(message);
+    }
+    throw new UpstreamError(message);
   }
 
   return Array.isArray(envelope.data) ? envelope.data : [];
@@ -257,14 +283,16 @@ function mapResult(row: unknown): LegacyPollResult {
 }
 
 /** Fetch the catalog of available polls (no vote totals). */
-export async function fetchPolls(): Promise<LegacyPoll[]> {
-  const rows = await wsPost("/poll_listing", {});
+export async function fetchPolls(token?: string): Promise<LegacyPoll[]> {
+  const rows = await wsPost("/poll_listing", {}, token);
   return rows.map(mapPoll).filter((p) => p.pollId);
 }
 
 /** Fetch results (totals + percentages) for every poll. */
-export async function fetchPollResults(): Promise<LegacyPollResult[]> {
-  const rows = await wsPost("/poll_results", {});
+export async function fetchPollResults(
+  token?: string,
+): Promise<LegacyPollResult[]> {
+  const rows = await wsPost("/poll_results", {}, token);
   return rows.map(mapResult).filter((p) => p.pollId);
 }
 
@@ -275,8 +303,9 @@ export async function fetchPollResults(): Promise<LegacyPollResult[]> {
 export async function votePoll(
   pollId: string,
   answer: string,
+  token?: string,
 ): Promise<LegacyPollResult | null> {
-  const rows = await wsPost("/polling", { poll_id: pollId, answer });
+  const rows = await wsPost("/polling", { poll_id: pollId, answer }, token);
   const first = rows[0];
   return first ? mapResult(first) : null;
 }

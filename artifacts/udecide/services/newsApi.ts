@@ -1,8 +1,9 @@
-// Political news is proxied through the API Server, which serves nonpartisan
-// election/voting updates (mock-backed today, live-ready behind the same route).
-const API_BASE = process.env.EXPO_PUBLIC_DOMAIN
-  ? `https://${process.env.EXPO_PUBLIC_DOMAIN}/api`
-  : "/api";
+import { apiFetch } from "./apiClient";
+
+// Political news is proxied through the API Server (mock-backed today, live-ready
+// behind the same route). Requests go through the shared apiFetch wrapper, which
+// attaches the AUTHTOKEN header (the auth_token saved at login/signup)
+// automatically and centralizes session-expiry handling.
 
 export interface NewsArticle {
   id: string;
@@ -21,10 +22,8 @@ export interface NewsFeed {
   articles: NewsArticle[];
 }
 
-export async function getNews(token?: string | null): Promise<NewsFeed> {
-  const res = await fetch(`${API_BASE}/news`, {
-    headers: token ? { AUTHTOKEN: token } : undefined,
-  });
+export async function getNews(): Promise<NewsFeed> {
+  const res = await apiFetch("/news");
   if (!res.ok) {
     throw new Error(`Failed to load news (${res.status})`);
   }
