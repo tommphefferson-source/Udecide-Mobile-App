@@ -56,12 +56,10 @@ export default function DashboardScreen() {
   const timeGreeting =
     hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
 
-  const dateTimeLabel = now.toLocaleString(undefined, {
+  const dateTimeLabel = now.toLocaleDateString(undefined, {
     weekday: "short",
     month: "short",
     day: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
   });
 
   return (
