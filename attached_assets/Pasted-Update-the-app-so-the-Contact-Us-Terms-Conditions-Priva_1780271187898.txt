@@ -1,0 +1,119 @@
+Update the app so the **Contact Us, Terms & Conditions, Privacy Policy, and About Us** pages use the same endpoint/data behavior as the legacy iOS app.
+
+## Legacy behavior to preserve
+
+### Contact Us
+
+This does **not** come from an API endpoint.
+
+The old app uses a hardcoded support email address:
+
+* `udecidemobileapplication@gmail.com`
+
+Implement Contact Us so it:
+
+* shows the support email address
+* opens the user’s mail client with a `mailto:` link
+* does **not** call the backend for this page
+
+### Terms & Conditions, Privacy Policy, About Us
+
+These pages come from the legacy backend endpoint:
+
+* `POST /static_pages`
+
+The request must send a field named:
+
+* `page_code`
+
+Use these exact legacy values:
+
+* `aboutus`
+* `privacypolicy`
+* `termsconditions`
+
+Map them like this:
+
+* About Us → `page_code=aboutus`
+* Privacy Policy → `page_code=privacypolicy`
+* Terms & Conditions → `page_code=termsconditions`
+
+The backend response should be treated as returning content like:
+
+* `pageTitle`
+* `pageContent`
+
+Render those values in the app page view.
+
+## What to implement
+
+1. Centralize the endpoint definitions for static/legal pages.
+2. Add a reusable API method for:
+
+   * `POST /static_pages`
+3. Add a helper function like:
+
+   * `getStaticPage(pageCode)`
+4. Add page-specific loaders:
+
+   * `getAboutUs()`
+   * `getPrivacyPolicy()`
+   * `getTermsAndConditions()`
+5. Make sure the UI routes the correct page to the correct `page_code`.
+6. Do not hardcode the HTML/body for Terms, Privacy, or About in the frontend.
+7. Render the returned content from the backend response.
+8. Support HTML or rich text content in `pageContent` if the backend returns formatted content.
+9. Add comments explaining that these are legacy backend-managed static pages.
+10. Keep Contact Us separate from `/static_pages`, because it is email-based, not API-based.
+
+## Endpoint details to use
+
+Base legacy backend:
+
+* `http://52.45.60.139/WS`
+
+Static pages endpoint:
+
+* `POST http://52.45.60.139/WS/static_pages`
+
+Feedback endpoint also exists and may be useful later:
+
+* `POST http://52.45.60.139/WS/post_a_feedback`
+
+But for this task, only wire up:
+
+* Contact Us
+* About Us
+* Privacy Policy
+* Terms & Conditions
+
+## Required mapping
+
+Implement this exact mapping table in code:
+
+* `about` or `about-us` page → `aboutus`
+* `privacy` or `privacy-policy` page → `privacypolicy`
+* `terms` or `terms-and-conditions` page → `termsconditions`
+
+## UI behavior
+
+* About Us page loads content from `/static_pages` with `page_code=aboutus`
+* Privacy Policy page loads content from `/static_pages` with `page_code=privacypolicy`
+* Terms & Conditions page loads content from `/static_pages` with `page_code=termsconditions`
+* Contact Us opens a compose-email action to:
+
+  * `udecidemobileapplication@gmail.com`
+
+## Deliverable
+
+Update the existing app code now so these pages point to the correct legacy endpoints and data sources.
+Use the app’s current stack and coding style.
+Create or update:
+
+* endpoint config
+* API client methods
+* page loaders/services
+* UI wiring
+* comments documenting the legacy behavior
+
+Do not just describe the changes. Implement them.

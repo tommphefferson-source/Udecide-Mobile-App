@@ -84,8 +84,12 @@ export const POLL_DISCLAIMER =
 export const NEUTRALITY_NOTICE =
   "UDecide presents factual, nonpartisan information. We do not endorse any candidate, party, or policy.";
 
-/** Address used for the Support section's Send Feedback / Contact Us mailto links. */
-export const SUPPORT_EMAIL = "support@udecideapp.com";
+/**
+ * Support email used for the Support section's Send Feedback / Contact Us links.
+ * Contact Us is intentionally email-based (mailto:), not an API call — this
+ * mirrors the legacy iOS app, which hardcodes this same address.
+ */
+export const SUPPORT_EMAIL = "udecidemobileapplication@gmail.com";
 
 export const GEMINI_SYSTEM_PROMPT = `You are a neutral, nonpartisan political information assistant for the UDecide app. 
 Your role is to help users understand U.S. politics, government processes, legislation, and elections.

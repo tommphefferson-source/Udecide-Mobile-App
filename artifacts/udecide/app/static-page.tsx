@@ -15,7 +15,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useColors } from "@/hooks/useColors";
-import { fetchStaticPage } from "@/services/pagesApi";
+import { getStaticPage } from "@/services/pagesApi";
 
 /**
  * Decode the common named/numeric HTML entities that appear in the legacy CMS
@@ -103,7 +103,7 @@ export default function StaticPageScreen() {
 
   const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ["static-page", code],
-    queryFn: () => fetchStaticPage(code),
+    queryFn: () => getStaticPage(code),
     enabled: code.length > 0,
   });
 
