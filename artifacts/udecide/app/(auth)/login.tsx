@@ -67,7 +67,6 @@ export default function LoginScreen() {
               style={styles.logoImage}
               resizeMode="contain"
             />
-            <Text style={styles.appName}>UDecide</Text>
           </View>
 
           {/* Card */}
@@ -192,12 +191,6 @@ const styles = StyleSheet.create({
     width: 240,
     height: 240,
     marginBottom: 4,
-  },
-  appName: {
-    fontSize: 28,
-    fontFamily: "Inter_700Bold",
-    color: "#FFFFFF",
-    letterSpacing: 1,
   },
   card: {
     width: "100%",
