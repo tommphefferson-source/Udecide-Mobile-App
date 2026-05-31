@@ -147,6 +147,83 @@ export const GetPollResultsResponse = zod.object({
 
 
 /**
+ * @summary Authenticate a user against the legacy server
+ */
+
+
+
+
+export const LoginBody = zod.object({
+  "email": zod.string().min(1),
+  "password": zod.string().min(1)
+})
+
+
+
+
+export const LoginResponse = zod.object({
+  "authToken": zod.string().min(1),
+  "user": zod.object({
+  "userId": zod.string(),
+  "email": zod.string(),
+  "firstName": zod.string(),
+  "lastName": zod.string(),
+  "city": zod.string().optional(),
+  "state": zod.string().optional(),
+  "stateId": zod.string().optional(),
+  "zipCode": zod.string().optional(),
+  "phoneNumber": zod.string().optional(),
+  "profileImage": zod.string().optional(),
+  "status": zod.string().optional()
+})
+})
+
+
+/**
+ * @summary Register a new user against the legacy server
+ */
+
+
+
+
+
+
+
+
+
+export const SignupBody = zod.object({
+  "firstName": zod.string().min(1),
+  "lastName": zod.string().min(1),
+  "email": zod.string().min(1),
+  "password": zod.string().min(1),
+  "stateId": zod.string().min(1),
+  "city": zod.string().min(1),
+  "zipCode": zod.string().min(1),
+  "phone": zod.string().optional()
+})
+
+
+
+
+export const SignupResponse = zod.object({
+  "authToken": zod.string().min(1),
+  "user": zod.object({
+  "userId": zod.string(),
+  "email": zod.string(),
+  "firstName": zod.string(),
+  "lastName": zod.string(),
+  "city": zod.string().optional(),
+  "state": zod.string().optional(),
+  "stateId": zod.string().optional(),
+  "zipCode": zod.string().optional(),
+  "phoneNumber": zod.string().optional(),
+  "profileImage": zod.string().optional(),
+  "status": zod.string().optional()
+})
+})
+
+
+/**
  * @summary App home metadata
  */
 export const GetHomeResponse = zod.object({

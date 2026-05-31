@@ -1,10 +1,12 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import React, { createContext, useCallback, useContext, useEffect, useState } from "react";
 
+import { login as apiLogin, type AuthUser } from "@/services/authApi";
 import type { UserProfile } from "@/types/user";
 
 interface AuthContextValue {
   user: UserProfile | null;
+  authToken: string | null;
   isLoading: boolean;
   isAuthenticated: boolean;
   login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
@@ -22,9 +24,25 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 
 const STORAGE_KEY = "@udecide_user";
 const CREDENTIALS_KEY = "@udecide_credentials";
+const AUTH_TOKEN_KEY = "@udecide_auth_token";
+
+/** Map the legacy auth payload into the app's local UserProfile shape. */
+function toUserProfile(u: AuthUser): UserProfile {
+  return {
+    id: u.userId,
+    fullName: `${u.firstName} ${u.lastName}`.trim(),
+    email: u.email.toLowerCase(),
+    address: "",
+    city: u.city,
+    state: u.state,
+    zipCode: u.zipCode,
+    createdAt: new Date().toISOString(),
+  };
+}
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<UserProfile | null>(null);
+  const [authToken, setAuthToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -33,8 +51,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   async function loadUser() {
     try {
-      const stored = await AsyncStorage.getItem(STORAGE_KEY);
+      const [stored, token] = await Promise.all([
+        AsyncStorage.getItem(STORAGE_KEY),
+        AsyncStorage.getItem(AUTH_TOKEN_KEY),
+      ]);
       if (stored) setUser(JSON.parse(stored));
+      if (token) setAuthToken(token);
     } catch {
       // ignore
     } finally {
@@ -45,25 +67,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const login = useCallback(
     async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
       try {
-        const stored = await AsyncStorage.getItem(CREDENTIALS_KEY);
-        const credentials: Record<string, { password: string; userId: string }> = stored
-          ? JSON.parse(stored)
-          : {};
-
-        const cred = credentials[email.toLowerCase()];
-        if (!cred || cred.password !== password) {
-          return { success: false, error: "Invalid email or password" };
-        }
-
-        const userStored = await AsyncStorage.getItem(STORAGE_KEY + "_" + cred.userId);
-        if (!userStored) return { success: false, error: "Account not found" };
-
-        const userProfile: UserProfile = JSON.parse(userStored);
+        const { authToken: token, user: legacyUser } = await apiLogin(email.trim(), password);
+        const userProfile = toUserProfile(legacyUser);
         setUser(userProfile);
-        await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(userProfile));
+        setAuthToken(token);
+        await AsyncStorage.multiSet([
+          [STORAGE_KEY, JSON.stringify(userProfile)],
+          [STORAGE_KEY + "_" + userProfile.id, JSON.stringify(userProfile)],
+          [AUTH_TOKEN_KEY, token],
+        ]);
         return { success: true };
-      } catch {
-        return { success: false, error: "An error occurred. Please try again." };
+      } catch (err) {
+        return {
+          success: false,
+          error: err instanceof Error ? err.message : "Unable to sign in. Please try again.",
+        };
       }
     },
     []
@@ -138,13 +156,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const logout = useCallback(async () => {
     setUser(null);
-    await AsyncStorage.removeItem(STORAGE_KEY);
+    setAuthToken(null);
+    await AsyncStorage.multiRemove([STORAGE_KEY, AUTH_TOKEN_KEY]);
   }, []);
 
   return (
     <AuthContext.Provider
       value={{
         user,
+        authToken,
         isLoading,
         isAuthenticated: !!user,
         login,

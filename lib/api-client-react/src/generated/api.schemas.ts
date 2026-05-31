@@ -13,6 +13,51 @@ export interface ApiError {
   error: string;
 }
 
+export interface AuthUser {
+  userId: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  city?: string;
+  state?: string;
+  stateId?: string;
+  zipCode?: string;
+  phoneNumber?: string;
+  profileImage?: string;
+  status?: string;
+}
+
+export interface AuthResponse {
+  /** @minLength 1 */
+  authToken: string;
+  user: AuthUser;
+}
+
+export interface AuthLoginInput {
+  /** @minLength 1 */
+  email: string;
+  /** @minLength 1 */
+  password: string;
+}
+
+export interface AuthSignUpInput {
+  /** @minLength 1 */
+  firstName: string;
+  /** @minLength 1 */
+  lastName: string;
+  /** @minLength 1 */
+  email: string;
+  /** @minLength 1 */
+  password: string;
+  /** @minLength 1 */
+  stateId: string;
+  /** @minLength 1 */
+  city: string;
+  /** @minLength 1 */
+  zipCode: string;
+  phone?: string;
+}
+
 export interface Election {
   id: string;
   name: string;

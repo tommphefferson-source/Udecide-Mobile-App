@@ -6,10 +6,12 @@ import pollsRouter from "./polls";
 import homeRouter from "./home";
 import newsRouter from "./news";
 import civicsRouter from "./civics";
+import authRouter from "./auth";
 
 const router: IRouter = Router();
 
 router.use(healthRouter);
+router.use(authRouter);
 router.use(representativesRouter);
 router.use(electionsRouter);
 router.use(pollsRouter);

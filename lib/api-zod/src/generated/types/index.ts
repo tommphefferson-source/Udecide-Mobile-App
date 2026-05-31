@@ -7,6 +7,10 @@
  */
 
 export * from './apiError';
+export * from './authLoginInput';
+export * from './authResponse';
+export * from './authSignUpInput';
+export * from './authUser';
 export * from './candidate';
 export * from './civicsQuiz';
 export * from './civicsQuizQuestion';

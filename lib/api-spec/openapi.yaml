@@ -20,6 +20,8 @@ tags:
     description: News feed
   - name: civics
     description: Quizzes, questionnaires, terminology and party reference data
+  - name: auth
+    description: User authentication (legacy WS backed)
 paths:
   /healthz:
     get:
@@ -167,6 +169,62 @@ paths:
               schema:
                 $ref: "#/components/schemas/ApiError"
 
+  /auth/login:
+    post:
+      operationId: login
+      tags: [auth]
+      summary: Authenticate a user against the legacy server
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AuthLoginInput"
+      responses:
+        "200":
+          description: Authenticated user with token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "400":
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "401":
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+
+  /auth/signup:
+    post:
+      operationId: signup
+      tags: [auth]
+      summary: Register a new user against the legacy server
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AuthSignUpInput"
+      responses:
+        "200":
+          description: Newly registered user with token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "400":
+          description: Invalid request or registration rejected
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+
   /home:
     get:
       operationId: getHome
@@ -300,6 +358,97 @@ components:
           type: string
       required:
         - error
+
+    AuthUser:
+      type: object
+      properties:
+        userId:
+          type: string
+        email:
+          type: string
+        firstName:
+          type: string
+        lastName:
+          type: string
+        city:
+          type: string
+        state:
+          type: string
+        stateId:
+          type: string
+        zipCode:
+          type: string
+        phoneNumber:
+          type: string
+        profileImage:
+          type: string
+        status:
+          type: string
+      required:
+        - userId
+        - email
+        - firstName
+        - lastName
+
+    AuthResponse:
+      type: object
+      properties:
+        authToken:
+          type: string
+          minLength: 1
+        user:
+          $ref: "#/components/schemas/AuthUser"
+      required:
+        - authToken
+        - user
+
+    AuthLoginInput:
+      type: object
+      properties:
+        email:
+          type: string
+          minLength: 1
+        password:
+          type: string
+          minLength: 1
+      required:
+        - email
+        - password
+
+    AuthSignUpInput:
+      type: object
+      properties:
+        firstName:
+          type: string
+          minLength: 1
+        lastName:
+          type: string
+          minLength: 1
+        email:
+          type: string
+          minLength: 1
+        password:
+          type: string
+          minLength: 1
+        stateId:
+          type: string
+          minLength: 1
+        city:
+          type: string
+          minLength: 1
+        zipCode:
+          type: string
+          minLength: 1
+        phone:
+          type: string
+      required:
+        - firstName
+        - lastName
+        - email
+        - password
+        - stateId
+        - city
+        - zipCode
 
     Election:
       type: object
