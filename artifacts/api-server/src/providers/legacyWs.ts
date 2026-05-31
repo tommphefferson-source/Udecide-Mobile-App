@@ -1,5 +1,6 @@
 import { config } from "../config";
 import { AppError, UpstreamError } from "../lib/errors";
+import { logger } from "../lib/logger";
 
 /**
  * Provider for the legacy UDecide web service (CodeIgniter backend at
@@ -404,6 +405,11 @@ export async function fetchPolls(token?: string): Promise<LegacyPoll[]> {
   try {
     rows = await wsPost("/poll_listing", {}, token);
   } catch (err) {
+    // [poll diag] TEMPORARY: capture the exact upstream failure message.
+    logger.warn(
+      { message: err instanceof Error ? err.message : String(err) },
+      "[poll diag] /poll_listing error",
+    );
     // The legacy backend returns success!=1 with a "No polls found." message
     // when the catalog is empty. That is a no-result, not a failure — surface
     // it as an empty list so the client shows its empty state, not an error.
@@ -412,7 +418,13 @@ export async function fetchPolls(token?: string): Promise<LegacyPoll[]> {
     }
     throw err;
   }
-  return rows.map(mapPoll).filter((p) => p.pollId);
+  const mapped = rows.map(mapPoll).filter((p) => p.pollId);
+  // [poll diag] TEMPORARY: raw shape + mapped count to verify field mapping.
+  logger.info(
+    { rawCount: rows.length, firstRow: rows[0] ?? null, mappedCount: mapped.length },
+    "[poll diag] /poll_listing raw rows",
+  );
+  return mapped;
 }
 
 /** Fetch results (totals + percentages) for every poll. */
