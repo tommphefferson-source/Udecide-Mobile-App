@@ -21,8 +21,10 @@ export interface NewsFeed {
   articles: NewsArticle[];
 }
 
-export async function getNews(): Promise<NewsFeed> {
-  const res = await fetch(`${API_BASE}/news`);
+export async function getNews(token?: string | null): Promise<NewsFeed> {
+  const res = await fetch(`${API_BASE}/news`, {
+    headers: token ? { AUTHTOKEN: token } : undefined,
+  });
   if (!res.ok) {
     throw new Error(`Failed to load news (${res.status})`);
   }

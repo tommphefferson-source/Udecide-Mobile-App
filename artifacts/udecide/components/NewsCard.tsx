@@ -3,6 +3,7 @@ import { router } from "expo-router";
 import React, { useCallback, useEffect, useState } from "react";
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from "react-native";
 
+import { useAuth } from "@/context/AuthContext";
 import { useColors } from "@/hooks/useColors";
 import { getNews, type NewsArticle, type NewsFeed } from "@/services/newsApi";
 
@@ -14,6 +15,7 @@ function formatDate(iso: string): string {
 
 export function NewsCard() {
   const colors = useColors();
+  const { authToken } = useAuth();
   const [feed, setFeed] = useState<NewsFeed | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -22,13 +24,13 @@ export function NewsCard() {
     setLoading(true);
     setError(false);
     try {
-      setFeed(await getNews());
+      setFeed(await getNews(authToken));
     } catch {
       setError(true);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [authToken]);
 
   useEffect(() => {
     void load();
@@ -64,6 +66,21 @@ export function NewsCard() {
           <Text style={[styles.stateText, { color: colors.mutedForeground }]}>
             Couldn&apos;t load news. Tap to retry.
           </Text>
+        </Pressable>
+      ) : feed && feed.articles.length === 0 && feed.newsUrl ? (
+        <Pressable
+          style={({ pressed }) => [styles.row, { opacity: pressed ? 0.6 : 1 }]}
+          onPress={() => openArticle({ url: feed.newsUrl, title: "Political News" })}
+        >
+          <View style={styles.rowText}>
+            <Text style={[styles.rowTitle, { color: colors.foreground }]} numberOfLines={2}>
+              Read the latest political news
+            </Text>
+            <Text style={[styles.rowMeta, { color: colors.mutedForeground }]}>
+              {feed.source || "Open in app"}
+            </Text>
+          </View>
+          <MaterialIcons name="chevron-right" size={20} color={colors.mutedForeground} />
         </Pressable>
       ) : !feed || feed.articles.length === 0 ? (
         <View style={styles.stateBox}>

@@ -346,3 +346,36 @@ export async function fetchIssueQuestions(
   );
   return rows.map(mapIssueQuestion).filter((q) => q.questionId && q.question);
 }
+
+export interface LegacyHomeData {
+  newsUrl: string | null;
+  politicalSystemLink: string | null;
+  voterStatusLink: string | null;
+  presidentCabinetLink: string | null;
+  presidentialElection: string | null;
+  townUrl: string | null;
+}
+
+function mapHomeData(row: unknown): LegacyHomeData {
+  const o = (row ?? {}) as Record<string, unknown>;
+  return {
+    newsUrl: asString(o.news_url),
+    politicalSystemLink: asString(o.political_system_link),
+    voterStatusLink: asString(o.voter_status_link),
+    presidentCabinetLink: asString(o.president_cabinet_link),
+    presidentialElection: asString(o.presidential_election),
+    townUrl: asString(o.town_url),
+  };
+}
+
+/**
+ * Fetch the legacy home payload (`/home_data`). Carries reference links — most
+ * notably `news_url`, which the app opens in a web view as its Political News
+ * source. Returns null when the upstream provides no row.
+ */
+export async function fetchHomeData(
+  token?: string,
+): Promise<LegacyHomeData | null> {
+  const rows = await wsPost("/home_data", {}, token);
+  return rows[0] ? mapHomeData(rows[0]) : null;
+}
