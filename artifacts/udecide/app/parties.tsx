@@ -20,6 +20,15 @@ export default function PartiesScreen() {
   const insets = useSafeAreaInsets();
   const colors = useColors();
   const [selectedParty, setSelectedParty] = useState<PoliticalParty | null>(null);
+  const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
+
+  const toggleExpanded = (id: string) =>
+    setExpandedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
 
   const topPad = Platform.OS === "web" ? 67 : insets.top;
   const bottomPad = Platform.OS === "web" ? 34 : insets.bottom + 24;
@@ -124,9 +133,14 @@ export default function PartiesScreen() {
                 </Text>
               </View>
             </View>
-            <Text style={[styles.partyDesc, { color: colors.mutedForeground }]} numberOfLines={2}>
-              {party.description}
-            </Text>
+            <Pressable onPress={() => toggleExpanded(party.id)}>
+              <Text
+                style={[styles.partyDesc, { color: colors.mutedForeground }]}
+                numberOfLines={expandedIds.has(party.id) ? undefined : 2}
+              >
+                {party.description}
+              </Text>
+            </Pressable>
             <View style={styles.partyActions}>
               <Pressable
                 style={({ pressed }) => [styles.partyBtn, { backgroundColor: party.color + "20", opacity: pressed ? 0.7 : 1 }]}
