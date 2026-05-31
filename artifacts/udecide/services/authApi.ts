@@ -1,6 +1,8 @@
 // Authentication is handled by the API Server, which proxies the legacy
 // UDecide web service (/user_login, /user_sign_up) and returns a per-user
 // auth token. Mirrors the API_BASE pattern used by the other services.
+import { Platform } from "react-native";
+
 import { apiFetch } from "./apiClient";
 
 const API_BASE = process.env.EXPO_PUBLIC_DOMAIN
@@ -142,12 +144,20 @@ export interface ProfilePhotoFile {
  */
 export async function uploadProfilePhoto(file: ProfilePhotoFile): Promise<AuthResult> {
   const form = new FormData();
-  // React Native's FormData accepts a { uri, name, type } object for file parts.
-  form.append("photo", {
-    uri: file.uri,
-    name: file.name,
-    type: file.type,
-  } as unknown as Blob);
+  if (Platform.OS === "web") {
+    // On web the picker returns a blob:/data: URL. The { uri, name, type }
+    // descriptor below is native-only — on web it serializes to "[object
+    // Object]" and no real file is sent — so fetch the URI into a Blob instead.
+    const blob = await (await fetch(file.uri)).blob();
+    form.append("photo", blob, file.name);
+  } else {
+    // React Native's FormData accepts a { uri, name, type } object for file parts.
+    form.append("photo", {
+      uri: file.uri,
+      name: file.name,
+      type: file.type,
+    } as unknown as Blob);
+  }
 
   const res = await apiFetch("/auth/profile/photo", {
     method: "POST",

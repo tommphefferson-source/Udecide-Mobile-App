@@ -27,3 +27,11 @@ shape. Do not try to re-add a multipart binary body to the spec.
 **Image URL resolution:** legacy returns `user_profile` possibly as a relative
 path; `resolveProfileImageUrl()` makes it absolute against the legacy ORIGIN
 (not the `/WS` base path).
+
+**Web vs native FormData file part (gotcha):** the RN `{uri,name,type}` file
+descriptor is **native-only**. On web it serializes to `"[object Object]"`, so
+the server receives no file and multer returns 400 (token present, file
+missing). Branch on `Platform.OS === "web"`: fetch the picked blob:/data: URI
+into a real `Blob` and `form.append("photo", blob, name)`. The 400-with-valid-
+token signature in api-server logs = this bug.
+
