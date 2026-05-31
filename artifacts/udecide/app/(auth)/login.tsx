@@ -214,10 +214,6 @@ export default function LoginScreen() {
                   </>
                 )}
               </Pressable>
-              <Pressable style={({ pressed }) => [styles.socialBtn, { opacity: pressed ? 0.7 : 1 }]}>
-                <MaterialIcons name="facebook" size={22} color="#1877F2" />
-                <Text style={styles.socialText}>Facebook</Text>
-              </Pressable>
             </View>
 
             <View style={styles.registerRow}>
