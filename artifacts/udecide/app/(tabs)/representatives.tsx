@@ -1,5 +1,6 @@
 import { MaterialIcons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
+import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
   FlatList,
@@ -27,6 +28,7 @@ type Level = (typeof REP_LEVELS)[number];
 export default function RepresentativesScreen() {
   const insets = useSafeAreaInsets();
   const colors = useColors();
+  const router = useRouter();
   const { effectiveAddress } = useAddress();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -71,6 +73,11 @@ export default function RepresentativesScreen() {
         colors={[colors.navy, colors.navyLight]}
         style={[styles.header, { paddingTop: topPad + 16 }]}
       >
+        {router.canGoBack() && (
+          <Pressable style={styles.backBtn} onPress={() => router.back()}>
+            <MaterialIcons name="arrow-back" size={24} color="#FFF" />
+          </Pressable>
+        )}
         <Text style={styles.screenTitle}>Your Representatives</Text>
         <Text style={styles.screenSubtitle}>
           {effectiveAddress.city
@@ -252,6 +259,7 @@ const styles = StyleSheet.create({
     paddingBottom: 16,
     gap: 4,
   },
+  backBtn: { marginBottom: 8 },
   screenTitle: {
     fontSize: 24,
     fontFamily: "Inter_700Bold",
