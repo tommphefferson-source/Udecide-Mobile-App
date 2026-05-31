@@ -18,6 +18,7 @@ import { HorizontalScroller } from "@/components/HorizontalScroller";
 import { LoadingState } from "@/components/LoadingState";
 import { RepresentativeCard } from "@/components/RepresentativeCard";
 import { useAddress } from "@/context/AddressContext";
+import { useAuth } from "@/context/AuthContext";
 import { useColors } from "@/hooks/useColors";
 import { getRepresentatives } from "@/services/civicApi";
 import type { Representative } from "@/types/politics";
@@ -30,11 +31,24 @@ export default function RepresentativesScreen() {
   const colors = useColors();
   const router = useRouter();
   const { effectiveAddress } = useAddress();
+  const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [reps, setReps] = useState<Representative[]>([]);
   const [selectedLevel, setSelectedLevel] = useState<Level>("All");
   const [usingLiveData, setUsingLiveData] = useState(false);
+
+  // Representatives prioritize the signed-in account's location. The address
+  // override is only used as a fallback when the account has no state on file.
+  const hasAccountState = !!user?.state?.trim();
+  const repAddress = hasAccountState
+    ? {
+        address: user?.address?.trim() ?? "",
+        city: user?.city?.trim() ?? "",
+        state: user?.state?.trim() ?? "",
+        zipCode: user?.zipCode?.trim() ?? "",
+      }
+    : effectiveAddress;
 
   const topPad = Platform.OS === "web" ? 67 : insets.top;
   const bottomPad = Platform.OS === "web" ? 110 : insets.bottom + 120;
@@ -43,7 +57,7 @@ export default function RepresentativesScreen() {
     setLoading(true);
     setError(false);
     try {
-      const result = await getRepresentatives(effectiveAddress);
+      const result = await getRepresentatives(repAddress);
       setReps(result.reps);
       setUsingLiveData(result.live);
     } catch {
@@ -56,10 +70,10 @@ export default function RepresentativesScreen() {
   useEffect(() => {
     loadReps();
   }, [
-    effectiveAddress.address,
-    effectiveAddress.city,
-    effectiveAddress.state,
-    effectiveAddress.zipCode,
+    repAddress.address,
+    repAddress.city,
+    repAddress.state,
+    repAddress.zipCode,
   ]);
 
   const filtered = reps.filter((r) => {
@@ -80,11 +94,11 @@ export default function RepresentativesScreen() {
         )}
         <Text style={styles.screenTitle}>Your Representatives</Text>
         <Text style={styles.screenSubtitle}>
-          {effectiveAddress.city
-            ? `${effectiveAddress.city}, ${effectiveAddress.state}`
-            : effectiveAddress.state || "All locations"}
+          {repAddress.city
+            ? `${repAddress.city}, ${repAddress.state}`
+            : repAddress.state || "All locations"}
         </Text>
-        <AddressOverrideBanner />
+        {!hasAccountState && <AddressOverrideBanner />}
       </LinearGradient>
 
       <View
@@ -141,7 +155,7 @@ export default function RepresentativesScreen() {
             {getEmptyMessage(
               usingLiveData,
               selectedLevel,
-              effectiveAddress.address,
+              repAddress.address,
             )}
           </Text>
         </View>
