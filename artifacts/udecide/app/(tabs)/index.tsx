@@ -23,6 +23,7 @@ const DASHBOARD_CARDS = [
   { title: "Representatives", subtitle: "Your elected officials", icon: "people", route: "/(tabs)/representatives", color: "#1A4A8A" },
   { title: "Elections & Ballots", subtitle: "Candidates and ballot info", icon: "ballot", route: "/(tabs)/elections", color: "#2E7D32" },
   { title: "Political Guide", subtitle: "Government education", icon: "account-balance", route: "/political-guide", color: "#D4AF37" },
+  { title: "Civics 101 Quiz", subtitle: "Test your knowledge", icon: "quiz", route: "/civics-quiz", color: "#3949AB" },
   { title: "Political Polls", subtitle: "Community insights", icon: "poll", route: "/polls", color: "#7B1FA2" },
   { title: "Legislation Tracker", subtitle: "Bills and laws", icon: "gavel", route: "/(tabs)/legislation", color: "#E65100" },
   { title: "Fact Checker", subtitle: "AI-powered analysis", icon: "fact-check", route: "/fact-checker", color: "#00695C" },
