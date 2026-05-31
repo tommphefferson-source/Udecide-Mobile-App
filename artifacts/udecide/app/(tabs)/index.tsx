@@ -3,6 +3,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import React from "react";
 import {
+  Image,
   Platform,
   Pressable,
   ScrollView,
@@ -48,10 +49,17 @@ export default function DashboardScreen() {
         style={[styles.header, { paddingTop: topPad + 16 }]}
       >
         <View style={styles.headerContent}>
-          <View>
-            <Text style={styles.greeting}>Good day, {firstName}</Text>
-            <Text style={styles.headerTitle}>UDecide</Text>
-            <Text style={styles.headerSubtitle}>Political & Voter App</Text>
+          <View style={styles.brandRow}>
+            <Image
+              source={require("@/assets/images/logo.png")}
+              style={styles.logo}
+              resizeMode="contain"
+            />
+            <View style={styles.brandText}>
+              <Text style={styles.greeting}>Good day, {firstName}</Text>
+              <Text style={styles.headerTitle}>UDecide</Text>
+              <Text style={styles.headerSubtitle}>Political & Voter App</Text>
+            </View>
           </View>
           <Pressable
             style={({ pressed }) => [styles.profileBtn, { opacity: pressed ? 0.7 : 1 }]}
@@ -135,6 +143,19 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "flex-start",
+  },
+  brandRow: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+  },
+  logo: {
+    width: 56,
+    height: 56,
+  },
+  brandText: {
+    flex: 1,
   },
   greeting: {
     fontSize: 13,
