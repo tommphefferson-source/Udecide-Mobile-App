@@ -2,84 +2,22 @@ import { MaterialIcons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
-import React, { useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Platform, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { ErrorState } from "@/components/ErrorState";
+import { LoadingState } from "@/components/LoadingState";
 import { useColors } from "@/hooks/useColors";
-
-interface QuizQuestion {
-  id: string;
-  question: string;
-  options: string[];
-  answerIndex: number;
-  explanation: string;
-}
-
-const QUESTIONS: QuizQuestion[] = [
-  {
-    id: "q1",
-    question: "How many branches are there in the U.S. federal government?",
-    options: ["Two", "Three", "Four", "Five"],
-    answerIndex: 1,
-    explanation:
-      "Three: the legislative (Congress), the executive (President), and the judicial (courts).",
-  },
-  {
-    id: "q2",
-    question: "What is the supreme law of the land?",
-    options: ["The Declaration of Independence", "Federal statutes", "The Constitution", "Executive orders"],
-    answerIndex: 2,
-    explanation: "The U.S. Constitution is the supreme law of the land.",
-  },
-  {
-    id: "q3",
-    question: "How many U.S. Senators are there in total?",
-    options: ["50", "100", "435", "538"],
-    answerIndex: 1,
-    explanation: "There are 100 Senators — two from each of the 50 states.",
-  },
-  {
-    id: "q4",
-    question: "What are the first ten amendments to the Constitution called?",
-    options: ["The Articles", "The Bill of Rights", "The Federalist Papers", "The Preamble"],
-    answerIndex: 1,
-    explanation: "The first ten amendments are known as the Bill of Rights.",
-  },
-  {
-    id: "q5",
-    question: "How long is the term of a member of the U.S. House of Representatives?",
-    options: ["Two years", "Four years", "Six years", "Eight years"],
-    answerIndex: 0,
-    explanation: "Representatives serve two-year terms; the entire House is up for election every two years.",
-  },
-  {
-    id: "q6",
-    question: "Who has the power to declare war?",
-    options: ["The President", "The Supreme Court", "Congress", "State governors"],
-    answerIndex: 2,
-    explanation: "The Constitution grants Congress the power to declare war.",
-  },
-  {
-    id: "q7",
-    question: "How many justices serve on the U.S. Supreme Court?",
-    options: ["Seven", "Nine", "Eleven", "Twelve"],
-    answerIndex: 1,
-    explanation: "The Supreme Court has nine justices, including one Chief Justice.",
-  },
-  {
-    id: "q8",
-    question: "How old must a person be to vote in U.S. federal elections?",
-    options: ["16", "18", "21", "25"],
-    answerIndex: 1,
-    explanation: "The 26th Amendment set the voting age at 18.",
-  },
-];
+import { getQuiz, type QuizQuestion } from "@/services/quizApi";
 
 export default function CivicsQuizScreen() {
   const insets = useSafeAreaInsets();
   const colors = useColors();
 
+  const [questions, setQuestions] = useState<QuizQuestion[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
   const [index, setIndex] = useState(0);
   const [selected, setSelected] = useState<number | null>(null);
   const [score, setScore] = useState(0);
@@ -91,12 +29,33 @@ export default function CivicsQuizScreen() {
   const correctColor = "#2E7D32";
   const wrongColor = colors.red;
 
-  const current = QUESTIONS[index];
-  const total = QUESTIONS.length;
+  const loadQuiz = useCallback(async () => {
+    setLoading(true);
+    setError(false);
+    try {
+      const quiz = await getQuiz();
+      setQuestions(quiz.questions);
+      setIndex(0);
+      setSelected(null);
+      setScore(0);
+      setFinished(false);
+    } catch {
+      setError(true);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    void loadQuiz();
+  }, [loadQuiz]);
+
+  const current = questions[index];
+  const total = questions.length;
   const answered = selected !== null;
 
   const scoreLabel = useMemo(() => {
-    const pct = Math.round((score / total) * 100);
+    const pct = total > 0 ? Math.round((score / total) * 100) : 0;
     if (pct === 100) return "Perfect score!";
     if (pct >= 75) return "Great job!";
     if (pct >= 50) return "Nice effort!";
@@ -104,7 +63,7 @@ export default function CivicsQuizScreen() {
   }, [score, total]);
 
   function handleSelect(optionIndex: number) {
-    if (answered) return;
+    if (answered || !current) return;
     void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     setSelected(optionIndex);
     if (optionIndex === current.answerIndex) {
@@ -136,9 +95,15 @@ export default function CivicsQuizScreen() {
         </Pressable>
         <Text style={styles.screenTitle}>Civics 101 Quiz</Text>
         <Text style={styles.screenSubtitle}>
-          {finished ? "Your results" : `Question ${index + 1} of ${total}`}
+          {loading
+            ? "Loading questions…"
+            : error
+              ? "Couldn't load quiz"
+              : finished
+                ? "Your results"
+                : `Question ${index + 1} of ${total}`}
         </Text>
-        {!finished && (
+        {!finished && !loading && !error && total > 0 && (
           <View style={styles.progressTrack}>
             <View
               style={[
@@ -151,7 +116,11 @@ export default function CivicsQuizScreen() {
       </LinearGradient>
 
       <ScrollView contentContainerStyle={{ padding: 16, gap: 14, paddingBottom: bottomPad }}>
-        {finished ? (
+        {loading ? (
+          <LoadingState rows={3} />
+        ) : error || !current ? (
+          <ErrorState message="No quiz questions available." onRetry={() => void loadQuiz()} />
+        ) : finished ? (
           <View style={[styles.resultCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
             <View style={[styles.resultBadge, { backgroundColor: colors.gold + "20" }]}>
               <MaterialIcons name="emoji-events" size={40} color={colors.gold} />

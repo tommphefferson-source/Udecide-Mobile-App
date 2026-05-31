@@ -8,6 +8,8 @@
 
 export * from './apiError';
 export * from './candidate';
+export * from './civicsQuiz';
+export * from './civicsQuizQuestion';
 export * from './contest';
 export * from './correspondenceAddress';
 export * from './election';

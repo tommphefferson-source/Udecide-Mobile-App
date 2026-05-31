@@ -182,6 +182,22 @@ export interface QuizList {
   quizzes: Quiz[];
 }
 
+export interface CivicsQuizQuestion {
+  id: string;
+  question: string;
+  options: string[];
+  answerIndex: number;
+  explanation: string;
+}
+
+export interface CivicsQuiz {
+  id: string;
+  title: string;
+  description: string;
+  /** @minItems 1 */
+  questions: CivicsQuizQuestion[];
+}
+
 export interface QuizProgressInput {
   /** @minLength 1 */
   quizId: string;

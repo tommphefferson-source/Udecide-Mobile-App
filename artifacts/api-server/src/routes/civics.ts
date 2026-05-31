@@ -1,5 +1,6 @@
 import { Router, type IRouter } from "express";
 import {
+  GetQuizResponse,
   ListQuizzesResponse,
   ListQuestionnairesResponse,
   ListTerminologyResponse,
@@ -7,12 +8,17 @@ import {
   SubmitQuizProgressBody,
   SubmitQuizProgressResponse,
 } from "@workspace/api-zod";
+import { civicsQuiz } from "../data/quiz";
 import { quizzes } from "../data/quizzes";
 import { questionnaires } from "../data/questionnaires";
 import { terminology } from "../data/terminology";
 import { parties } from "../data/parties";
 
 const router: IRouter = Router();
+
+router.get("/quiz", (_req, res): void => {
+  res.json(GetQuizResponse.parse(civicsQuiz));
+});
 
 router.get("/quizzes", (_req, res): void => {
   res.json(ListQuizzesResponse.parse({ quizzes }));

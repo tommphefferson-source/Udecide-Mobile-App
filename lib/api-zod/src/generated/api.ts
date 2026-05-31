@@ -183,6 +183,26 @@ export const GetNewsResponse = zod.object({
 
 
 /**
+ * @summary Civics quiz with questions
+ */
+
+
+
+export const GetQuizResponse = zod.object({
+  "id": zod.string(),
+  "title": zod.string(),
+  "description": zod.string(),
+  "questions": zod.array(zod.object({
+  "id": zod.string(),
+  "question": zod.string(),
+  "options": zod.array(zod.string()),
+  "answerIndex": zod.number(),
+  "explanation": zod.string()
+})).min(1)
+})
+
+
+/**
  * @summary List quizzes / quiz menu
  */
 export const ListQuizzesResponse = zod.object({

@@ -193,6 +193,19 @@ paths:
               schema:
                 $ref: "#/components/schemas/NewsResponse"
 
+  /quiz:
+    get:
+      operationId: getQuiz
+      tags: [civics]
+      summary: Civics quiz with questions
+      responses:
+        "200":
+          description: Quiz with questions
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CivicsQuiz"
+
   /quizzes:
     get:
       operationId: listQuizzes
@@ -626,6 +639,48 @@ components:
             $ref: "#/components/schemas/Quiz"
       required:
         - quizzes
+
+    CivicsQuizQuestion:
+      type: object
+      properties:
+        id:
+          type: string
+        question:
+          type: string
+        options:
+          type: array
+          items:
+            type: string
+        answerIndex:
+          type: integer
+        explanation:
+          type: string
+      required:
+        - id
+        - question
+        - options
+        - answerIndex
+        - explanation
+
+    CivicsQuiz:
+      type: object
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+        questions:
+          type: array
+          minItems: 1
+          items:
+            $ref: "#/components/schemas/CivicsQuizQuestion"
+      required:
+        - id
+        - title
+        - description
+        - questions
 
     QuizProgressInput:
       type: object
