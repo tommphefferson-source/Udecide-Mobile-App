@@ -44,6 +44,11 @@ export default function DashboardScreen() {
     ? rawFirstName.charAt(0).toUpperCase() + rawFirstName.slice(1).toLowerCase()
     : "Voter";
 
+  // Pick the greeting based on the device's local hour.
+  const hour = new Date().getHours();
+  const timeGreeting =
+    hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
+
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       {/* Header */}
@@ -59,7 +64,7 @@ export default function DashboardScreen() {
               resizeMode="contain"
             />
             <View style={styles.brandText}>
-              <Text style={styles.greeting}>Good day, {firstName}</Text>
+              <Text style={styles.greeting}>{timeGreeting}, {firstName}</Text>
               <Text style={styles.headerSubtitle}>Political & Voter App</Text>
             </View>
           </View>
