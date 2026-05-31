@@ -1,7 +1,7 @@
 import { MaterialIcons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   Image,
   Platform,
@@ -44,10 +44,25 @@ export default function DashboardScreen() {
     ? rawFirstName.charAt(0).toUpperCase() + rawFirstName.slice(1).toLowerCase()
     : "Voter";
 
+  // Live clock — updates every 30s so the header datetime stays current.
+  const [now, setNow] = useState(new Date());
+  useEffect(() => {
+    const id = setInterval(() => setNow(new Date()), 30_000);
+    return () => clearInterval(id);
+  }, []);
+
   // Pick the greeting based on the device's local hour.
-  const hour = new Date().getHours();
+  const hour = now.getHours();
   const timeGreeting =
     hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
+
+  const dateTimeLabel = now.toLocaleString(undefined, {
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  });
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
@@ -74,6 +89,8 @@ export default function DashboardScreen() {
             <MaterialIcons name="account-circle" size={36} color="rgba(255,255,255,0.8)" />
           </Pressable>
         </View>
+
+        <Text style={styles.dateTime}>{dateTimeLabel}</Text>
 
         <AddressOverrideBanner />
 
@@ -144,6 +161,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingBottom: 16,
     gap: 12,
+  },
+  dateTime: {
+    position: "absolute",
+    right: 20,
+    bottom: 10,
+    fontSize: 12,
+    fontFamily: "Inter_500Medium",
+    color: "rgba(255,255,255,0.6)",
   },
   headerContent: {
     flexDirection: "row",
