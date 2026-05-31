@@ -7,6 +7,7 @@ import {
   FlatList,
   Platform,
   Pressable,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -171,14 +172,14 @@ export default function FactCheckerScreen() {
         {messages.length === 1 && (
           <View style={styles.suggestedRow}>
             <Text style={[styles.suggestedLabel, { color: colors.mutedForeground }]}>Suggested:</Text>
-            <FlatList
+            <ScrollView
               horizontal
-              data={SUGGESTED_PROMPTS}
-              keyExtractor={(p) => p}
               showsHorizontalScrollIndicator={false}
               contentContainerStyle={{ gap: 8, paddingHorizontal: 16 }}
-              renderItem={({ item }) => (
+            >
+              {SUGGESTED_PROMPTS.map((item) => (
                 <Pressable
+                  key={item}
                   style={({ pressed }) => [
                     styles.suggestedChip,
                     { backgroundColor: colors.card, borderColor: colors.border, opacity: pressed ? 0.7 : 1 },
@@ -187,8 +188,8 @@ export default function FactCheckerScreen() {
                 >
                   <Text style={[styles.suggestedChipText, { color: colors.foreground }]}>{item}</Text>
                 </Pressable>
-              )}
-            />
+              ))}
+            </ScrollView>
           </View>
         )}
 

@@ -5,6 +5,7 @@ import {
   FlatList,
   Platform,
   Pressable,
+  ScrollView,
   StyleSheet,
   Text,
   View,
@@ -85,29 +86,35 @@ export default function RepresentativesScreen() {
           { backgroundColor: colors.card, borderBottomColor: colors.border },
         ]}
       >
-        {REP_LEVELS.map((level) => (
-          <Pressable
-            key={level}
-            style={({ pressed }) => [
-              styles.filterBtn,
-              selectedLevel === level && { backgroundColor: colors.accent },
-              { opacity: pressed ? 0.7 : 1 },
-            ]}
-            onPress={() => setSelectedLevel(level)}
-          >
-            <Text
-              style={[
-                styles.filterText,
-                {
-                  color:
-                    selectedLevel === level ? "#FFF" : colors.mutedForeground,
-                },
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.filterRowContent}
+        >
+          {REP_LEVELS.map((level) => (
+            <Pressable
+              key={level}
+              style={({ pressed }) => [
+                styles.filterBtn,
+                selectedLevel === level && { backgroundColor: colors.accent },
+                { opacity: pressed ? 0.7 : 1 },
               ]}
+              onPress={() => setSelectedLevel(level)}
             >
-              {level}
-            </Text>
-          </Pressable>
-        ))}
+              <Text
+                style={[
+                  styles.filterText,
+                  {
+                    color:
+                      selectedLevel === level ? "#FFF" : colors.mutedForeground,
+                  },
+                ]}
+              >
+                {level}
+              </Text>
+            </Pressable>
+          ))}
+        </ScrollView>
       </View>
 
       {loading ? (
@@ -260,12 +267,14 @@ const styles = StyleSheet.create({
     color: "rgba(255,255,255,0.6)",
   },
   filterRow: {
-    flexDirection: "row",
-    paddingHorizontal: 12,
     paddingVertical: 10,
-    gap: 6,
     borderBottomWidth: 1,
-    flexWrap: "wrap",
+  },
+  filterRowContent: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 12,
+    gap: 6,
   },
   filterBtn: {
     paddingHorizontal: 12,

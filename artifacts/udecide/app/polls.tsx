@@ -2,7 +2,7 @@ import { MaterialIcons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import React, { useCallback, useEffect, useState } from "react";
-import { FlatList, Platform, Pressable, StyleSheet, Text, View } from "react-native";
+import { FlatList, Platform, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { ErrorState } from "@/components/ErrorState";
@@ -80,14 +80,14 @@ export default function PollsScreen() {
       </LinearGradient>
 
       <View style={[styles.filterContainer, { backgroundColor: colors.card, borderBottomColor: colors.border }]}>
-        <FlatList
+        <ScrollView
           horizontal
-          data={POLL_TOPICS as unknown as PollTopic[]}
-          keyExtractor={(t) => t}
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={{ gap: 6, paddingHorizontal: 12 }}
-          renderItem={({ item: topic }) => (
+        >
+          {(POLL_TOPICS as unknown as PollTopic[]).map((topic) => (
             <Pressable
+              key={topic}
               style={({ pressed }) => [
                 styles.topicChip,
                 selectedTopic === topic && { backgroundColor: colors.accent },
@@ -104,8 +104,8 @@ export default function PollsScreen() {
                 {topic}
               </Text>
             </Pressable>
-          )}
-        />
+          ))}
+        </ScrollView>
       </View>
 
       {loading ? (

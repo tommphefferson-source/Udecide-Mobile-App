@@ -3,7 +3,6 @@ import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
-  FlatList,
   Platform,
   Pressable,
   ScrollView,
@@ -107,16 +106,16 @@ export default function IssueQuestionnaireScreen() {
               { backgroundColor: colors.card, borderBottomColor: colors.border },
             ]}
           >
-            <FlatList
+            <ScrollView
               horizontal
-              data={questionnaires}
-              keyExtractor={(q) => q.id}
               showsHorizontalScrollIndicator={false}
               contentContainerStyle={{ gap: 6, paddingHorizontal: 12 }}
-              renderItem={({ item }) => {
+            >
+              {questionnaires.map((item) => {
                 const active = item.id === selectedId;
                 return (
                   <Pressable
+                    key={item.id}
                     style={({ pressed }) => [
                       styles.topicChip,
                       active && { backgroundColor: colors.accent },
@@ -137,8 +136,8 @@ export default function IssueQuestionnaireScreen() {
                     </Text>
                   </Pressable>
                 );
-              }}
-            />
+              })}
+            </ScrollView>
           </View>
 
           <ScrollView
