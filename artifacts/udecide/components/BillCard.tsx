@@ -39,7 +39,12 @@ export function BillCard({ bill, onPress }: BillCardProps) {
           <Text style={[styles.number, { color: colors.navy }]}>{bill.number}</Text>
         </View>
         <View style={[styles.statusBadge, { backgroundColor: statusColor + "20" }]}>
-          <Text style={[styles.statusText, { color: statusColor }]}>{bill.status}</Text>
+          <Text
+            style={[styles.statusText, { color: statusColor }]}
+            numberOfLines={1}
+          >
+            {bill.status}
+          </Text>
         </View>
       </View>
       <Text style={[styles.title, { color: colors.foreground }]} numberOfLines={2}>
@@ -93,6 +98,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 3,
     borderRadius: 8,
+    flexShrink: 0,
   },
   number: {
     fontSize: 12,
@@ -102,6 +108,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 3,
     borderRadius: 8,
+    flexShrink: 1,
   },
   statusText: {
     fontSize: 12,
