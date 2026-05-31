@@ -2,7 +2,7 @@ import { GEMINI_SYSTEM_PROMPT } from "@/utils/constants";
 
 const API_KEY = process.env.EXPO_PUBLIC_GEMINI_API_KEY;
 const BASE_URL =
-  "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent";
+  "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent";
 
 export interface GeminiMessage {
   role: "user" | "model";
