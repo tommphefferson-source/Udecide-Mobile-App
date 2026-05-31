@@ -27,6 +27,7 @@ import { formatDate } from "@/utils/formatters";
 export default function ElectionsScreen() {
   const insets = useSafeAreaInsets();
   const colors = useColors();
+  const router = useRouter();
   const { effectiveAddress } = useAddress();
   const [loading, setLoading] = useState(true);
   const [elections, setElections] = useState<Election[]>([]);
@@ -100,6 +101,11 @@ export default function ElectionsScreen() {
         colors={[colors.navy, colors.navyLight]}
         style={[styles.header, { paddingTop: topPad + 16 }]}
       >
+        {router.canGoBack() && (
+          <Pressable style={styles.backBtn} onPress={() => router.back()}>
+            <MaterialIcons name="arrow-back" size={24} color="#FFF" />
+          </Pressable>
+        )}
         <Text style={styles.screenTitle}>Elections & Ballots</Text>
         <Text style={styles.screenSubtitle}>
           Upcoming elections in {effectiveAddress.state || "your area"}
