@@ -35,7 +35,7 @@ export default function ElectionsScreen() {
   const [usingLiveData, setUsingLiveData] = useState(false);
 
   const topPad = Platform.OS === "web" ? 67 : insets.top;
-  const bottomPad = Platform.OS === "web" ? 34 : insets.bottom + 90;
+  const bottomPad = Platform.OS === "web" ? 110 : insets.bottom + 120;
 
   async function loadElections() {
     setLoading(true);

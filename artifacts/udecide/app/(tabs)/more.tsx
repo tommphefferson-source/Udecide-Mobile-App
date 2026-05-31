@@ -45,7 +45,7 @@ export default function MoreScreen() {
   const { logout } = useAuth();
 
   const topPad = Platform.OS === "web" ? 67 : insets.top;
-  const bottomPad = Platform.OS === "web" ? 34 : insets.bottom + 90;
+  const bottomPad = Platform.OS === "web" ? 110 : insets.bottom + 120;
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
