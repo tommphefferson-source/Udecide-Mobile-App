@@ -1,9 +1,11 @@
 import { MaterialIcons } from "@expo/vector-icons";
+import * as ImagePicker from "expo-image-picker";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import React, { useState } from "react";
 import {
   ActivityIndicator,
+  Image,
   Platform,
   Pressable,
   ScrollView,
@@ -22,10 +24,12 @@ import { validateName, validateRequired, validateState, validateZipCode } from "
 export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
   const colors = useColors();
-  const { user, updateProfile, logout } = useAuth();
+  const { user, updateProfile, uploadProfilePhoto, logout } = useAuth();
 
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [photoUploading, setPhotoUploading] = useState(false);
+  const [localPhotoUri, setLocalPhotoUri] = useState<string | null>(null);
   const [firstName, setFirstName] = useState(user?.firstName ?? "");
   const [lastName, setLastName] = useState(user?.lastName ?? "");
   const [address, setAddress] = useState(user?.address ?? "");
@@ -70,6 +74,35 @@ export default function ProfileScreen() {
     setEditing(false);
   }
 
+  async function handlePickPhoto() {
+    if (photoUploading) return;
+    const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!perm.granted) {
+      setErrors({ general: "Photo library access is needed to choose a profile photo." });
+      return;
+    }
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ["images"],
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.7,
+    });
+    if (result.canceled || !result.assets?.[0]) return;
+    const asset = result.assets[0];
+    setErrors({});
+    setLocalPhotoUri(asset.uri);
+    setPhotoUploading(true);
+    const name = asset.fileName ?? asset.uri.split("/").pop() ?? "profile.jpg";
+    const type = asset.mimeType ?? "image/jpeg";
+    const res = await uploadProfilePhoto({ uri: asset.uri, name, type });
+    setPhotoUploading(false);
+    if (!res.success) {
+      setLocalPhotoUri(null);
+      setErrors({ general: res.error ?? "Unable to upload your photo. Please try again." });
+    }
+  }
+
+  const displayPhoto = localPhotoUri ?? (user?.profileImage || null);
   const stateName = US_STATES.find((s) => s.code === user?.state)?.name ?? user?.state ?? "Not set";
 
   return (
@@ -79,9 +112,22 @@ export default function ProfileScreen() {
           <MaterialIcons name="arrow-back" size={24} color="#FFF" />
         </Pressable>
         <View style={styles.avatarSection}>
-          <View style={[styles.avatar, { backgroundColor: colors.accent }]}>
-            <Text style={styles.avatarText}>{user?.firstName?.charAt(0)?.toUpperCase() ?? "U"}</Text>
-          </View>
+          <Pressable style={styles.avatarWrap} onPress={handlePickPhoto} disabled={photoUploading}>
+            {displayPhoto ? (
+              <Image source={{ uri: displayPhoto }} style={styles.avatar} />
+            ) : (
+              <View style={[styles.avatar, { backgroundColor: colors.accent }]}>
+                <Text style={styles.avatarText}>{user?.firstName?.charAt(0)?.toUpperCase() ?? "U"}</Text>
+              </View>
+            )}
+            <View style={styles.avatarBadge}>
+              {photoUploading ? (
+                <ActivityIndicator size="small" color="#FFF" />
+              ) : (
+                <MaterialIcons name="photo-camera" size={16} color="#FFF" />
+              )}
+            </View>
+          </Pressable>
           <Text style={styles.userName}>{`${user?.firstName ?? ""} ${user?.lastName ?? ""}`.trim() || "User"}</Text>
           <Text style={styles.userEmail}>{user?.email ?? ""}</Text>
         </View>
@@ -206,8 +252,22 @@ const styles = StyleSheet.create({
   header: { paddingHorizontal: 20, paddingBottom: 24, gap: 16 },
   backBtn: { alignSelf: "flex-start" },
   avatarSection: { alignItems: "center", gap: 8 },
+  avatarWrap: { position: "relative" },
   avatar: { width: 72, height: 72, borderRadius: 36, alignItems: "center", justifyContent: "center" },
   avatarText: { fontSize: 32, fontFamily: "Inter_700Bold", color: "#FFF" },
+  avatarBadge: {
+    position: "absolute",
+    right: -2,
+    bottom: -2,
+    width: 26,
+    height: 26,
+    borderRadius: 13,
+    backgroundColor: "rgba(0,0,0,0.6)",
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 2,
+    borderColor: "#FFF",
+  },
   userName: { fontSize: 20, fontFamily: "Inter_700Bold", color: "#FFF" },
   userEmail: { fontSize: 13, fontFamily: "Inter_400Regular", color: "rgba(255,255,255,0.6)" },
   section: { borderRadius: 16, borderWidth: 1, overflow: "hidden" },

@@ -7,7 +7,9 @@ import {
   signup as apiSignup,
   exchangeGoogleCode as apiExchangeGoogleCode,
   updateProfile as apiUpdateProfile,
+  uploadProfilePhoto as apiUploadProfilePhoto,
   type AuthUser,
+  type ProfilePhotoFile,
 } from "@/services/authApi";
 import {
   setSessionToken,
@@ -33,6 +35,7 @@ interface AuthContextValue {
   setupProfile: (profile: Partial<UserProfile>) => Promise<{ success: boolean; error?: string }>;
   logout: () => Promise<void>;
   updateProfile: (updates: Partial<UserProfile>) => Promise<{ success: boolean; error?: string }>;
+  uploadProfilePhoto: (file: ProfilePhotoFile) => Promise<{ success: boolean; error?: string }>;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -51,6 +54,7 @@ function toUserProfile(u: AuthUser): UserProfile {
     city: u.city,
     state: u.state,
     zipCode: u.zipCode,
+    profileImage: u.profileImage,
     createdAt: new Date().toISOString(),
   };
 }
@@ -217,6 +221,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           city: canonical.city || merged.city,
           state: canonical.state || merged.state,
           zipCode: canonical.zipCode || merged.zipCode,
+          profileImage: canonical.profileImage || merged.profileImage,
           createdAt: user.createdAt,
         };
         setUser(toStore);
@@ -246,6 +251,38 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const updateProfile = useCallback(
     (updates: Partial<UserProfile>) => persistProfile(updates),
     [persistProfile]
+  );
+
+  /**
+   * Upload a new profile photo to the backend (legacy /edit_profile) and store
+   * the canonical photo URL it returns. Only the image changes here, so we keep
+   * the rest of the local user untouched.
+   */
+  const uploadProfilePhoto = useCallback(
+    async (file: ProfilePhotoFile): Promise<{ success: boolean; error?: string }> => {
+      if (!user) return { success: false, error: "You must be signed in to update your photo." };
+      try {
+        const { user: legacyUser } = await apiUploadProfilePhoto(file);
+        const canonical = toUserProfile(legacyUser);
+        const toStore: UserProfile = {
+          ...user,
+          profileImage: canonical.profileImage || user.profileImage,
+          createdAt: user.createdAt,
+        };
+        setUser(toStore);
+        await AsyncStorage.multiSet([
+          [STORAGE_KEY, JSON.stringify(toStore)],
+          [STORAGE_KEY + "_" + user.id, JSON.stringify(toStore)],
+        ]);
+        return { success: true };
+      } catch (err) {
+        return {
+          success: false,
+          error: err instanceof Error ? err.message : "Unable to upload your photo. Please try again.",
+        };
+      }
+    },
+    [user]
   );
 
   const logout = useCallback(async () => {
@@ -281,6 +318,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setupProfile,
         logout,
         updateProfile,
+        uploadProfilePhoto,
       }}
     >
       {children}

@@ -140,6 +140,23 @@ function asNumber(value: unknown): number {
   return Number.isFinite(n) ? n : 0;
 }
 
+/**
+ * The legacy backend stores the profile photo in the `user_profile` column,
+ * which may come back as an absolute URL or a server-relative path. Resolve it
+ * to an absolute URL (against the legacy host, not the `/WS` API base) so the
+ * mobile client can render it directly. Empty stays empty.
+ */
+function resolveProfileImageUrl(raw: string): string {
+  if (!raw) return "";
+  if (/^https?:\/\//i.test(raw)) return raw;
+  try {
+    const origin = new URL(config.legacyWsBaseUrl).origin;
+    return `${origin}/${raw.replace(/^\/+/, "")}`;
+  } catch {
+    return raw;
+  }
+}
+
 async function wsPost(
   path: string,
   params: Record<string, string>,
@@ -256,7 +273,7 @@ function mapAuthUser(row: unknown): LegacyAuthUser {
     stateId,
     zipCode: asString(o.zip_code) ?? "",
     phoneNumber: asString(o.phone_number) ?? "",
-    profileImage: asString(o.user_profile) ?? "",
+    profileImage: resolveProfileImageUrl(asString(o.user_profile) ?? ""),
     status: asString(o.status) ?? "",
   };
 }
@@ -368,6 +385,79 @@ export async function editProfile(
   }
   // The edit_profile response omits auth_token; preserve the caller's token so
   // the client keeps its session.
+  if (!user.authToken) user.authToken = token;
+  return user;
+}
+
+export interface ProfilePhotoUpload {
+  buffer: Buffer;
+  filename: string;
+  mimetype: string;
+}
+
+/**
+ * Upload a profile photo to the legacy `/edit_profile` endpoint. Unlike the
+ * other legacy calls this is multipart/form-data — the image is sent under the
+ * `user_profile` file field (the same column name the response echoes back),
+ * with the AUTHTOKEN header. The boundary/Content-Type is set automatically by
+ * fetch from the FormData body, so we must NOT set it ourselves.
+ */
+export async function uploadProfilePhoto(
+  file: ProfilePhotoUpload,
+  token: string,
+): Promise<LegacyAuthUser> {
+  const form = new FormData();
+  const blob = new Blob([new Uint8Array(file.buffer)], { type: file.mimetype });
+  form.append("user_profile", blob, file.filename);
+
+  let res: Response;
+  try {
+    res = await fetch(`${config.legacyWsBaseUrl}/edit_profile`, {
+      method: "POST",
+      headers: { AUTHTOKEN: token },
+      body: form,
+      signal: AbortSignal.timeout(30_000),
+    });
+  } catch {
+    throw new UpstreamError("Failed to reach legacy endpoint /edit_profile");
+  }
+
+  if (res.status === 401 || res.status === 403) {
+    throw new LegacyAuthError("Authentication token was rejected");
+  }
+
+  const text = await res.text().catch(() => "");
+  let envelope: WsEnvelope;
+  try {
+    envelope = text ? (JSON.parse(text) as WsEnvelope) : {};
+  } catch {
+    throw new UpstreamError("Legacy endpoint /edit_profile returned a non-JSON body");
+  }
+
+  if (envelope.settings?.success !== "1") {
+    const message = envelope.settings?.message ?? "Legacy endpoint /edit_profile failed";
+    if (/unauthor|invalid token|invalid auth|token expired|expired token|not logged|login again|invalid session/i.test(message)) {
+      throw new LegacyAuthError(message);
+    }
+    throw new UpstreamError(message);
+  }
+
+  const rows = Array.isArray(envelope.data) ? envelope.data : [];
+  const user = rows[0] ? mapAuthUser(rows[0]) : null;
+  // [photo diag] TEMPORARY: capture the raw user_profile value the legacy
+  // backend returns so we can confirm the stored path/URL format. Remove once
+  // upload is verified end-to-end on a device.
+  const rawProfile =
+    rows[0] && typeof rows[0] === "object"
+      ? (rows[0] as Record<string, unknown>).user_profile
+      : undefined;
+  logger.info(
+    { rawUserProfile: rawProfile, resolved: user?.profileImage ?? null },
+    "[photo diag] /edit_profile photo upload result",
+  );
+  if (!user) {
+    throw new UpstreamError("Legacy /edit_profile returned no user");
+  }
   if (!user.authToken) user.authToken = token;
   return user;
 }

@@ -7,6 +7,8 @@ export interface UserProfile {
   city: string;
   state: string;
   zipCode: string;
+  /** Absolute URL of the user's profile photo on the legacy backend, if set. */
+  profileImage?: string;
   createdAt: string;
 }
 

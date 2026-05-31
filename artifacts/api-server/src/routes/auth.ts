@@ -1,4 +1,5 @@
-import { Router, type IRouter } from "express";
+import { Router, type IRouter, type RequestHandler } from "express";
+import multer, { MulterError } from "multer";
 import {
   LoginBody,
   LoginResponse,
@@ -13,12 +14,46 @@ import {
   editProfile,
   LegacyAuthError,
   stateCodeToId,
+  uploadProfilePhoto,
   userLogin,
   userSignUp,
   type LegacyAuthUser,
 } from "../providers/legacyWs";
 
 const router: IRouter = Router();
+
+// In-memory upload: profile photos are small and forwarded straight to the
+// legacy backend, so there is no need to touch disk. 8 MB cap, images only.
+const photoUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 8 * 1024 * 1024 },
+  fileFilter: (_req, file, cb) => {
+    cb(null, file.mimetype.startsWith("image/"));
+  },
+});
+
+// Translate multer parsing failures (oversize file, malformed multipart) into
+// actionable 4xx responses instead of letting them fall through as a 500.
+function photoUploadMiddleware(): RequestHandler {
+  const handler = photoUpload.single("photo");
+  return (req, res, next) => {
+    handler(req, res, (err: unknown) => {
+      if (err instanceof MulterError) {
+        if (err.code === "LIMIT_FILE_SIZE") {
+          res.status(413).json({ error: "Image is too large. Maximum size is 8 MB." });
+          return;
+        }
+        res.status(400).json({ error: `Invalid upload: ${err.message}` });
+        return;
+      }
+      if (err) {
+        next(err);
+        return;
+      }
+      next();
+    });
+  };
+}
 
 function toAuthResponse(user: LegacyAuthUser) {
   const { authToken, ...rest } = user;
@@ -85,5 +120,36 @@ router.post("/auth/profile", async (req, res): Promise<void> => {
     throw err;
   }
 });
+
+router.post(
+  "/auth/profile/photo",
+  photoUploadMiddleware(),
+  async (req, res): Promise<void> => {
+    const token = tokenFromRequest(req);
+    if (!token) {
+      throw new AppError(401, "Authentication token is required");
+    }
+    if (!req.file) {
+      res.status(400).json({ error: "An image file is required under the 'photo' field" });
+      return;
+    }
+    try {
+      const user = await uploadProfilePhoto(
+        {
+          buffer: req.file.buffer,
+          filename: req.file.originalname || "profile.jpg",
+          mimetype: req.file.mimetype || "image/jpeg",
+        },
+        token,
+      );
+      res.json(UpdateProfileResponse.parse(toAuthResponse(user)));
+    } catch (err) {
+      if (err instanceof LegacyAuthError) {
+        throw new AppError(401, err.message);
+      }
+      throw err;
+    }
+  },
+);
 
 export default router;

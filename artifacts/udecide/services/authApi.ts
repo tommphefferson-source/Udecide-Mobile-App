@@ -124,3 +124,37 @@ export async function updateProfile(input: ProfileUpdateInput): Promise<AuthResu
   }
   return (await res.json()) as AuthResult;
 }
+
+export interface ProfilePhotoFile {
+  /** Local file URI from the image picker. */
+  uri: string;
+  /** Filename sent to the backend (e.g. "profile.jpg"). */
+  name: string;
+  /** MIME type (e.g. "image/jpeg"). */
+  type: string;
+}
+
+/**
+ * Upload a new profile photo. Sent as multipart/form-data under the `photo`
+ * field; the API Server forwards it to the legacy backend and returns the
+ * updated user (with the stored photo URL). The Content-Type/boundary is set
+ * automatically from the FormData body — do NOT set it manually.
+ */
+export async function uploadProfilePhoto(file: ProfilePhotoFile): Promise<AuthResult> {
+  const form = new FormData();
+  // React Native's FormData accepts a { uri, name, type } object for file parts.
+  form.append("photo", {
+    uri: file.uri,
+    name: file.name,
+    type: file.type,
+  } as unknown as Blob);
+
+  const res = await apiFetch("/auth/profile/photo", {
+    method: "POST",
+    body: form,
+  });
+  if (!res.ok) {
+    throw new Error(await parseError(res));
+  }
+  return (await res.json()) as AuthResult;
+}

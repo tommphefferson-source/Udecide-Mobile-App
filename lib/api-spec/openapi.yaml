@@ -293,6 +293,14 @@ paths:
               schema:
                 $ref: "#/components/schemas/ApiError"
 
+  # NOTE: POST /auth/profile/photo (multipart/form-data file upload, field
+  # `photo`) is implemented in artifacts/api-server but intentionally NOT
+  # described here. The zod/orval codegen cannot represent a binary file body
+  # (it emits File/Blob, which fail the Node lib typecheck). The endpoint reuses
+  # the AuthResponse schema for its 200 body, and the Expo client calls it with
+  # a hand-written multipart fetch, mirroring how the other auth endpoints are
+  # consumed.
+
   /home:
     get:
       operationId: getHome
