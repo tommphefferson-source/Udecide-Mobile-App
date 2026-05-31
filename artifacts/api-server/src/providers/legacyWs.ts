@@ -136,6 +136,7 @@ async function wsPost(
 async function wsPostJson(
   path: string,
   body: Record<string, string>,
+  timeoutMs: number = TIMEOUT_MS,
 ): Promise<unknown[]> {
   let res: Response;
   try {
@@ -143,7 +144,7 @@ async function wsPostJson(
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
-      signal: AbortSignal.timeout(TIMEOUT_MS),
+      signal: AbortSignal.timeout(timeoutMs),
     });
   } catch {
     throw new UpstreamError(`Failed to reach legacy endpoint ${path}`);
@@ -217,7 +218,8 @@ export async function userSignUp(
   };
   if (input.phone) body.phone = input.phone;
 
-  const rows = await wsPostJson("/user_sign_up", body);
+  // Signup is slow upstream (it sends a confirmation email), so allow longer.
+  const rows = await wsPostJson("/user_sign_up", body, 30_000);
   const user = rows[0] ? mapAuthUser(rows[0]) : null;
   // Some legacy deployments omit the token on signup; fall back to a login.
   if (user && user.authToken) return user;

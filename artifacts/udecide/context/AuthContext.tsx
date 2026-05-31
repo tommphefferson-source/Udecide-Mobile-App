@@ -1,7 +1,7 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import React, { createContext, useCallback, useContext, useEffect, useState } from "react";
 
-import { login as apiLogin, type AuthUser } from "@/services/authApi";
+import { login as apiLogin, signup as apiSignup, type AuthUser } from "@/services/authApi";
 import type { UserProfile } from "@/types/user";
 
 interface AuthContextValue {
@@ -13,7 +13,9 @@ interface AuthContextValue {
   register: (
     fullName: string,
     email: string,
-    password: string
+    password: string,
+    city: string,
+    zipCode: string
   ) => Promise<{ success: boolean; error?: string }>;
   setupProfile: (profile: Partial<UserProfile>) => Promise<void>;
   logout: () => Promise<void>;
@@ -23,7 +25,6 @@ interface AuthContextValue {
 const AuthContext = createContext<AuthContextValue | null>(null);
 
 const STORAGE_KEY = "@udecide_user";
-const CREDENTIALS_KEY = "@udecide_credentials";
 const AUTH_TOKEN_KEY = "@udecide_auth_token";
 
 /** Map the legacy auth payload into the app's local UserProfile shape. */
@@ -91,42 +92,38 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     async (
       fullName: string,
       email: string,
-      password: string
+      password: string,
+      city: string,
+      zipCode: string
     ): Promise<{ success: boolean; error?: string }> => {
       try {
-        const stored = await AsyncStorage.getItem(CREDENTIALS_KEY);
-        const credentials: Record<string, { password: string; userId: string }> = stored
-          ? JSON.parse(stored)
-          : {};
-
-        if (credentials[email.toLowerCase()]) {
-          return { success: false, error: "An account with this email already exists" };
-        }
-
-        const userId =
-          Date.now().toString() + Math.random().toString(36).substring(2, 9);
-        const newUser: UserProfile = {
-          id: userId,
-          fullName,
-          email: email.toLowerCase(),
-          address: "",
-          city: "",
-          state: "",
-          zipCode: "",
-          createdAt: new Date().toISOString(),
-        };
-
-        credentials[email.toLowerCase()] = { password, userId };
-        await AsyncStorage.setItem(CREDENTIALS_KEY, JSON.stringify(credentials));
-        await AsyncStorage.setItem(
-          STORAGE_KEY + "_" + userId,
-          JSON.stringify(newUser)
-        );
-        setUser(newUser);
-        await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(newUser));
+        const parts = fullName.trim().split(/\s+/);
+        const firstName = parts[0] ?? "";
+        const lastName = parts.slice(1).join(" ") || firstName;
+        // state_id "0" is the legacy placeholder for the simplified signup path.
+        const { authToken: token, user: legacyUser } = await apiSignup({
+          firstName,
+          lastName,
+          email: email.trim(),
+          password,
+          stateId: "0",
+          city: city.trim(),
+          zipCode: zipCode.trim(),
+        });
+        const userProfile = toUserProfile(legacyUser);
+        setUser(userProfile);
+        setAuthToken(token);
+        await AsyncStorage.multiSet([
+          [STORAGE_KEY, JSON.stringify(userProfile)],
+          [STORAGE_KEY + "_" + userProfile.id, JSON.stringify(userProfile)],
+          [AUTH_TOKEN_KEY, token],
+        ]);
         return { success: true };
-      } catch {
-        return { success: false, error: "An error occurred. Please try again." };
+      } catch (err) {
+        return {
+          success: false,
+          error: err instanceof Error ? err.message : "Unable to create account. Please try again.",
+        };
       }
     },
     []
@@ -155,10 +152,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [user]);
 
   const logout = useCallback(async () => {
+    const keys = [STORAGE_KEY, AUTH_TOKEN_KEY];
+    if (user) keys.push(STORAGE_KEY + "_" + user.id);
     setUser(null);
     setAuthToken(null);
-    await AsyncStorage.multiRemove([STORAGE_KEY, AUTH_TOKEN_KEY]);
-  }, []);
+    await AsyncStorage.multiRemove(keys);
+  }, [user]);
 
   return (
     <AuthContext.Provider
@@ -166,7 +165,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         user,
         authToken,
         isLoading,
-        isAuthenticated: !!user,
+        isAuthenticated: !!user && !!authToken,
         login,
         register,
         setupProfile,

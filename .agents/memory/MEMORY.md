@@ -3,3 +3,4 @@
 - [LegiScan API response shapes](legiscan-response-shapes.md) — getMasterList→`masterlist`, getSearch→`searchresult`; differing field names + numeric status codes; one mapper must handle all or state bills come back empty.
 - [Mock-fallback honesty](mock-fallback-honesty.md) — UDecide API services are mock-first; in live mode (key present) no-result/error paths must return empty, never MOCK_* data shown under a "live" badge.
 - [Cicero / paid APIs proxy](cicero-and-paid-apis-proxy.md) — no-CORS/paid external APIs (Cicero reps data) must go through api-server, not the Expo client; never name paid keys EXPO_PUBLIC_* (Expo bundles them).
+- [Legacy WS auth & questionnaires](legacy-auth-and-questionnaires.md) — login/signup are JSON + no AUTHTOKEN; signup needs city/zip + state_id="0" placeholder and is slow (~30s); questionaires_listing is stance data, not a knowledge quiz.

@@ -22,6 +22,8 @@ import {
   validateEmail,
   validateName,
   validatePassword,
+  validateRequired,
+  validateZipCode,
 } from "@/utils/validation";
 
 export default function RegisterScreen() {
@@ -31,6 +33,8 @@ export default function RegisterScreen() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [city, setCity] = useState("");
+  const [zipCode, setZipCode] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -40,12 +44,16 @@ export default function RegisterScreen() {
     const emailErr = validateEmail(email);
     const passErr = validatePassword(password);
     const confirmErr = validateConfirmPassword(password, confirmPassword);
+    const cityErr = validateRequired(city, "City");
+    const zipErr = validateZipCode(zipCode);
 
     const newErrors: Record<string, string> = {};
     if (nameErr) newErrors.fullName = nameErr;
     if (emailErr) newErrors.email = emailErr;
     if (passErr) newErrors.password = passErr;
     if (confirmErr) newErrors.confirmPassword = confirmErr;
+    if (cityErr) newErrors.city = cityErr;
+    if (zipErr) newErrors.zipCode = zipErr;
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
@@ -53,7 +61,7 @@ export default function RegisterScreen() {
     }
     setErrors({});
     setLoading(true);
-    const result = await register(fullName.trim(), email.trim(), password);
+    const result = await register(fullName.trim(), email.trim(), password, city.trim(), zipCode.trim());
     setLoading(false);
     if (!result.success) {
       setErrors({ general: result.error ?? "Registration failed" });
@@ -72,6 +80,7 @@ export default function RegisterScreen() {
     keyboardType,
     errorKey,
     rightAction,
+    maxLength,
   }: {
     label: string;
     value: string;
@@ -79,9 +88,10 @@ export default function RegisterScreen() {
     icon: string;
     placeholder: string;
     secureTextEntry?: boolean;
-    keyboardType?: "email-address" | "default";
+    keyboardType?: "email-address" | "default" | "numeric";
     errorKey: string;
     rightAction?: React.ReactNode;
+    maxLength?: number;
   }) {
     return (
       <View style={styles.field}>
@@ -96,8 +106,9 @@ export default function RegisterScreen() {
             onChangeText={onChangeText}
             secureTextEntry={secureTextEntry}
             keyboardType={keyboardType ?? "default"}
-            autoCapitalize={keyboardType === "email-address" ? "none" : "words"}
+            autoCapitalize={keyboardType === "email-address" || keyboardType === "numeric" ? "none" : "words"}
             autoCorrect={false}
+            maxLength={maxLength}
           />
           {rightAction}
         </View>
@@ -178,6 +189,24 @@ export default function RegisterScreen() {
               placeholder="Re-enter password"
               secureTextEntry={!showPassword}
               errorKey="confirmPassword"
+            />
+            <Field
+              label="City"
+              value={city}
+              onChangeText={setCity}
+              icon="location-city"
+              placeholder="Your city"
+              errorKey="city"
+            />
+            <Field
+              label="ZIP Code"
+              value={zipCode}
+              onChangeText={setZipCode}
+              icon="markunread-mailbox"
+              placeholder="12345"
+              keyboardType="numeric"
+              maxLength={10}
+              errorKey="zipCode"
             />
 
             <Pressable
