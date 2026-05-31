@@ -11,11 +11,11 @@ import { listPolls, getResults, recordVote } from "../services/pollsService";
 
 const router: IRouter = Router();
 
-router.get("/polls", (_req, res): void => {
-  res.json(ListPollsResponse.parse({ polls: listPolls() }));
+router.get("/polls", async (_req, res): Promise<void> => {
+  res.json(ListPollsResponse.parse({ polls: await listPolls() }));
 });
 
-router.post("/polls/:pollId/vote", (req, res): void => {
+router.post("/polls/:pollId/vote", async (req, res): Promise<void> => {
   const params = VotePollParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
@@ -26,17 +26,17 @@ router.post("/polls/:pollId/vote", (req, res): void => {
     res.status(400).json({ error: body.error.message });
     return;
   }
-  const results = recordVote(params.data.pollId, body.data.optionId);
+  const results = await recordVote(params.data.pollId, body.data.optionId);
   res.json(VotePollResponse.parse(results));
 });
 
-router.get("/polls/:pollId/results", (req, res): void => {
+router.get("/polls/:pollId/results", async (req, res): Promise<void> => {
   const params = GetPollResultsParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });
     return;
   }
-  res.json(GetPollResultsResponse.parse(getResults(params.data.pollId)));
+  res.json(GetPollResultsResponse.parse(await getResults(params.data.pollId)));
 });
 
 export default router;

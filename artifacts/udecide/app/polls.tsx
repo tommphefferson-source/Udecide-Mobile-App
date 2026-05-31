@@ -1,40 +1,68 @@
 import { MaterialIcons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
-import React, { useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { FlatList, Platform, Pressable, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { ErrorState } from "@/components/ErrorState";
+import { LoadingState } from "@/components/LoadingState";
 import { PollCard } from "@/components/PollCard";
 import { useColors } from "@/hooks/useColors";
-import { MOCK_POLLS } from "@/services/mockData";
+import { getPolls, votePoll } from "@/services/pollsApi";
 import type { Poll, PollTopic } from "@/types/politics";
 import { POLL_TOPICS } from "@/utils/constants";
 
 export default function PollsScreen() {
   const insets = useSafeAreaInsets();
   const colors = useColors();
-  const [polls, setPolls] = useState<Poll[]>(MOCK_POLLS);
+  const [polls, setPolls] = useState<Poll[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
   const [selectedTopic, setSelectedTopic] = useState<PollTopic>("All");
 
   const topPad = Platform.OS === "web" ? 67 : insets.top;
   const bottomPad = Platform.OS === "web" ? 34 : insets.bottom + 24;
 
-  function handleVote(pollId: string, optionId: string) {
-    setPolls((prev) =>
-      prev.map((poll) => {
-        if (poll.id !== pollId) return poll;
-        if (poll.userVoted) return poll;
-        return {
-          ...poll,
-          userVoted: optionId,
-          totalVotes: poll.totalVotes + 1,
-          options: poll.options.map((opt) =>
-            opt.id === optionId ? { ...opt, votes: opt.votes + 1 } : opt
-          ),
-        };
-      })
-    );
+  const loadPolls = useCallback(async () => {
+    setLoading(true);
+    setError(false);
+    try {
+      setPolls(await getPolls());
+    } catch {
+      setError(true);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    void loadPolls();
+  }, [loadPolls]);
+
+  async function handleVote(pollId: string, optionId: string) {
+    const target = polls.find((p) => p.id === pollId);
+    if (!target || target.userVoted) return;
+    try {
+      const results = await votePoll(pollId, optionId);
+      setPolls((prev) =>
+        prev.map((poll) => {
+          if (poll.id !== pollId) return poll;
+          const votesById = new Map(results.options.map((o) => [o.id, o.votes]));
+          return {
+            ...poll,
+            userVoted: optionId,
+            totalVotes: results.totalVotes,
+            options: poll.options.map((opt) => ({
+              ...opt,
+              votes: votesById.get(opt.id) ?? opt.votes,
+            })),
+          };
+        })
+      );
+    } catch {
+      // Vote failed upstream — leave the poll unchanged so the user can retry.
+    }
   }
 
   const filteredPolls = polls.filter(
@@ -80,20 +108,26 @@ export default function PollsScreen() {
         />
       </View>
 
-      <FlatList
-        data={filteredPolls}
-        keyExtractor={(p) => p.id}
-        renderItem={({ item }) => <PollCard poll={item} onVote={handleVote} />}
-        contentContainerStyle={{ padding: 16, gap: 16, paddingBottom: bottomPad }}
-        showsVerticalScrollIndicator={false}
-        ListEmptyComponent={
-          <View style={styles.emptyState}>
-            <MaterialIcons name="poll" size={48} color={colors.mutedForeground} />
-            <Text style={[styles.emptyTitle, { color: colors.foreground }]}>No Polls</Text>
-            <Text style={[styles.emptyText, { color: colors.mutedForeground }]}>No polls available for this topic.</Text>
-          </View>
-        }
-      />
+      {loading ? (
+        <LoadingState rows={4} />
+      ) : error ? (
+        <ErrorState message="We couldn't load polls right now." onRetry={() => void loadPolls()} />
+      ) : (
+        <FlatList
+          data={filteredPolls}
+          keyExtractor={(p) => p.id}
+          renderItem={({ item }) => <PollCard poll={item} onVote={handleVote} />}
+          contentContainerStyle={{ padding: 16, gap: 16, paddingBottom: bottomPad }}
+          showsVerticalScrollIndicator={false}
+          ListEmptyComponent={
+            <View style={styles.emptyState}>
+              <MaterialIcons name="poll" size={48} color={colors.mutedForeground} />
+              <Text style={[styles.emptyTitle, { color: colors.foreground }]}>No Polls</Text>
+              <Text style={[styles.emptyText, { color: colors.mutedForeground }]}>No polls available for this topic.</Text>
+            </View>
+          }
+        />
+      )}
     </View>
   );
 }

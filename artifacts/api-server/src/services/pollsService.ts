@@ -1,10 +1,132 @@
+import { config } from "../config";
 import { polls as seedPolls, type SeedPoll } from "../data/polls";
 import { AppError } from "../lib/errors";
+import * as legacy from "../providers/legacyWs";
+
+/**
+ * Polls are served live from the legacy web service when an AUTHTOKEN is
+ * configured (config.legacyWsAuthToken); otherwise they fall back to local mock
+ * data. In live mode, no-result and error paths surface empty/upstream errors —
+ * mock data is never shown alongside live data.
+ */
+function isLive(): boolean {
+  return Boolean(config.legacyWsAuthToken);
+}
+
+interface ApiPollOption {
+  id: string;
+  label: string;
+  votes: number;
+}
+
+interface ApiPoll {
+  id: string;
+  question: string;
+  description: string | null;
+  category: string | null;
+  totalVotes: number;
+  options: ApiPollOption[];
+}
+
+interface ApiResultOption extends ApiPollOption {
+  percentage: number;
+}
+
+interface ApiResults {
+  pollId: string;
+  question: string;
+  totalVotes: number;
+  options: ApiResultOption[];
+}
+
+// ── Live (legacy web service) ────────────────────────────────────────────────
+
+function votesFromPercent(percent: number, total: number): number {
+  return Math.round((percent / 100) * total);
+}
+
+function resultToApi(r: legacy.LegacyPollResult): ApiResults {
+  return {
+    pollId: r.pollId,
+    question: r.question,
+    totalVotes: r.totalVotes,
+    options: [
+      {
+        id: "option1",
+        label: r.option1,
+        votes: votesFromPercent(r.option1Perc, r.totalVotes),
+        percentage: r.option1Perc,
+      },
+      {
+        id: "option2",
+        label: r.option2,
+        votes: votesFromPercent(r.option2Perc, r.totalVotes),
+        percentage: r.option2Perc,
+      },
+    ],
+  };
+}
+
+async function listPollsLive(): Promise<ApiPoll[]> {
+  const [list, results] = await Promise.all([
+    legacy.fetchPolls(),
+    // Results enrich the list with real vote totals; if unavailable the list
+    // still renders with zero counts rather than failing entirely.
+    legacy.fetchPollResults().catch(() => [] as legacy.LegacyPollResult[]),
+  ]);
+  const byId = new Map(results.map((r) => [r.pollId, r]));
+
+  return list.map((p) => {
+    const r = byId.get(p.pollId);
+    const total = r?.totalVotes ?? 0;
+    return {
+      id: p.pollId,
+      question: p.question,
+      description: null,
+      category: null,
+      totalVotes: total,
+      options: [
+        {
+          id: "option1",
+          label: p.option1,
+          votes: r ? votesFromPercent(r.option1Perc, total) : 0,
+        },
+        {
+          id: "option2",
+          label: p.option2,
+          votes: r ? votesFromPercent(r.option2Perc, total) : 0,
+        },
+      ],
+    };
+  });
+}
+
+async function getResultsLive(pollId: string): Promise<ApiResults> {
+  const results = await legacy.fetchPollResults();
+  const found = results.find((r) => r.pollId === pollId);
+  if (!found) throw new AppError(404, `Poll "${pollId}" not found`);
+  return resultToApi(found);
+}
+
+async function recordVoteLive(
+  pollId: string,
+  optionId: string,
+): Promise<ApiResults> {
+  if (optionId !== "option1" && optionId !== "option2") {
+    throw new AppError(
+      404,
+      `Option "${optionId}" not found in poll "${pollId}"`,
+    );
+  }
+  const result = await legacy.votePoll(pollId, optionId);
+  return result ? resultToApi(result) : getResultsLive(pollId);
+}
+
+// ── Mock (local in-memory) ───────────────────────────────────────────────────
 
 /**
  * In-memory vote store seeded from the mock poll data. Votes accumulate for the
- * lifetime of the process. Swap this for a persistent store (e.g. the shared
- * @workspace/db) when durable storage is needed.
+ * lifetime of the process. Used only when no legacy AUTHTOKEN is configured.
  */
 const voteCounts = new Map<string, Map<string, number>>();
 for (const poll of seedPolls) {
@@ -25,7 +147,7 @@ function counts(pollId: string): Map<string, number> {
   return map;
 }
 
-export function listPolls() {
+function listPollsMock(): ApiPoll[] {
   return seedPolls.map((poll) => {
     const counted = counts(poll.id);
     const options = poll.options.map((o) => ({
@@ -45,7 +167,7 @@ export function listPolls() {
   });
 }
 
-function buildResults(pollId: string) {
+function buildResultsMock(pollId: string): ApiResults {
   const seed = findSeed(pollId);
   const counted = counts(pollId);
   const tallied = seed.options.map((o) => ({
@@ -61,23 +183,39 @@ function buildResults(pollId: string) {
     options: tallied.map((o) => ({
       ...o,
       percentage:
-        totalVotes === 0
-          ? 0
-          : Math.round((o.votes / totalVotes) * 1000) / 10,
+        totalVotes === 0 ? 0 : Math.round((o.votes / totalVotes) * 1000) / 10,
     })),
   };
 }
 
-export function getResults(pollId: string) {
-  return buildResults(pollId);
-}
-
-export function recordVote(pollId: string, optionId: string) {
+function recordVoteMock(pollId: string, optionId: string): ApiResults {
   const seed = findSeed(pollId);
   const counted = counts(pollId);
   if (!seed.options.some((o) => o.id === optionId)) {
-    throw new AppError(404, `Option "${optionId}" not found in poll "${pollId}"`);
+    throw new AppError(
+      404,
+      `Option "${optionId}" not found in poll "${pollId}"`,
+    );
   }
   counted.set(optionId, (counted.get(optionId) ?? 0) + 1);
-  return buildResults(pollId);
+  return buildResultsMock(pollId);
+}
+
+// ── Public API ───────────────────────────────────────────────────────────────
+
+export async function listPolls(): Promise<ApiPoll[]> {
+  return isLive() ? listPollsLive() : listPollsMock();
+}
+
+export async function getResults(pollId: string): Promise<ApiResults> {
+  return isLive() ? getResultsLive(pollId) : buildResultsMock(pollId);
+}
+
+export async function recordVote(
+  pollId: string,
+  optionId: string,
+): Promise<ApiResults> {
+  return isLive()
+    ? recordVoteLive(pollId, optionId)
+    : recordVoteMock(pollId, optionId);
 }
