@@ -36,11 +36,23 @@ export function NewsCard() {
     void load();
   }, [load]);
 
-  function openArticle(article: Pick<NewsArticle, "url" | "title">) {
+  function openArticle(article: NewsArticle) {
     router.push({
-      pathname: "/web-view",
-      params: { url: article.url, title: article.title },
+      pathname: "/article",
+      params: {
+        title: article.title,
+        source: article.source,
+        author: article.author ?? "",
+        publishedAt: article.publishedAt,
+        content: article.content ?? "",
+        imageUrl: article.imageUrl ?? "",
+        url: article.url,
+      },
     });
+  }
+
+  function openExternal(url: string, title: string) {
+    router.push({ pathname: "/web-view", params: { url, title } });
   }
 
   return (
@@ -70,7 +82,7 @@ export function NewsCard() {
       ) : feed && feed.articles.length === 0 && feed.newsUrl ? (
         <Pressable
           style={({ pressed }) => [styles.row, { opacity: pressed ? 0.6 : 1 }]}
-          onPress={() => openArticle({ url: feed.newsUrl, title: "Political News" })}
+          onPress={() => openExternal(feed.newsUrl, "Political News")}
         >
           <View style={styles.rowText}>
             <Text style={[styles.rowTitle, { color: colors.foreground }]} numberOfLines={2}>

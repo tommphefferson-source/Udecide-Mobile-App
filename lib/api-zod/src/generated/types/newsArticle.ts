@@ -13,4 +13,10 @@ export interface NewsArticle {
   source: string;
   url: string;
   publishedAt: string;
+  /** Plain-text article body for in-app reading (paragraphs separated by blank lines). */
+  content?: string;
+  /** Lead image URL extracted from the feed item, if any. */
+  imageUrl?: string;
+  /** Article author/byline, if provided by the feed. */
+  author?: string;
 }

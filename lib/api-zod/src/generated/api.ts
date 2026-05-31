@@ -291,7 +291,10 @@ export const GetNewsResponse = zod.object({
   "description": zod.string(),
   "source": zod.string(),
   "url": zod.string(),
-  "publishedAt": zod.string()
+  "publishedAt": zod.string(),
+  "content": zod.string().optional().describe('Plain-text article body for in-app reading (paragraphs separated by blank lines).'),
+  "imageUrl": zod.string().optional().describe('Lead image URL extracted from the feed item, if any.'),
+  "author": zod.string().optional().describe('Article author\/byline, if provided by the feed.')
 }))
 })
 

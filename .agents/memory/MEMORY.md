@@ -3,6 +3,7 @@
 - [LegiScan API response shapes](legiscan-response-shapes.md) — getMasterList→`masterlist`, getSearch→`searchresult`; differing field names + numeric status codes; one mapper must handle all or state bills come back empty.
 - [Mock-fallback honesty](mock-fallback-honesty.md) — UDecide API services are mock-first; in live mode (key present) no-result/error paths must return empty, never MOCK_* data shown under a "live" badge.
 - [Cicero / paid APIs proxy](cicero-and-paid-apis-proxy.md) — no-CORS/paid external APIs (Cicero reps data) must go through api-server, not the Expo client; never name paid keys EXPO_PUBLIC_* (Expo bundles them).
+- [News RSS feed parsing](news-rss-feed-parsing.md) — news_url is an RSS feed parsed server-side into in-app articles; NPR 403s without a User-Agent; feeds carry teasers only, not full bodies.
 - [Legacy WS edit_profile quirks](legacy-ws-edit-profile.md) — state is numeric state_id (not code); WS silently drops unknown state codes and still returns 200, so api-server must map+validate codes server-side and reject with 400.
 - [Legacy /home_data link fields](legacy-home-data-links.md) — reference links (news_url, town_url, etc.) often lack a scheme; prepend https:// before opening. No article list — Political News is one CTA.
 - [Horizontal chip/filter rows](horizontal-chip-rows.md) — use shared HorizontalScroller (adds web wheel→scrollLeft); bare ScrollView/FlatList horizontal won't scroll with a vertical mouse wheel on web.

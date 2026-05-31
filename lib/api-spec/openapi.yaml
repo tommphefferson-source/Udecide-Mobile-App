@@ -785,6 +785,15 @@ components:
           type: string
         publishedAt:
           type: string
+        content:
+          type: string
+          description: Plain-text article body for in-app reading (paragraphs separated by blank lines).
+        imageUrl:
+          type: string
+          description: Lead image URL extracted from the feed item, if any.
+        author:
+          type: string
+          description: Article author/byline, if provided by the feed.
       required:
         - id
         - title

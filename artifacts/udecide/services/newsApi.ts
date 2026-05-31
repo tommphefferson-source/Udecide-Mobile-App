@@ -12,6 +12,9 @@ export interface NewsArticle {
   source: string;
   url: string;
   publishedAt: string;
+  content?: string;
+  imageUrl?: string;
+  author?: string;
 }
 
 export interface NewsFeed {
