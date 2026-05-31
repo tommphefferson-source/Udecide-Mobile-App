@@ -19,6 +19,13 @@ export interface AppConfig {
    * the Google console. Derived from the Replit domains.
    */
   publicOrigin: string | undefined;
+  /**
+   * Public https origin of the Expo **web** build (the `*.expo.*` subdomain),
+   * which differs from `publicOrigin`. Used to allow the web client's OAuth
+   * return_uri, since on web `makeRedirectUri` returns this origin rather than a
+   * `udecide://` deep link.
+   */
+  expoWebOrigin: string | undefined;
   /** Secret used to sign the OAuth `state` parameter (HMAC). */
   sessionSecret: string | undefined;
   /** Base URL of the legacy UDecide web service (CodeIgniter backend). */
@@ -46,6 +53,9 @@ export const config: AppConfig = {
       process.env.REPLIT_DEV_DOMAIN;
     return domain ? `https://${domain}` : undefined;
   })(),
+  expoWebOrigin: process.env.REPLIT_EXPO_DEV_DOMAIN
+    ? `https://${process.env.REPLIT_EXPO_DEV_DOMAIN}`
+    : undefined,
   sessionSecret: process.env.SESSION_SECRET,
   legacyWsBaseUrl: process.env.LEGACY_WS_BASE_URL ?? "http://52.45.60.139/WS",
   legacyWsAuthToken: process.env.LEGACY_WS_AUTHTOKEN,

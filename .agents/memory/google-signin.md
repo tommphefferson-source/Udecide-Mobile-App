@@ -16,4 +16,6 @@ UDecide's Google Sign-In is a **server-mediated OAuth 2.0 authorization-code flo
 
 **On deploy:** the production domain changes, so the prod `/api/auth/google/callback` URL must also be added to the same Google OAuth client's redirect URIs, or sign-in breaks in production.
 
+**Web vs native return_uri gotcha:** on native, `makeRedirectUri` returns a `udecide://`/`exp://` deep link; on **web** it returns the Expo web origin, which is the `*.expo.*` subdomain (`REPLIT_EXPO_DEV_DOMAIN`) — NOT `publicOrigin` (`REPLIT_DOMAINS[0]`, no `.expo.`). The server's `isAllowedReturnUri` allowlist must therefore accept BOTH `config.publicOrigin` and `config.expoWebOrigin`, or web sign-in fails with 400 "A valid return_uri is required" while native works. Keep that allowlist strict (exact origin or `origin/` prefix) — it's the open-redirect guard.
+
 **How to apply:** if Google Sign-In fails, first curl `localhost:80/api/auth/google/start?return_uri=udecide://` — a 302 to accounts.google.com means server config is good and the problem is in Google Console (redirect URI mismatch / consent screen / test users) or the legacy `socialLogin`.

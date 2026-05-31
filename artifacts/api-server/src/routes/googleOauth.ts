@@ -72,8 +72,14 @@ function getGoogleConfig(): GoogleConfig | null {
  */
 function isAllowedReturnUri(value: string): boolean {
   if (/^(exp|udecide|exp\+udecide):/i.test(value)) return true;
-  if (config.publicOrigin && value.startsWith(`${config.publicOrigin}/`)) return true;
-  return false;
+  // On web, makeRedirectUri returns the app's own https origin (the main proxy
+  // domain or the Expo web subdomain) instead of a deep link.
+  const allowedOrigins = [config.publicOrigin, config.expoWebOrigin].filter(
+    (o): o is string => Boolean(o),
+  );
+  return allowedOrigins.some(
+    (origin) => value === origin || value.startsWith(`${origin}/`),
+  );
 }
 
 function base64url(input: Buffer | string): string {
