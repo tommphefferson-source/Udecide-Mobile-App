@@ -199,9 +199,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           state: merged.state,
           zipCode: merged.zipCode,
         });
-        // Adopt the server's canonical fields (e.g. 2-letter state derived from
-        // the saved state id); preserve the original createdAt.
-        const toStore = { ...toUserProfile(legacyUser), createdAt: user.createdAt };
+        // Adopt the server's canonical fields when present (e.g. 2-letter state
+        // derived from the saved state id), but fall back to the values we just
+        // saved for any field the legacy /edit_profile response omits. That
+        // response is partial — it can drop last_name and state_id — so adopting
+        // it wholesale would wipe fields we successfully saved. Both values were
+        // sent upstream (state as a valid numeric state_id), so keeping them
+        // locally stays consistent with what the backend stored.
+        const canonical = toUserProfile(legacyUser);
+        const toStore: UserProfile = {
+          ...merged,
+          id: canonical.id || merged.id,
+          firstName: canonical.firstName || merged.firstName,
+          lastName: canonical.lastName || merged.lastName,
+          email: canonical.email || merged.email,
+          address: canonical.address || merged.address,
+          city: canonical.city || merged.city,
+          state: canonical.state || merged.state,
+          zipCode: canonical.zipCode || merged.zipCode,
+          createdAt: user.createdAt,
+        };
         setUser(toStore);
         await AsyncStorage.multiSet([
           [STORAGE_KEY, JSON.stringify(toStore)],
