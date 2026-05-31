@@ -1,6 +1,5 @@
 import { config } from "../config";
 import { AppError, UpstreamError } from "../lib/errors";
-import { logger } from "../lib/logger";
 
 /**
  * Provider for the legacy UDecide web service (CodeIgniter backend at
@@ -95,6 +94,19 @@ export class LegacyAuthError extends AppError {
   constructor(message: string) {
     super(401, message);
     this.name = "LegacyAuthError";
+  }
+}
+
+/**
+ * Raised when a social sign-in is verified by the provider but no account is
+ * linked to that identity yet. Callers should route the user into the
+ * account-creation step (collect the fields the legacy backend requires) rather
+ * than treating this as a hard failure.
+ */
+export class SocialAccountNotLinkedError extends LegacyAuthError {
+  constructor(message: string) {
+    super(message);
+    this.name = "SocialAccountNotLinkedError";
   }
 }
 
@@ -307,29 +319,80 @@ export interface SocialLoginInput {
 }
 
 /**
- * Authenticate (or auto-register) via a social identity provider against the
- * legacy `/user_login` endpoint, which accepts `social_login_type` /
- * `social_login_id` in place of a password. The verified email and name are
- * forwarded so the legacy backend can create the account on first sign-in.
+ * Authenticate via a social identity provider against the legacy `/user_login`
+ * endpoint, which matches the account by email + a stored `social_login_id`.
+ *
+ * Two legacy quirks drive this implementation:
+ *  - `user_password` MUST be non-empty or the endpoint dies and returns an
+ *    empty body (the password itself is ignored for social logins, so we pass
+ *    the opaque provider id as a deterministic placeholder).
+ *  - An unlinked identity comes back as `success:"2"` with a "not linked"
+ *    message; we surface that as {@link SocialAccountNotLinkedError} so the
+ *    caller can route into account creation instead of failing outright.
  */
 export async function socialLogin(
   input: SocialLoginInput,
 ): Promise<LegacyAuthUser> {
   const body: Record<string, string> = {
     user_email: input.email,
-    user_password: "",
+    // Non-empty placeholder: the legacy social path ignores the password value
+    // but rejects an empty one with an empty response body.
+    user_password: input.providerId,
     social_login_type: input.provider,
     social_login_id: input.providerId,
   };
   if (input.firstName) body.first_name = input.firstName;
   if (input.lastName) body.last_name = input.lastName;
 
-  const rows = await wsPostJson("/user_login", body);
+  let rows: unknown[];
+  try {
+    rows = await wsPostJson("/user_login", body);
+  } catch (err) {
+    if (err instanceof LegacyAuthError && /not linked/i.test(err.message)) {
+      throw new SocialAccountNotLinkedError(err.message);
+    }
+    throw err;
+  }
   const user = rows[0] ? mapAuthUser(rows[0]) : null;
   if (!user || !user.authToken) {
     throw new LegacyAuthError("Unable to sign in with this account");
   }
   return user;
+}
+
+export interface SocialSignUpInput extends SocialLoginInput {
+  city: string;
+  zipCode: string;
+}
+
+/**
+ * Create an account for a social identity against the legacy `/user_sign_up`
+ * endpoint, then return the authenticated user. The legacy backend requires a
+ * non-empty `user_password`, `city`, and `zipcode`; `state_id` is sent as the
+ * "0" placeholder (the real state is collected afterwards in profile setup,
+ * mirroring the email/password signup path).
+ */
+export async function socialSignup(
+  input: SocialSignUpInput,
+): Promise<LegacyAuthUser> {
+  const body: Record<string, string> = {
+    user_email: input.email,
+    user_password: input.providerId,
+    social_login_type: input.provider,
+    social_login_id: input.providerId,
+    first_name: input.firstName ?? "",
+    last_name: input.lastName ?? "",
+    state_id: "0",
+    city: input.city,
+    zipcode: input.zipCode,
+  };
+
+  // Signup is slow upstream (it sends a confirmation email), so allow longer.
+  const rows = await wsPostJson("/user_sign_up", body, 30_000);
+  const user = rows[0] ? mapAuthUser(rows[0]) : null;
+  if (user && user.authToken) return user;
+  // Some legacy deployments omit the token on signup; fall back to a login.
+  return socialLogin(input);
 }
 
 /** Register a new user against the legacy `/user_sign_up` endpoint. */
@@ -484,11 +547,6 @@ export async function fetchPolls(token?: string): Promise<LegacyPoll[]> {
   try {
     rows = await wsPost("/poll_listing", {}, token);
   } catch (err) {
-    // [poll diag] TEMPORARY: capture the exact upstream failure message.
-    logger.warn(
-      { message: err instanceof Error ? err.message : String(err) },
-      "[poll diag] /poll_listing error",
-    );
     // The legacy backend returns success!=1 with a "No polls found." message
     // when the catalog is empty. That is a no-result, not a failure — surface
     // it as an empty list so the client shows its empty state, not an error.
@@ -497,13 +555,7 @@ export async function fetchPolls(token?: string): Promise<LegacyPoll[]> {
     }
     throw err;
   }
-  const mapped = rows.map(mapPoll).filter((p) => p.pollId);
-  // [poll diag] TEMPORARY: raw shape + mapped count to verify field mapping.
-  logger.info(
-    { rawCount: rows.length, firstRow: rows[0] ?? null, mappedCount: mapped.length },
-    "[poll diag] /poll_listing raw rows",
-  );
-  return mapped;
+  return rows.map(mapPoll).filter((p) => p.pollId);
 }
 
 /** Fetch results (totals + percentages) for every poll. */

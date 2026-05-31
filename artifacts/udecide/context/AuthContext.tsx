@@ -6,6 +6,7 @@ import {
   login as apiLogin,
   signup as apiSignup,
   exchangeGoogleCode as apiExchangeGoogleCode,
+  registerWithGoogle as apiRegisterWithGoogle,
   updateProfile as apiUpdateProfile,
   uploadProfilePhoto as apiUploadProfilePhoto,
   type AuthUser,
@@ -24,6 +25,11 @@ interface AuthContextValue {
   isAuthenticated: boolean;
   login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
   signInWithGoogleCode: (code: string) => Promise<{ success: boolean; error?: string }>;
+  registerWithGoogleCode: (
+    code: string,
+    city: string,
+    zipCode: string
+  ) => Promise<{ success: boolean; error?: string }>;
   register: (
     firstName: string,
     lastName: string,
@@ -132,6 +138,38 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return {
           success: false,
           error: err instanceof Error ? err.message : "Unable to sign in. Please try again.",
+        };
+      }
+    },
+    []
+  );
+
+  const registerWithGoogleCode = useCallback(
+    async (
+      code: string,
+      city: string,
+      zipCode: string
+    ): Promise<{ success: boolean; error?: string }> => {
+      try {
+        const { authToken: token, user: legacyUser } = await apiRegisterWithGoogle({
+          code,
+          city: city.trim(),
+          zipCode: zipCode.trim(),
+        });
+        const userProfile = toUserProfile(legacyUser);
+        setUser(userProfile);
+        setAuthToken(token);
+        setSessionToken(token);
+        await AsyncStorage.multiSet([
+          [STORAGE_KEY, JSON.stringify(userProfile)],
+          [STORAGE_KEY + "_" + userProfile.id, JSON.stringify(userProfile)],
+          [AUTH_TOKEN_KEY, token],
+        ]);
+        return { success: true };
+      } catch (err) {
+        return {
+          success: false,
+          error: err instanceof Error ? err.message : "Unable to create account. Please try again.",
         };
       }
     },
@@ -314,6 +352,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         isAuthenticated: !!user && !!authToken,
         login,
         signInWithGoogleCode,
+        registerWithGoogleCode,
         register,
         setupProfile,
         logout,

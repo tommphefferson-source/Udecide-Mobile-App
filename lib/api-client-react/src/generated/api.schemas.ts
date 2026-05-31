@@ -68,6 +68,18 @@ export interface AuthGoogleExchangeInput {
 }
 
 /**
+ * Completes Google sign-up for a verified-but-unlinked identity. `code` is the short-lived registration ticket handed to the app on its return URL; `city` and `zipCode` are the minimum the legacy backend requires to create the account. The verified email and name are held server-side against the ticket, so they are never sent by the app.
+ */
+export interface AuthGoogleRegisterInput {
+  /** @minLength 1 */
+  code: string;
+  /** @minLength 1 */
+  city: string;
+  /** @minLength 1 */
+  zipCode: string;
+}
+
+/**
  * Partial profile update for the authenticated user. `state` is the 2-letter US abbreviation; the server maps it to the legacy numeric state id. All fields are optional so partial updates are allowed.
  */
 export interface AuthProfileUpdateInput {

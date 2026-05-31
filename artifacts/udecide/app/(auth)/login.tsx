@@ -54,6 +54,12 @@ export default function LoginScreen() {
       const { queryParams } = Linking.parse(result.url);
       const status = queryParams?.status;
       const code = queryParams?.code;
+      // Verified Google identity with no linked account yet: collect the few
+      // remaining required fields before creating the account.
+      if (status === "register" && typeof code === "string") {
+        router.push({ pathname: "/(auth)/google-setup", params: { code } });
+        return;
+      }
       if (status !== "success" || typeof code !== "string") {
         const message =
           typeof queryParams?.message === "string"

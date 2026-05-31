@@ -22,6 +22,7 @@ import type {
 import type {
   ApiError,
   AuthGoogleExchangeInput,
+  AuthGoogleRegisterInput,
   AuthLoginInput,
   AuthProfileUpdateInput,
   AuthResponse,
@@ -735,6 +736,78 @@ export const useExchangeGoogleCode = <TError = ErrorType<ApiError>,
         TContext
       > => {
       return useMutation(getExchangeGoogleCodeMutationOptions(options));
+    }
+
+export const getRegisterGoogleUserUrl = () => {
+
+
+
+
+  return `/api/auth/google/register`
+}
+
+/**
+ * Second step for a Google sign-in whose email is not yet linked to an account. The app first runs the server-mediated OAuth flow; when the identity is verified but no account exists, the server returns a short-lived `code` (a registration ticket) on the return URL instead of a session. The app collects the minimum the legacy backend requires to create an account (city + ZIP), then posts them here with that ticket. The Google-verified identity (email, name) is held server-side against the ticket, so the app never sends provider data.
+ * @summary Finish creating an account for a new Google sign-in
+ */
+export const registerGoogleUser = async (authGoogleRegisterInput: AuthGoogleRegisterInput, options?: RequestInit): Promise<AuthResponse> => {
+
+  return customFetch<AuthResponse>(getRegisterGoogleUserUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      authGoogleRegisterInput,)
+  }
+);}
+
+
+
+
+export const getRegisterGoogleUserMutationOptions = <TError = ErrorType<ApiError>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof registerGoogleUser>>, TError,{data: BodyType<AuthGoogleRegisterInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof registerGoogleUser>>, TError,{data: BodyType<AuthGoogleRegisterInput>}, TContext> => {
+
+const mutationKey = ['registerGoogleUser'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof registerGoogleUser>>, {data: BodyType<AuthGoogleRegisterInput>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  registerGoogleUser(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type RegisterGoogleUserMutationResult = NonNullable<Awaited<ReturnType<typeof registerGoogleUser>>>
+    export type RegisterGoogleUserMutationBody = BodyType<AuthGoogleRegisterInput>
+    export type RegisterGoogleUserMutationError = ErrorType<ApiError>
+
+    /**
+ * @summary Finish creating an account for a new Google sign-in
+ */
+export const useRegisterGoogleUser = <TError = ErrorType<ApiError>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof registerGoogleUser>>, TError,{data: BodyType<AuthGoogleRegisterInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof registerGoogleUser>>,
+        TError,
+        {data: BodyType<AuthGoogleRegisterInput>},
+        TContext
+      > => {
+      return useMutation(getRegisterGoogleUserMutationOptions(options));
     }
 
 export const getUpdateProfileUrl = () => {

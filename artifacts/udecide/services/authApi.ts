@@ -98,6 +98,31 @@ export async function exchangeGoogleCode(code: string): Promise<AuthResult> {
   return (await res.json()) as AuthResult;
 }
 
+export interface GoogleRegisterInput {
+  /** The single-use registration ticket returned on `returnUri`. */
+  code: string;
+  city: string;
+  zipCode: string;
+}
+
+/**
+ * Finish Google sign-up for a verified-but-unlinked identity. The server reads
+ * the Google-verified email/name from the ticket (`code`); the app only sends
+ * the extra fields the legacy backend requires. Signup is slow upstream, so the
+ * server allows a long timeout — keep the app's request alive accordingly.
+ */
+export async function registerWithGoogle(input: GoogleRegisterInput): Promise<AuthResult> {
+  const res = await fetch(`${API_BASE}/auth/google/register`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(input),
+  });
+  if (!res.ok) {
+    throw new Error(await parseError(res));
+  }
+  return (await res.json()) as AuthResult;
+}
+
 export async function signup(input: SignUpInput): Promise<AuthResult> {
   const res = await fetch(`${API_BASE}/auth/signup`, {
     method: "POST",

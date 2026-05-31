@@ -262,6 +262,46 @@ paths:
               schema:
                 $ref: "#/components/schemas/ApiError"
 
+  /auth/google/register:
+    post:
+      operationId: registerGoogleUser
+      tags: [auth]
+      summary: Finish creating an account for a new Google sign-in
+      description: >-
+        Second step for a Google sign-in whose email is not yet linked to an
+        account. The app first runs the server-mediated OAuth flow; when the
+        identity is verified but no account exists, the server returns a
+        short-lived `code` (a registration ticket) on the return URL instead of
+        a session. The app collects the minimum the legacy backend requires to
+        create an account (city + ZIP), then posts them here with that ticket.
+        The Google-verified identity (email, name) is held server-side against
+        the ticket, so the app never sends provider data.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AuthGoogleRegisterInput"
+      responses:
+        "200":
+          description: Newly registered user with token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "400":
+          description: Invalid request or registration rejected
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "401":
+          description: Registration ticket is invalid, already used, or expired
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+
   /auth/profile:
     post:
       operationId: updateProfile
@@ -540,6 +580,29 @@ components:
           minLength: 1
       required:
         - code
+
+    AuthGoogleRegisterInput:
+      type: object
+      description: >-
+        Completes Google sign-up for a verified-but-unlinked identity. `code` is
+        the short-lived registration ticket handed to the app on its return URL;
+        `city` and `zipCode` are the minimum the legacy backend requires to
+        create the account. The verified email and name are held server-side
+        against the ticket, so they are never sent by the app.
+      properties:
+        code:
+          type: string
+          minLength: 1
+        city:
+          type: string
+          minLength: 1
+        zipCode:
+          type: string
+          minLength: 1
+      required:
+        - code
+        - city
+        - zipCode
 
     AuthProfileUpdateInput:
       type: object

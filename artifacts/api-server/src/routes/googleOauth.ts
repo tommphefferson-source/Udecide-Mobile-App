@@ -1,11 +1,18 @@
 import { Router, type IRouter } from "express";
 import { createHmac, randomBytes, timingSafeEqual } from "node:crypto";
-import { ExchangeGoogleCodeBody, ExchangeGoogleCodeResponse } from "@workspace/api-zod";
+import {
+  ExchangeGoogleCodeBody,
+  ExchangeGoogleCodeResponse,
+  RegisterGoogleUserBody,
+  RegisterGoogleUserResponse,
+} from "@workspace/api-zod";
 import { config } from "../config";
 import { AppError } from "../lib/errors";
 import {
   LegacyAuthError,
+  SocialAccountNotLinkedError,
   socialLogin,
+  socialSignup,
   type LegacyAuthUser,
 } from "../providers/legacyWs";
 
@@ -148,6 +155,42 @@ function stashSession(user: LegacyAuthUser): string {
   return code;
 }
 
+/**
+ * A Google-verified identity that has no linked account yet, held server-side
+ * against a single-use ticket while the app collects the extra fields the
+ * legacy backend needs to create the account. The app never sees (or sends)
+ * the email/provider id — keeping the identity server-verified end to end.
+ */
+interface PendingRegistration {
+  provider: string;
+  providerId: string;
+  email: string;
+  firstName?: string;
+  lastName?: string;
+  expiresAt: number;
+}
+
+const pendingRegistrations = new Map<string, PendingRegistration>();
+
+function sweepExpiredRegistrations(): void {
+  const now = Date.now();
+  for (const [code, entry] of pendingRegistrations) {
+    if (entry.expiresAt <= now) pendingRegistrations.delete(code);
+  }
+}
+
+function stashRegistration(
+  identity: Omit<PendingRegistration, "expiresAt">,
+): string {
+  sweepExpiredRegistrations();
+  const code = randomBytes(32).toString("hex");
+  pendingRegistrations.set(code, {
+    ...identity,
+    expiresAt: Date.now() + EXCHANGE_TTL_MS,
+  });
+  return code;
+}
+
 function toAuthResponse(user: LegacyAuthUser) {
   const { authToken, ...rest } = user;
   return { authToken, user: rest };
@@ -253,15 +296,32 @@ router.get("/auth/google/callback", async (req, res): Promise<void> => {
       fail("unverified_email");
       return;
     }
-    const user = await socialLogin({
-      provider: "google",
-      providerId: profile.sub,
-      email: profile.email,
-      firstName: profile.given_name,
-      lastName: profile.family_name,
-    });
-    const oneTimeCode = stashSession(user);
-    res.redirect(appendParams(returnUri, { status: "success", code: oneTimeCode }));
+    try {
+      const user = await socialLogin({
+        provider: "google",
+        providerId: profile.sub,
+        email: profile.email,
+        firstName: profile.given_name,
+        lastName: profile.family_name,
+      });
+      const oneTimeCode = stashSession(user);
+      res.redirect(appendParams(returnUri, { status: "success", code: oneTimeCode }));
+    } catch (err) {
+      // Verified identity but no linked account yet: hand the app a registration
+      // ticket so it can collect the remaining required fields and finish signup.
+      if (err instanceof SocialAccountNotLinkedError) {
+        const ticket = stashRegistration({
+          provider: "google",
+          providerId: profile.sub,
+          email: profile.email,
+          firstName: profile.given_name,
+          lastName: profile.family_name,
+        });
+        res.redirect(appendParams(returnUri, { status: "register", code: ticket }));
+        return;
+      }
+      throw err;
+    }
   } catch (err) {
     req.log.error({ err }, "Google sign-in callback failed");
     fail(err instanceof LegacyAuthError ? err.message : "signin_failed");
@@ -282,6 +342,47 @@ router.post("/auth/google/exchange", (req, res): void => {
   }
   pendingSessions.delete(body.data.code);
   res.json(ExchangeGoogleCodeResponse.parse(toAuthResponse(entry.user)));
+});
+
+// Step 3b — for a verified-but-unlinked identity, finish account creation. The
+// app supplies the registration ticket plus the minimum legacy-required fields
+// (city + ZIP); the Google-verified identity is read from the server-held ticket.
+router.post("/auth/google/register", async (req, res): Promise<void> => {
+  const body = RegisterGoogleUserBody.safeParse(req.body);
+  if (!body.success) {
+    res.status(400).json({ error: body.error.message });
+    return;
+  }
+  sweepExpiredRegistrations();
+  const ticket = pendingRegistrations.get(body.data.code);
+  if (!ticket) {
+    throw new AppError(401, "This sign-in code is invalid or has expired");
+  }
+  // Consume the ticket up front so a slow/failed signup can't be retried with
+  // the same single-use code.
+  pendingRegistrations.delete(body.data.code);
+
+  let user: LegacyAuthUser;
+  try {
+    user = await socialSignup({
+      provider: ticket.provider,
+      providerId: ticket.providerId,
+      email: ticket.email,
+      firstName: ticket.firstName,
+      lastName: ticket.lastName,
+      city: body.data.city,
+      zipCode: body.data.zipCode,
+    });
+  } catch (err) {
+    // A rejected signup (e.g. the email already belongs to an account) is a bad
+    // request, not an auth failure — mirror /auth/signup and surface it as 400
+    // so the app shows the message instead of treating it as a 401 session error.
+    if (err instanceof LegacyAuthError) {
+      throw new AppError(400, err.message);
+    }
+    throw err;
+  }
+  res.json(RegisterGoogleUserResponse.parse(toAuthResponse(user)));
 });
 
 export default router;

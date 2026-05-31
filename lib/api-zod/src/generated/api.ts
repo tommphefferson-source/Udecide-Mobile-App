@@ -259,6 +259,43 @@ export const ExchangeGoogleCodeResponse = zod.object({
 
 
 /**
+ * Second step for a Google sign-in whose email is not yet linked to an account. The app first runs the server-mediated OAuth flow; when the identity is verified but no account exists, the server returns a short-lived `code` (a registration ticket) on the return URL instead of a session. The app collects the minimum the legacy backend requires to create an account (city + ZIP), then posts them here with that ticket. The Google-verified identity (email, name) is held server-side against the ticket, so the app never sends provider data.
+ * @summary Finish creating an account for a new Google sign-in
+ */
+
+
+
+
+
+export const RegisterGoogleUserBody = zod.object({
+  "code": zod.string().min(1),
+  "city": zod.string().min(1),
+  "zipCode": zod.string().min(1)
+}).describe('Completes Google sign-up for a verified-but-unlinked identity. `code` is the short-lived registration ticket handed to the app on its return URL; `city` and `zipCode` are the minimum the legacy backend requires to create the account. The verified email and name are held server-side against the ticket, so they are never sent by the app.')
+
+
+
+
+export const RegisterGoogleUserResponse = zod.object({
+  "authToken": zod.string().min(1),
+  "user": zod.object({
+  "userId": zod.string(),
+  "email": zod.string(),
+  "firstName": zod.string(),
+  "lastName": zod.string(),
+  "address": zod.string().optional(),
+  "city": zod.string().optional(),
+  "state": zod.string().optional(),
+  "stateId": zod.string().optional(),
+  "zipCode": zod.string().optional(),
+  "phoneNumber": zod.string().optional(),
+  "profileImage": zod.string().optional(),
+  "status": zod.string().optional()
+})
+})
+
+
+/**
  * @summary Update the authenticated user's profile on the legacy server
  */
 export const UpdateProfileBody = zod.object({

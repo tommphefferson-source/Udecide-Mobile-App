@@ -8,6 +8,7 @@
 
 export * from './apiError';
 export * from './authGoogleExchangeInput';
+export * from './authGoogleRegisterInput';
 export * from './authLoginInput';
 export * from './authProfileUpdateInput';
 export * from './authResponse';
