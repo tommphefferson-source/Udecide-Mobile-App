@@ -22,6 +22,10 @@ export interface AuthUser {
   phoneNumber: string;
   profileImage: string;
   status: string;
+  /** Raw subscription expiry date from the backend; empty/zero when none. */
+  subscribeExpiryDate?: string;
+  /** Whether the account currently has an active paid subscription. */
+  isSubscribed?: boolean;
 }
 
 export interface ProfileUpdateInput {
@@ -192,4 +196,16 @@ export async function uploadProfilePhoto(file: ProfilePhotoFile): Promise<AuthRe
     throw new Error(await parseError(res));
   }
   return (await res.json()) as AuthResult;
+}
+
+/**
+ * Permanently delete the current user's account. The API Server identifies the
+ * user from the forwarded AUTHTOKEN, so no body is required. Callers should
+ * clear the local session afterwards (see AuthContext.deleteAccount).
+ */
+export async function deleteAccount(): Promise<void> {
+  const res = await apiFetch("/auth/account", { method: "DELETE" });
+  if (!res.ok) {
+    throw new Error(await parseError(res));
+  }
 }

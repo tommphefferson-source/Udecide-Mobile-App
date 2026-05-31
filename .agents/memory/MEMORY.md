@@ -12,3 +12,4 @@
 - [Horizontal chip/filter rows](horizontal-chip-rows.md) — use shared HorizontalScroller (adds web wheel→scrollLeft); bare ScrollView/FlatList horizontal won't scroll with a vertical mouse wheel on web.
 - [AUTHTOKEN auth flow](auth-token-flow.md) — legacy uses custom AUTHTOKEN header (=login auth_token), not bearer; route authed reqs through apiFetch; 401/LegacyAuthError(AppError 401) → clear session + redirect to login.
 - [Legacy WS auth & questionnaires](legacy-auth-and-questionnaires.md) — login/signup are JSON + no AUTHTOKEN; signup needs city/zip + state_id="0" placeholder and is slow (~30s); questionaires_listing is stance data, not a knowledge quiz.
+- [Legacy static_pages CMS](legacy-static-pages.md) — About/Privacy/Terms via page_code (aboutus/privacypolicy/termsconditions), NO AUTHTOKEN; only "Page not found" message → 404, else throw; render HTML dependency-free + guard numeric entities.

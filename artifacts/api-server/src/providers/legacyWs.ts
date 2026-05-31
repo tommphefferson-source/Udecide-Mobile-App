@@ -32,6 +32,8 @@ export interface LegacyAuthUser {
   phoneNumber: string;
   profileImage: string;
   status: string;
+  subscribeExpiryDate: string;
+  isSubscribed: boolean;
 }
 
 export interface LegacySignUpInput {
@@ -287,6 +289,8 @@ function mapAuthUser(row: unknown): LegacyAuthUser {
     phoneNumber: asString(o.phone_number) ?? "",
     profileImage: resolveProfileImageUrl(asString(o.user_profile) ?? ""),
     status: asString(o.status) ?? "",
+    subscribeExpiryDate: asString(o.subscribe_expiry_date) ?? "",
+    isSubscribed: asString(o.is_subscribe) === "1",
   };
 }
 
@@ -677,4 +681,70 @@ export async function fetchHomeData(
 ): Promise<LegacyHomeData | null> {
   const rows = await wsPost("/home_data", {}, token);
   return rows[0] ? mapHomeData(rows[0]) : null;
+}
+
+export interface LegacyStaticPage {
+  title: string;
+  contentHtml: string;
+}
+
+/**
+ * Fetch a legacy CMS page (`/static_pages`) by its page code. Used for the
+ * About Us (`aboutus`), Privacy Policy (`privacypolicy`) and Terms & Conditions
+ * (`termsconditions`) screens. This endpoint needs NO `AUTHTOKEN` (unlike most
+ * legacy endpoints), so we call it directly without the shared token. Returns
+ * `null` when the page code does not exist so the route can answer 404.
+ */
+export async function fetchStaticPage(
+  code: string,
+): Promise<LegacyStaticPage | null> {
+  let res: Response;
+  try {
+    res = await fetch(`${config.legacyWsBaseUrl}/static_pages`, {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({ page_code: code }).toString(),
+      signal: AbortSignal.timeout(TIMEOUT_MS),
+    });
+  } catch {
+    throw new UpstreamError("Failed to reach legacy endpoint /static_pages");
+  }
+
+  const text = await res.text().catch(() => "");
+  let envelope: WsEnvelope;
+  try {
+    envelope = text ? (JSON.parse(text) as WsEnvelope) : {};
+  } catch {
+    throw new UpstreamError("Legacy endpoint /static_pages returned a non-JSON body");
+  }
+
+  if (envelope.settings?.success !== "1") {
+    // The legacy backend answers an unknown page code with `success: "0"` and a
+    // "not found"/"no record" style message rather than an error status; map
+    // only that case to a 404. Any other failure is an upstream problem and
+    // should surface as such rather than being misreported as "page not found".
+    const message = (envelope.settings?.message ?? "").toLowerCase();
+    if (/not found|no record|no data|invalid page/.test(message)) {
+      return null;
+    }
+    throw new UpstreamError(
+      `Legacy endpoint /static_pages failed: ${envelope.settings?.message ?? "unknown error"}`,
+    );
+  }
+
+  const rows = Array.isArray(envelope.data) ? envelope.data : [];
+  const row = (rows[0] ?? {}) as Record<string, unknown>;
+  return {
+    title: asString(row.page_title) ?? "",
+    contentHtml: asString(row.page_content) ?? "",
+  };
+}
+
+/**
+ * Permanently delete the authenticated user's account (`/delete_account`). The
+ * user is identified by the forwarded per-user token, so no body is required.
+ * Throws {@link LegacyAuthError} when the token is missing/rejected.
+ */
+export async function deleteAccount(token: string): Promise<void> {
+  await wsPost("/delete_account", {}, token);
 }

@@ -9,6 +9,10 @@ export interface UserProfile {
   zipCode: string;
   /** Absolute URL of the user's profile photo on the legacy backend, if set. */
   profileImage?: string;
+  /** Subscription expiry date from the backend; empty/zero when no plan. */
+  subscribeExpiryDate?: string;
+  /** Whether the account currently has an active paid subscription. */
+  isSubscribed?: boolean;
   createdAt: string;
 }
 

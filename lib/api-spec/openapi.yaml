@@ -333,6 +333,55 @@ paths:
               schema:
                 $ref: "#/components/schemas/ApiError"
 
+  /auth/account:
+    delete:
+      operationId: deleteAccount
+      tags: [auth]
+      summary: Permanently delete the authenticated user's account
+      description: >-
+        Deletes the signed-in user's account on the legacy backend. The user is
+        identified by the forwarded AUTHTOKEN, so no body is required. The app
+        clears the local session after a successful deletion.
+      responses:
+        "200":
+          description: Account deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeleteAccountResult"
+        "401":
+          description: Missing or rejected auth token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+
+  /pages/{code}:
+    get:
+      operationId: getStaticPage
+      tags: [pages]
+      summary: Fetch a static CMS page (about us, privacy policy, terms) by code
+      parameters:
+        - name: code
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Legacy page code, e.g. `aboutus`, `privacypolicy`, `termsconditions`.
+      responses:
+        "200":
+          description: Page content
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StaticPage"
+        "404":
+          description: No page exists for the given code
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+
   # NOTE: POST /auth/profile/photo (multipart/form-data file upload, field
   # `photo`) is implemented in artifacts/api-server but intentionally NOT
   # described here. The zod/orval codegen cannot represent a binary file body
@@ -502,6 +551,12 @@ components:
           type: string
         status:
           type: string
+        subscribeExpiryDate:
+          type: string
+          description: Raw subscription expiry date from the legacy backend; empty/zero when there is no active subscription.
+        isSubscribed:
+          type: boolean
+          description: Whether the account currently has an active paid subscription.
       required:
         - userId
         - email
@@ -519,6 +574,25 @@ components:
       required:
         - authToken
         - user
+
+    DeleteAccountResult:
+      type: object
+      properties:
+        success:
+          type: boolean
+      required:
+        - success
+
+    StaticPage:
+      type: object
+      properties:
+        title:
+          type: string
+        contentHtml:
+          type: string
+      required:
+        - title
+        - contentHtml
 
     AuthLoginInput:
       type: object

@@ -52,6 +52,7 @@ function RootLayoutNav() {
         <Stack.Screen name="address-override" options={{ presentation: "card" }} />
         <Stack.Screen name="article" options={{ presentation: "card" }} />
         <Stack.Screen name="web-view" options={{ presentation: "modal" }} />
+        <Stack.Screen name="static-page" options={{ presentation: "card" }} />
       </Stack>
     </AddressProvider>
   );

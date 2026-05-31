@@ -19,4 +19,8 @@ export interface AuthUser {
   phoneNumber?: string;
   profileImage?: string;
   status?: string;
+  /** Raw subscription expiry date from the legacy backend; empty/zero when there is no active subscription. */
+  subscribeExpiryDate?: string;
+  /** Whether the account currently has an active paid subscription. */
+  isSubscribed?: boolean;
 }

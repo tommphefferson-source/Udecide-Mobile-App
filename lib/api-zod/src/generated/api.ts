@@ -175,7 +175,9 @@ export const LoginResponse = zod.object({
   "zipCode": zod.string().optional(),
   "phoneNumber": zod.string().optional(),
   "profileImage": zod.string().optional(),
-  "status": zod.string().optional()
+  "status": zod.string().optional(),
+  "subscribeExpiryDate": zod.string().optional().describe('Raw subscription expiry date from the legacy backend; empty\/zero when there is no active subscription.'),
+  "isSubscribed": zod.boolean().optional().describe('Whether the account currently has an active paid subscription.')
 })
 })
 
@@ -220,7 +222,9 @@ export const SignupResponse = zod.object({
   "zipCode": zod.string().optional(),
   "phoneNumber": zod.string().optional(),
   "profileImage": zod.string().optional(),
-  "status": zod.string().optional()
+  "status": zod.string().optional(),
+  "subscribeExpiryDate": zod.string().optional().describe('Raw subscription expiry date from the legacy backend; empty\/zero when there is no active subscription.'),
+  "isSubscribed": zod.boolean().optional().describe('Whether the account currently has an active paid subscription.')
 })
 })
 
@@ -253,7 +257,9 @@ export const ExchangeGoogleCodeResponse = zod.object({
   "zipCode": zod.string().optional(),
   "phoneNumber": zod.string().optional(),
   "profileImage": zod.string().optional(),
-  "status": zod.string().optional()
+  "status": zod.string().optional(),
+  "subscribeExpiryDate": zod.string().optional().describe('Raw subscription expiry date from the legacy backend; empty\/zero when there is no active subscription.'),
+  "isSubscribed": zod.boolean().optional().describe('Whether the account currently has an active paid subscription.')
 })
 })
 
@@ -290,7 +296,9 @@ export const RegisterGoogleUserResponse = zod.object({
   "zipCode": zod.string().optional(),
   "phoneNumber": zod.string().optional(),
   "profileImage": zod.string().optional(),
-  "status": zod.string().optional()
+  "status": zod.string().optional(),
+  "subscribeExpiryDate": zod.string().optional().describe('Raw subscription expiry date from the legacy backend; empty\/zero when there is no active subscription.'),
+  "isSubscribed": zod.boolean().optional().describe('Whether the account currently has an active paid subscription.')
 })
 })
 
@@ -325,8 +333,32 @@ export const UpdateProfileResponse = zod.object({
   "zipCode": zod.string().optional(),
   "phoneNumber": zod.string().optional(),
   "profileImage": zod.string().optional(),
-  "status": zod.string().optional()
+  "status": zod.string().optional(),
+  "subscribeExpiryDate": zod.string().optional().describe('Raw subscription expiry date from the legacy backend; empty\/zero when there is no active subscription.'),
+  "isSubscribed": zod.boolean().optional().describe('Whether the account currently has an active paid subscription.')
 })
+})
+
+
+/**
+ * Deletes the signed-in user's account on the legacy backend. The user is identified by the forwarded AUTHTOKEN, so no body is required. The app clears the local session after a successful deletion.
+ * @summary Permanently delete the authenticated user's account
+ */
+export const DeleteAccountResponse = zod.object({
+  "success": zod.boolean()
+})
+
+
+/**
+ * @summary Fetch a static CMS page (about us, privacy policy, terms) by code
+ */
+export const GetStaticPageParams = zod.object({
+  "code": zod.coerce.string().describe('Legacy page code, e.g. `aboutus`, `privacypolicy`, `termsconditions`.')
+})
+
+export const GetStaticPageResponse = zod.object({
+  "title": zod.string(),
+  "contentHtml": zod.string()
 })
 
 

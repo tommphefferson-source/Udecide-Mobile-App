@@ -5,7 +5,9 @@ import { router } from "expo-router";
 import React, { useState } from "react";
 import {
   ActivityIndicator,
+  Alert,
   Image,
+  Linking,
   Platform,
   Pressable,
   ScrollView,
@@ -18,16 +20,36 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useAuth } from "@/context/AuthContext";
 import { useColors } from "@/hooks/useColors";
-import { US_STATES } from "@/utils/constants";
+import { STATIC_PAGE_CODES } from "@/services/pagesApi";
+import { SUPPORT_EMAIL, US_STATES } from "@/utils/constants";
 import { validateName, validateRequired, validateState, validateZipCode } from "@/utils/validation";
+
+/** Format the legacy subscription expiry date into a friendly label. */
+function formatSubscription(expiry?: string, isSubscribed?: boolean): string {
+  const raw = (expiry ?? "").trim();
+  if (!raw || raw.startsWith("0000") || raw === "0") {
+    return isSubscribed ? "Active" : "Free plan";
+  }
+  const parsed = new Date(raw.replace(" ", "T"));
+  if (Number.isNaN(parsed.getTime())) {
+    return isSubscribed ? `Renews ${raw}` : raw;
+  }
+  const label = parsed.toLocaleDateString(undefined, {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
+  return `Expires ${label}`;
+}
 
 export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
   const colors = useColors();
-  const { user, updateProfile, uploadProfilePhoto, logout } = useAuth();
+  const { user, updateProfile, uploadProfilePhoto, logout, deleteAccount } = useAuth();
 
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [photoUploading, setPhotoUploading] = useState(false);
   const [localPhotoUri, setLocalPhotoUri] = useState<string | null>(null);
   const [firstName, setFirstName] = useState(user?.firstName ?? "");
@@ -102,8 +124,96 @@ export default function ProfileScreen() {
     }
   }
 
+  function openEmail(subject: string) {
+    const url = `mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent(subject)}`;
+    Linking.openURL(url).catch(() => {
+      setErrors({ general: `Couldn't open your email app. Reach us at ${SUPPORT_EMAIL}.` });
+    });
+  }
+
+  async function runDelete() {
+    setDeleting(true);
+    const res = await deleteAccount();
+    setDeleting(false);
+    if (res.success) {
+      router.replace("/(auth)/login");
+    } else {
+      setErrors({ general: res.error ?? "Unable to delete your account. Please try again." });
+    }
+  }
+
+  function handleDeleteAccount() {
+    if (deleting) return;
+    const message =
+      "This permanently deletes your account and all associated data. This action cannot be undone.";
+    if (Platform.OS === "web") {
+      if (typeof window !== "undefined" && window.confirm(`Delete Account\n\n${message}`)) {
+        void runDelete();
+      }
+    } else {
+      Alert.alert("Delete Account", message, [
+        { text: "Cancel", style: "cancel" },
+        { text: "Delete", style: "destructive", onPress: () => void runDelete() },
+      ]);
+    }
+  }
+
   const displayPhoto = localPhotoUri ?? (user?.profileImage || null);
   const stateName = US_STATES.find((s) => s.code === user?.state)?.name ?? user?.state ?? "Not set";
+  const subscriptionLabel = formatSubscription(user?.subscribeExpiryDate, user?.isSubscribed);
+
+  const supportLinks: {
+    key: string;
+    label: string;
+    icon: string;
+    onPress: () => void;
+    destructive?: boolean;
+  }[] = [
+    {
+      key: "about",
+      label: "About Us",
+      icon: "info-outline",
+      onPress: () =>
+        router.push(`/static-page?code=${STATIC_PAGE_CODES.about}&title=About%20Us` as never),
+    },
+    {
+      key: "privacy",
+      label: "Privacy Policy",
+      icon: "privacy-tip",
+      onPress: () =>
+        router.push(
+          `/static-page?code=${STATIC_PAGE_CODES.privacy}&title=Privacy%20Policy` as never
+        ),
+    },
+    {
+      key: "terms",
+      label: "Terms & Conditions",
+      icon: "description",
+      onPress: () =>
+        router.push(
+          `/static-page?code=${STATIC_PAGE_CODES.terms}&title=Terms%20%26%20Conditions` as never
+        ),
+    },
+    {
+      key: "feedback",
+      label: "Send Feedback",
+      icon: "feedback",
+      onPress: () => openEmail("UDecide App Feedback"),
+    },
+    {
+      key: "contact",
+      label: "Contact Us",
+      icon: "mail-outline",
+      onPress: () => openEmail("UDecide Support Request"),
+    },
+    {
+      key: "delete",
+      label: "Delete Account",
+      icon: "delete-outline",
+      onPress: handleDeleteAccount,
+      destructive: true,
+    },
+  ];
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
@@ -134,6 +244,12 @@ export default function ProfileScreen() {
       </LinearGradient>
 
       <ScrollView contentContainerStyle={{ padding: 16, gap: 16, paddingBottom: bottomPad }}>
+        {!editing && errors.general ? (
+          <View style={styles.errorBanner}>
+            <MaterialIcons name="error-outline" size={16} color="#C41E3A" />
+            <Text style={styles.errorBannerText}>{errors.general}</Text>
+          </View>
+        ) : null}
         <View style={[styles.section, { backgroundColor: colors.card, borderColor: colors.border }]}>
           <View style={styles.sectionHeader}>
             <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Account Information</Text>
@@ -221,6 +337,68 @@ export default function ProfileScreen() {
           )}
         </View>
 
+        <View style={[styles.section, { backgroundColor: colors.card, borderColor: colors.border }]}>
+          <View style={styles.sectionHeader}>
+            <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Account Settings</Text>
+          </View>
+          <Pressable
+            style={({ pressed }) => [styles.settingsRow, { borderBottomWidth: 1, borderBottomColor: colors.border, opacity: pressed ? 0.7 : 1 }]}
+            onPress={() => setEditing(true)}
+          >
+            <MaterialIcons name="edit" size={20} color={colors.accent} />
+            <View style={styles.settingsRowText}>
+              <Text style={[styles.settingsRowTitle, { color: colors.foreground }]}>Edit Profile</Text>
+            </View>
+            <MaterialIcons name="chevron-right" size={20} color={colors.mutedForeground} />
+          </Pressable>
+          <View style={styles.settingsRow}>
+            <MaterialIcons name="card-membership" size={20} color={colors.accent} />
+            <View style={styles.settingsRowText}>
+              <Text style={[styles.settingsRowTitle, { color: colors.foreground }]}>Subscription</Text>
+              <Text style={[styles.settingsRowValue, { color: colors.mutedForeground }]}>{subscriptionLabel}</Text>
+            </View>
+          </View>
+        </View>
+
+        <View style={[styles.section, { backgroundColor: colors.card, borderColor: colors.border }]}>
+          <View style={styles.sectionHeader}>
+            <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Support</Text>
+          </View>
+          {supportLinks.map((link, i, arr) => {
+            const isDeleteRow = link.key === "delete";
+            const tint = link.destructive ? "#C41E3A" : colors.accent;
+            return (
+              <Pressable
+                key={link.key}
+                style={({ pressed }) => [
+                  styles.settingsRow,
+                  i < arr.length - 1 && { borderBottomWidth: 1, borderBottomColor: colors.border },
+                  { opacity: pressed ? 0.7 : 1 },
+                ]}
+                onPress={link.onPress}
+                disabled={isDeleteRow && deleting}
+              >
+                <MaterialIcons name={link.icon as never} size={20} color={tint} />
+                <View style={styles.settingsRowText}>
+                  <Text
+                    style={[
+                      styles.settingsRowTitle,
+                      { color: link.destructive ? "#C41E3A" : colors.foreground },
+                    ]}
+                  >
+                    {link.label}
+                  </Text>
+                </View>
+                {isDeleteRow && deleting ? (
+                  <ActivityIndicator size="small" color="#C41E3A" />
+                ) : (
+                  <MaterialIcons name="chevron-right" size={20} color={colors.mutedForeground} />
+                )}
+              </Pressable>
+            );
+          })}
+        </View>
+
         <Pressable
           style={({ pressed }) => [styles.overrideBtn, { backgroundColor: colors.card, borderColor: colors.border, opacity: pressed ? 0.8 : 1 }]}
           onPress={() => router.push("/address-override" as never)}
@@ -274,6 +452,10 @@ const styles = StyleSheet.create({
   sectionHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", padding: 16 },
   sectionTitle: { fontSize: 16, fontFamily: "Inter_600SemiBold" },
   profileFields: {},
+  settingsRow: { flexDirection: "row", gap: 12, alignItems: "center", paddingHorizontal: 16, paddingVertical: 16 },
+  settingsRowText: { flex: 1 },
+  settingsRowTitle: { fontSize: 15, fontFamily: "Inter_500Medium" },
+  settingsRowValue: { fontSize: 12, fontFamily: "Inter_400Regular", marginTop: 2 },
   profileField: { flexDirection: "row", gap: 12, alignItems: "center", padding: 14 },
   profileFieldText: { flex: 1 },
   profileFieldLabel: { fontSize: 11, fontFamily: "Inter_400Regular" },

@@ -8,6 +8,7 @@ import newsRouter from "./news";
 import civicsRouter from "./civics";
 import authRouter from "./auth";
 import googleOauthRouter from "./googleOauth";
+import pagesRouter from "./pages";
 
 const router: IRouter = Router();
 
@@ -20,5 +21,6 @@ router.use(pollsRouter);
 router.use(homeRouter);
 router.use(newsRouter);
 router.use(civicsRouter);
+router.use(pagesRouter);
 
 export default router;

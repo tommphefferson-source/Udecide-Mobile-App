@@ -1,6 +1,7 @@
 import { Router, type IRouter, type RequestHandler } from "express";
 import multer, { MulterError } from "multer";
 import {
+  DeleteAccountResponse,
   LoginBody,
   LoginResponse,
   SignupBody,
@@ -11,6 +12,7 @@ import {
 import { AppError } from "../lib/errors";
 import { tokenFromRequest } from "../lib/requestToken";
 import {
+  deleteAccount,
   editProfile,
   LegacyAuthError,
   stateCodeToId,
@@ -113,6 +115,22 @@ router.post("/auth/profile", async (req, res): Promise<void> => {
   try {
     const user = await editProfile(body.data, token);
     res.json(UpdateProfileResponse.parse(toAuthResponse(user)));
+  } catch (err) {
+    if (err instanceof LegacyAuthError) {
+      throw new AppError(401, err.message);
+    }
+    throw err;
+  }
+});
+
+router.delete("/auth/account", async (req, res): Promise<void> => {
+  const token = tokenFromRequest(req);
+  if (!token) {
+    throw new AppError(401, "Authentication token is required");
+  }
+  try {
+    await deleteAccount(token);
+    res.json(DeleteAccountResponse.parse({ success: true }));
   } catch (err) {
     if (err instanceof LegacyAuthError) {
       throw new AppError(401, err.message);

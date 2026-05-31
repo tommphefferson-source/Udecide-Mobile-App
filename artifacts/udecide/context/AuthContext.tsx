@@ -9,6 +9,7 @@ import {
   registerWithGoogle as apiRegisterWithGoogle,
   updateProfile as apiUpdateProfile,
   uploadProfilePhoto as apiUploadProfilePhoto,
+  deleteAccount as apiDeleteAccount,
   type AuthUser,
   type ProfilePhotoFile,
 } from "@/services/authApi";
@@ -42,6 +43,7 @@ interface AuthContextValue {
   logout: () => Promise<void>;
   updateProfile: (updates: Partial<UserProfile>) => Promise<{ success: boolean; error?: string }>;
   uploadProfilePhoto: (file: ProfilePhotoFile) => Promise<{ success: boolean; error?: string }>;
+  deleteAccount: () => Promise<{ success: boolean; error?: string }>;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -61,6 +63,8 @@ function toUserProfile(u: AuthUser): UserProfile {
     state: u.state,
     zipCode: u.zipCode,
     profileImage: u.profileImage,
+    subscribeExpiryDate: u.subscribeExpiryDate,
+    isSubscribed: u.isSubscribed,
     createdAt: new Date().toISOString(),
   };
 }
@@ -332,6 +336,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await AsyncStorage.multiRemove(keys);
   }, [user]);
 
+  /**
+   * Permanently delete the account on the backend, then clear the local session
+   * exactly like logout. On failure the session is left intact so the user can
+   * retry. Callers should route back to login on success.
+   */
+  const deleteAccount = useCallback(async (): Promise<{ success: boolean; error?: string }> => {
+    if (!user) return { success: false, error: "You must be signed in to delete your account." };
+    try {
+      await apiDeleteAccount();
+    } catch (err) {
+      return {
+        success: false,
+        error: err instanceof Error ? err.message : "Unable to delete your account. Please try again.",
+      };
+    }
+    const keys = [STORAGE_KEY, AUTH_TOKEN_KEY, STORAGE_KEY + "_" + user.id];
+    setUser(null);
+    setAuthToken(null);
+    setSessionToken(null);
+    await AsyncStorage.multiRemove(keys);
+    return { success: true };
+  }, [user]);
+
   // Centralized session-expiry handling: when any authenticated request is
   // rejected (missing/expired/invalid AUTHTOKEN), the API client invokes this
   // handler to clear the session and route the user back to login.
@@ -358,6 +385,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         logout,
         updateProfile,
         uploadProfilePhoto,
+        deleteAccount,
       }}
     >
       {children}

@@ -26,12 +26,25 @@ export interface AuthUser {
   phoneNumber?: string;
   profileImage?: string;
   status?: string;
+  /** Raw subscription expiry date from the legacy backend; empty/zero when there is no active subscription. */
+  subscribeExpiryDate?: string;
+  /** Whether the account currently has an active paid subscription. */
+  isSubscribed?: boolean;
 }
 
 export interface AuthResponse {
   /** @minLength 1 */
   authToken: string;
   user: AuthUser;
+}
+
+export interface DeleteAccountResult {
+  success: boolean;
+}
+
+export interface StaticPage {
+  title: string;
+  contentHtml: string;
 }
 
 export interface AuthLoginInput {

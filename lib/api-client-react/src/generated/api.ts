@@ -28,6 +28,7 @@ import type {
   AuthResponse,
   AuthSignUpInput,
   CivicsQuiz,
+  DeleteAccountResult,
   Elections,
   GetVoterInfoParams,
   HealthStatus,
@@ -41,6 +42,7 @@ import type {
   QuizList,
   QuizProgressInput,
   QuizProgressResult,
+  StaticPage,
   TerminologyList,
   VoterInfo
 } from './api.schemas';
@@ -880,6 +882,154 @@ export const useUpdateProfile = <TError = ErrorType<ApiError>,
       > => {
       return useMutation(getUpdateProfileMutationOptions(options));
     }
+
+export const getDeleteAccountUrl = () => {
+
+
+
+
+  return `/api/auth/account`
+}
+
+/**
+ * Deletes the signed-in user's account on the legacy backend. The user is identified by the forwarded AUTHTOKEN, so no body is required. The app clears the local session after a successful deletion.
+ * @summary Permanently delete the authenticated user's account
+ */
+export const deleteAccount = async ( options?: RequestInit): Promise<DeleteAccountResult> => {
+
+  return customFetch<DeleteAccountResult>(getDeleteAccountUrl(),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+export const getDeleteAccountMutationOptions = <TError = ErrorType<ApiError>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteAccount>>, TError,void, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof deleteAccount>>, TError,void, TContext> => {
+
+const mutationKey = ['deleteAccount'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteAccount>>, void> = () => {
+
+
+          return  deleteAccount(requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteAccountMutationResult = NonNullable<Awaited<ReturnType<typeof deleteAccount>>>
+
+    export type DeleteAccountMutationError = ErrorType<ApiError>
+
+    /**
+ * @summary Permanently delete the authenticated user's account
+ */
+export const useDeleteAccount = <TError = ErrorType<ApiError>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteAccount>>, TError,void, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof deleteAccount>>,
+        TError,
+        void,
+        TContext
+      > => {
+      return useMutation(getDeleteAccountMutationOptions(options));
+    }
+
+export const getGetStaticPageUrl = (code: string,) => {
+
+
+
+
+  return `/api/pages/${code}`
+}
+
+/**
+ * @summary Fetch a static CMS page (about us, privacy policy, terms) by code
+ */
+export const getStaticPage = async (code: string, options?: RequestInit): Promise<StaticPage> => {
+
+  return customFetch<StaticPage>(getGetStaticPageUrl(code),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetStaticPageQueryKey = (code: string,) => {
+    return [
+    `/api/pages/${code}`
+    ] as const;
+    }
+
+
+export const getGetStaticPageQueryOptions = <TData = Awaited<ReturnType<typeof getStaticPage>>, TError = ErrorType<ApiError>>(code: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getStaticPage>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetStaticPageQueryKey(code);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getStaticPage>>> = ({ signal }) => getStaticPage(code, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: !!(code), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getStaticPage>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetStaticPageQueryResult = NonNullable<Awaited<ReturnType<typeof getStaticPage>>>
+export type GetStaticPageQueryError = ErrorType<ApiError>
+
+
+/**
+ * @summary Fetch a static CMS page (about us, privacy policy, terms) by code
+ */
+
+export function useGetStaticPage<TData = Awaited<ReturnType<typeof getStaticPage>>, TError = ErrorType<ApiError>>(
+ code: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getStaticPage>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetStaticPageQueryOptions(code,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
 
 export const getGetHomeUrl = () => {
 
