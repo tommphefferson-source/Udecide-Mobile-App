@@ -64,7 +64,12 @@ export async function getElections(
   if (isElectionsMockMode()) {
     console.warn("[Elections] No API key – using mock data");
     await new Promise((r) => setTimeout(r, 600));
-    return MOCK_ELECTIONS;
+    const stateUpper = (stateAbbr || "").toUpperCase();
+    return MOCK_ELECTIONS.filter((e) => {
+      const s = (e.state || "").toUpperCase();
+      // Keep national elections plus those matching the active state
+      return s === "US" || s === stateUpper;
+    });
   }
 
   try {

@@ -54,7 +54,8 @@ export default function ElectionsScreen() {
 
   useEffect(() => {
     loadElections();
-  }, [effectiveAddress.state]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [effectiveAddress.state, effectiveAddress.city, effectiveAddress.zipCode, effectiveAddress.address]);
 
   const selectedOffice = selectedElection?.offices.find((o) => o.id === selectedOfficeId);
 
