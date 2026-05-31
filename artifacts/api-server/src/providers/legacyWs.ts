@@ -278,6 +278,42 @@ export async function userLogin(
   return user;
 }
 
+export interface SocialLoginInput {
+  /** Identity provider; currently only "google". */
+  provider: string;
+  /** The provider's stable account id (Google `sub`). */
+  providerId: string;
+  email: string;
+  firstName?: string;
+  lastName?: string;
+}
+
+/**
+ * Authenticate (or auto-register) via a social identity provider against the
+ * legacy `/user_login` endpoint, which accepts `social_login_type` /
+ * `social_login_id` in place of a password. The verified email and name are
+ * forwarded so the legacy backend can create the account on first sign-in.
+ */
+export async function socialLogin(
+  input: SocialLoginInput,
+): Promise<LegacyAuthUser> {
+  const body: Record<string, string> = {
+    user_email: input.email,
+    user_password: "",
+    social_login_type: input.provider,
+    social_login_id: input.providerId,
+  };
+  if (input.firstName) body.first_name = input.firstName;
+  if (input.lastName) body.last_name = input.lastName;
+
+  const rows = await wsPostJson("/user_login", body);
+  const user = rows[0] ? mapAuthUser(rows[0]) : null;
+  if (!user || !user.authToken) {
+    throw new LegacyAuthError("Unable to sign in with this account");
+  }
+  return user;
+}
+
 /** Register a new user against the legacy `/user_sign_up` endpoint. */
 export async function userSignUp(
   input: LegacySignUpInput,

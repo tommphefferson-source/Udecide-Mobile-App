@@ -60,6 +60,14 @@ export interface AuthSignUpInput {
 }
 
 /**
+ * The short-lived, single-use code handed to the app on its return URL at the end of the server-mediated Google OAuth flow. The server verifies the identity with Google directly, so the app never sends provider data.
+ */
+export interface AuthGoogleExchangeInput {
+  /** @minLength 1 */
+  code: string;
+}
+
+/**
  * Partial profile update for the authenticated user. `state` is the 2-letter US abbreviation; the server maps it to the legacy numeric state id. All fields are optional so partial updates are allowed.
  */
 export interface AuthProfileUpdateInput {

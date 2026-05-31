@@ -5,6 +5,7 @@ import React, { createContext, useCallback, useContext, useEffect, useState } fr
 import {
   login as apiLogin,
   signup as apiSignup,
+  exchangeGoogleCode as apiExchangeGoogleCode,
   updateProfile as apiUpdateProfile,
   type AuthUser,
 } from "@/services/authApi";
@@ -20,6 +21,7 @@ interface AuthContextValue {
   isLoading: boolean;
   isAuthenticated: boolean;
   login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
+  signInWithGoogleCode: (code: string) => Promise<{ success: boolean; error?: string }>;
   register: (
     firstName: string,
     lastName: string,
@@ -91,6 +93,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setAuthToken(token);
         // auth_token (returned by login/signup) becomes the AUTHTOKEN header
         // value for subsequent authenticated requests.
+        setSessionToken(token);
+        await AsyncStorage.multiSet([
+          [STORAGE_KEY, JSON.stringify(userProfile)],
+          [STORAGE_KEY + "_" + userProfile.id, JSON.stringify(userProfile)],
+          [AUTH_TOKEN_KEY, token],
+        ]);
+        return { success: true };
+      } catch (err) {
+        return {
+          success: false,
+          error: err instanceof Error ? err.message : "Unable to sign in. Please try again.",
+        };
+      }
+    },
+    []
+  );
+
+  const signInWithGoogleCode = useCallback(
+    async (code: string): Promise<{ success: boolean; error?: string }> => {
+      try {
+        const { authToken: token, user: legacyUser } = await apiExchangeGoogleCode(code);
+        const userProfile = toUserProfile(legacyUser);
+        setUser(userProfile);
+        setAuthToken(token);
         setSessionToken(token);
         await AsyncStorage.multiSet([
           [STORAGE_KEY, JSON.stringify(userProfile)],
@@ -233,6 +259,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         isLoading,
         isAuthenticated: !!user && !!authToken,
         login,
+        signInWithGoogleCode,
         register,
         setupProfile,
         logout,

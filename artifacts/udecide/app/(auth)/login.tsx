@@ -1,6 +1,9 @@
 import { MaterialIcons } from "@expo/vector-icons";
+import { makeRedirectUri } from "expo-auth-session";
+import * as Linking from "expo-linking";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
+import * as WebBrowser from "expo-web-browser";
 import React, { useState } from "react";
 import {
   Image,
@@ -17,16 +20,62 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useAuth } from "@/context/AuthContext";
+import { googleStartUrl } from "@/services/authApi";
 import { validateEmail, validatePassword } from "@/utils/validation";
+
+// Completes the OAuth redirect when the auth browser returns to the app.
+WebBrowser.maybeCompleteAuthSession();
 
 export default function LoginScreen() {
   const insets = useSafeAreaInsets();
-  const { login } = useAuth();
+  const { login, signInWithGoogleCode } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState<{ email?: string; password?: string; general?: string }>({});
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
+
+  async function handleGoogleSignIn() {
+    setErrors({});
+    setGoogleLoading(true);
+    try {
+      // The server drives the OAuth handshake; we only open the browser and
+      // wait for it to redirect back to this deep link with a one-time code.
+      const returnUri = makeRedirectUri({ scheme: "udecide" });
+      const result = await WebBrowser.openAuthSessionAsync(
+        googleStartUrl(returnUri),
+        returnUri
+      );
+      if (result.type !== "success" || !result.url) {
+        // User dismissed/cancelled the browser, or it failed to open.
+        return;
+      }
+      const { queryParams } = Linking.parse(result.url);
+      const status = queryParams?.status;
+      const code = queryParams?.code;
+      if (status !== "success" || typeof code !== "string") {
+        const message =
+          typeof queryParams?.message === "string"
+            ? "Google sign-in was not completed."
+            : "Google sign-in failed. Please try again.";
+        setErrors({ general: message });
+        return;
+      }
+      const session = await signInWithGoogleCode(code);
+      if (!session.success) {
+        setErrors({ general: session.error });
+      } else {
+        router.replace("/(tabs)");
+      }
+    } catch (err) {
+      setErrors({
+        general: err instanceof Error ? err.message : "Google sign-in failed. Please try again.",
+      });
+    } finally {
+      setGoogleLoading(false);
+    }
+  }
 
   async function handleLogin() {
     const emailErr = validateEmail(email);
@@ -148,9 +197,22 @@ export default function LoginScreen() {
             </View>
 
             <View style={styles.socialRow}>
-              <Pressable style={({ pressed }) => [styles.socialBtn, { opacity: pressed ? 0.7 : 1 }]}>
-                <MaterialIcons name="g-mobiledata" size={22} color="#4285F4" />
-                <Text style={styles.socialText}>Google</Text>
+              <Pressable
+                style={({ pressed }) => [
+                  styles.socialBtn,
+                  { opacity: pressed || googleLoading ? 0.7 : 1 },
+                ]}
+                onPress={handleGoogleSignIn}
+                disabled={googleLoading}
+              >
+                {googleLoading ? (
+                  <ActivityIndicator size="small" color="#4285F4" />
+                ) : (
+                  <>
+                    <MaterialIcons name="g-mobiledata" size={22} color="#4285F4" />
+                    <Text style={styles.socialText}>Google</Text>
+                  </>
+                )}
               </Pressable>
               <Pressable style={({ pressed }) => [styles.socialBtn, { opacity: pressed ? 0.7 : 1 }]}>
                 <MaterialIcons name="facebook" size={22} color="#1877F2" />

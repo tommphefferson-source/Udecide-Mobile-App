@@ -226,6 +226,39 @@ export const SignupResponse = zod.object({
 
 
 /**
+ * Final step of the server-mediated Google OAuth flow. The app opens `/auth/google/start` in a browser; after Google redirects back through `/auth/google/callback`, the server hands the app a short-lived, single-use `code` on its return URL. The app posts that code here to receive the authenticated session (auth token + user).
+ * @summary Exchange a one-time Google sign-in code for a session
+ */
+
+
+
+export const ExchangeGoogleCodeBody = zod.object({
+  "code": zod.string().min(1)
+}).describe('The short-lived, single-use code handed to the app on its return URL at the end of the server-mediated Google OAuth flow. The server verifies the identity with Google directly, so the app never sends provider data.')
+
+
+
+
+export const ExchangeGoogleCodeResponse = zod.object({
+  "authToken": zod.string().min(1),
+  "user": zod.object({
+  "userId": zod.string(),
+  "email": zod.string(),
+  "firstName": zod.string(),
+  "lastName": zod.string(),
+  "address": zod.string().optional(),
+  "city": zod.string().optional(),
+  "state": zod.string().optional(),
+  "stateId": zod.string().optional(),
+  "zipCode": zod.string().optional(),
+  "phoneNumber": zod.string().optional(),
+  "profileImage": zod.string().optional(),
+  "status": zod.string().optional()
+})
+})
+
+
+/**
  * @summary Update the authenticated user's profile on the legacy server
  */
 export const UpdateProfileBody = zod.object({

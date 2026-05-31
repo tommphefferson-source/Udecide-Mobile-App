@@ -9,6 +9,18 @@ export interface AppConfig {
   appName: string;
   environment: string;
   googleCivicApiKey: string | undefined;
+  /** OAuth 2.0 Web client id for "Sign in with Google". */
+  googleOAuthClientId: string | undefined;
+  /** OAuth 2.0 Web client secret (kept server-side, never sent to the app). */
+  googleOAuthClientSecret: string | undefined;
+  /**
+   * Public https origin the app is reached at (no trailing slash). Used to
+   * build the Google OAuth redirect URI, which must exactly match an entry in
+   * the Google console. Derived from the Replit domains.
+   */
+  publicOrigin: string | undefined;
+  /** Secret used to sign the OAuth `state` parameter (HMAC). */
+  sessionSecret: string | undefined;
   /** Base URL of the legacy UDecide web service (CodeIgniter backend). */
   legacyWsBaseUrl: string;
   /**
@@ -26,6 +38,15 @@ export const config: AppConfig = {
   environment: process.env.NODE_ENV ?? "development",
   googleCivicApiKey:
     process.env.GOOGLE_CIVIC_API_KEY ?? process.env.CIVIC_API_KEY,
+  googleOAuthClientId: process.env.GOOGLE_CLIENT_ID,
+  googleOAuthClientSecret: process.env.GOOGLE_CLIENT_SECRET,
+  publicOrigin: (() => {
+    const domain =
+      process.env.REPLIT_DOMAINS?.split(",")[0]?.trim() ??
+      process.env.REPLIT_DEV_DOMAIN;
+    return domain ? `https://${domain}` : undefined;
+  })(),
+  sessionSecret: process.env.SESSION_SECRET,
   legacyWsBaseUrl: process.env.LEGACY_WS_BASE_URL ?? "http://52.45.60.139/WS",
   legacyWsAuthToken: process.env.LEGACY_WS_AUTHTOKEN,
   host: process.env.HOST ?? "0.0.0.0",

@@ -71,6 +71,31 @@ export async function login(email: string, password: string): Promise<AuthResult
   return (await res.json()) as AuthResult;
 }
 
+/**
+ * Build the URL that kicks off the server-mediated Google OAuth flow. The app
+ * opens this in an in-app browser; the server handles the Google handshake and
+ * redirects back to `returnUri` with a one-time `code` (or an `error`).
+ */
+export function googleStartUrl(returnUri: string): string {
+  return `${API_BASE}/auth/google/start?return_uri=${encodeURIComponent(returnUri)}`;
+}
+
+/**
+ * Redeem the one-time code returned on `returnUri` for an authenticated
+ * session. The code is single-use and short-lived.
+ */
+export async function exchangeGoogleCode(code: string): Promise<AuthResult> {
+  const res = await fetch(`${API_BASE}/auth/google/exchange`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ code }),
+  });
+  if (!res.ok) {
+    throw new Error(await parseError(res));
+  }
+  return (await res.json()) as AuthResult;
+}
+
 export async function signup(input: SignUpInput): Promise<AuthResult> {
   const res = await fetch(`${API_BASE}/auth/signup`, {
     method: "POST",

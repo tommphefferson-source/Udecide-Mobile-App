@@ -21,6 +21,7 @@ import type {
 
 import type {
   ApiError,
+  AuthGoogleExchangeInput,
   AuthLoginInput,
   AuthProfileUpdateInput,
   AuthResponse,
@@ -662,6 +663,78 @@ export const useSignup = <TError = ErrorType<ApiError>,
         TContext
       > => {
       return useMutation(getSignupMutationOptions(options));
+    }
+
+export const getExchangeGoogleCodeUrl = () => {
+
+
+
+
+  return `/api/auth/google/exchange`
+}
+
+/**
+ * Final step of the server-mediated Google OAuth flow. The app opens `/auth/google/start` in a browser; after Google redirects back through `/auth/google/callback`, the server hands the app a short-lived, single-use `code` on its return URL. The app posts that code here to receive the authenticated session (auth token + user).
+ * @summary Exchange a one-time Google sign-in code for a session
+ */
+export const exchangeGoogleCode = async (authGoogleExchangeInput: AuthGoogleExchangeInput, options?: RequestInit): Promise<AuthResponse> => {
+
+  return customFetch<AuthResponse>(getExchangeGoogleCodeUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      authGoogleExchangeInput,)
+  }
+);}
+
+
+
+
+export const getExchangeGoogleCodeMutationOptions = <TError = ErrorType<ApiError>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof exchangeGoogleCode>>, TError,{data: BodyType<AuthGoogleExchangeInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof exchangeGoogleCode>>, TError,{data: BodyType<AuthGoogleExchangeInput>}, TContext> => {
+
+const mutationKey = ['exchangeGoogleCode'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof exchangeGoogleCode>>, {data: BodyType<AuthGoogleExchangeInput>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  exchangeGoogleCode(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type ExchangeGoogleCodeMutationResult = NonNullable<Awaited<ReturnType<typeof exchangeGoogleCode>>>
+    export type ExchangeGoogleCodeMutationBody = BodyType<AuthGoogleExchangeInput>
+    export type ExchangeGoogleCodeMutationError = ErrorType<ApiError>
+
+    /**
+ * @summary Exchange a one-time Google sign-in code for a session
+ */
+export const useExchangeGoogleCode = <TError = ErrorType<ApiError>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof exchangeGoogleCode>>, TError,{data: BodyType<AuthGoogleExchangeInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof exchangeGoogleCode>>,
+        TError,
+        {data: BodyType<AuthGoogleExchangeInput>},
+        TContext
+      > => {
+      return useMutation(getExchangeGoogleCodeMutationOptions(options));
     }
 
 export const getUpdateProfileUrl = () => {
