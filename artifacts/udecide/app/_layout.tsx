@@ -47,6 +47,7 @@ function RootLayoutNav() {
         <Stack.Screen name="civics-quiz" options={{ presentation: "card" }} />
         <Stack.Screen name="issue-questionnaire" options={{ presentation: "card" }} />
         <Stack.Screen name="polls" options={{ presentation: "card" }} />
+        <Stack.Screen name="poll-results" options={{ presentation: "card" }} />
         <Stack.Screen name="fact-checker" options={{ presentation: "card" }} />
         <Stack.Screen name="profile" options={{ presentation: "card" }} />
         <Stack.Screen name="address-override" options={{ presentation: "card" }} />

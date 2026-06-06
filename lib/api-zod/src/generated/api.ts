@@ -127,6 +127,24 @@ export const VotePollResponse = zod.object({
 
 
 /**
+ * @summary Get results for all polls
+ */
+export const ListPollResultsResponse = zod.object({
+  "results": zod.array(zod.object({
+  "pollId": zod.string(),
+  "question": zod.string(),
+  "totalVotes": zod.number(),
+  "options": zod.array(zod.object({
+  "id": zod.string(),
+  "label": zod.string(),
+  "votes": zod.number(),
+  "percentage": zod.number()
+}))
+}))
+})
+
+
+/**
  * @summary Get poll results
  */
 export const GetPollResultsParams = zod.object({

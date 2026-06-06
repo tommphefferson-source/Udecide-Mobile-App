@@ -144,6 +144,19 @@ paths:
               schema:
                 $ref: "#/components/schemas/ApiError"
 
+  /polls/results:
+    get:
+      operationId: listPollResults
+      tags: [polls]
+      summary: Get results for all polls
+      responses:
+        "200":
+          description: Results for every poll
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PollResultsList"
+
   /polls/{pollId}/results:
     get:
       operationId: getPollResults
@@ -927,6 +940,16 @@ components:
         - question
         - totalVotes
         - options
+
+    PollResultsList:
+      type: object
+      properties:
+        results:
+          type: array
+          items:
+            $ref: "#/components/schemas/PollResults"
+      required:
+        - results
 
     HomeSection:
       type: object

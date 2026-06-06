@@ -36,6 +36,7 @@ export * from './pollList';
 export * from './pollOption';
 export * from './pollResultOption';
 export * from './pollResults';
+export * from './pollResultsList';
 export * from './pollVoteInput';
 export * from './questionnaire';
 export * from './questionnaireList';

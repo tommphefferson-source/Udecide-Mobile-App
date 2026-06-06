@@ -116,6 +116,18 @@ export default function PollsScreen() {
           renderItem={({ item }) => <PollCard poll={item} onVote={handleVote} />}
           contentContainerStyle={{ padding: 16, gap: 16, paddingBottom: bottomPad }}
           showsVerticalScrollIndicator={false}
+          ListFooterComponent={
+            <Pressable
+              style={({ pressed }) => [
+                styles.resultsBtn,
+                { backgroundColor: colors.accent, opacity: pressed ? 0.85 : 1 },
+              ]}
+              onPress={() => router.push("/poll-results")}
+            >
+              <MaterialIcons name="bar-chart" size={20} color="#FFF" />
+              <Text style={styles.resultsBtnText}>Poll Results</Text>
+            </Pressable>
+          }
           ListEmptyComponent={
             <View style={styles.emptyState}>
               <MaterialIcons name="poll" size={48} color={colors.mutedForeground} />
@@ -141,6 +153,15 @@ const styles = StyleSheet.create({
     borderWidth: 1, backgroundColor: "transparent",
   },
   topicChipText: { fontSize: 13, fontFamily: "Inter_500Medium" },
+  resultsBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    paddingVertical: 14,
+    borderRadius: 12,
+  },
+  resultsBtnText: { fontSize: 15, fontFamily: "Inter_600SemiBold", color: "#FFF" },
   emptyState: { flex: 1, alignItems: "center", justifyContent: "center", padding: 48, gap: 10 },
   emptyTitle: { fontSize: 18, fontFamily: "Inter_600SemiBold" },
   emptyText: { fontSize: 14, fontFamily: "Inter_400Regular", textAlign: "center" },

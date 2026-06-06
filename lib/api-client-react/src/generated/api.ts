@@ -37,6 +37,7 @@ import type {
   PartyList,
   PollList,
   PollResults,
+  PollResultsList,
   PollVoteInput,
   QuestionnaireList,
   QuizList,
@@ -448,6 +449,83 @@ export const useVotePoll = <TError = ErrorType<ApiError>,
       > => {
       return useMutation(getVotePollMutationOptions(options));
     }
+
+export const getListPollResultsUrl = () => {
+
+
+
+
+  return `/api/polls/results`
+}
+
+/**
+ * @summary Get results for all polls
+ */
+export const listPollResults = async ( options?: RequestInit): Promise<PollResultsList> => {
+
+  return customFetch<PollResultsList>(getListPollResultsUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListPollResultsQueryKey = () => {
+    return [
+    `/api/polls/results`
+    ] as const;
+    }
+
+
+export const getListPollResultsQueryOptions = <TData = Awaited<ReturnType<typeof listPollResults>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listPollResults>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListPollResultsQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listPollResults>>> = ({ signal }) => listPollResults({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listPollResults>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListPollResultsQueryResult = NonNullable<Awaited<ReturnType<typeof listPollResults>>>
+export type ListPollResultsQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Get results for all polls
+ */
+
+export function useListPollResults<TData = Awaited<ReturnType<typeof listPollResults>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listPollResults>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListPollResultsQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
 
 export const getGetPollResultsUrl = (pollId: string,) => {
 

@@ -3,11 +3,17 @@ import {
   ListPollsResponse,
   VotePollResponse,
   GetPollResultsResponse,
+  ListPollResultsResponse,
   VotePollBody,
   VotePollParams,
   GetPollResultsParams,
 } from "@workspace/api-zod";
-import { listPolls, getResults, recordVote } from "../services/pollsService";
+import {
+  listPolls,
+  getResults,
+  listResults,
+  recordVote,
+} from "../services/pollsService";
 import { tokenFromRequest } from "../lib/requestToken";
 
 const router: IRouter = Router();
@@ -37,6 +43,16 @@ router.post("/polls/:pollId/vote", async (req, res): Promise<void> => {
     tokenFromRequest(req),
   );
   res.json(VotePollResponse.parse(results));
+});
+
+// Registered before "/polls/:pollId/results" so the literal "results" segment
+// is not captured as a pollId. Returns results for every poll from the legacy
+// /poll_results endpoint.
+router.get("/polls/results", async (req, res): Promise<void> => {
+  const token = tokenFromRequest(req);
+  res.json(
+    ListPollResultsResponse.parse({ results: await listResults(token) }),
+  );
 });
 
 router.get("/polls/:pollId/results", async (req, res): Promise<void> => {

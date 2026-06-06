@@ -112,6 +112,11 @@ async function getResultsLive(
   return resultToApi(found);
 }
 
+async function listResultsLive(token?: string): Promise<ApiResults[]> {
+  const results = await legacy.fetchPollResults(token);
+  return results.map(resultToApi);
+}
+
 async function recordVoteLive(
   pollId: string,
   optionId: string,
@@ -172,6 +177,10 @@ function listPollsMock(): ApiPoll[] {
   });
 }
 
+function listResultsMock(): ApiResults[] {
+  return seedPolls.map((poll) => buildResultsMock(poll.id));
+}
+
 function buildResultsMock(pollId: string): ApiResults {
   const seed = findSeed(pollId);
   const counted = counts(pollId);
@@ -219,6 +228,10 @@ export async function getResults(
   return isLive(token)
     ? getResultsLive(pollId, token)
     : buildResultsMock(pollId);
+}
+
+export async function listResults(token?: string): Promise<ApiResults[]> {
+  return isLive(token) ? listResultsLive(token) : listResultsMock();
 }
 
 export async function recordVote(

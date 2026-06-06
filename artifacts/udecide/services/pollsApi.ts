@@ -67,6 +67,41 @@ export interface PollResults {
   options: { id: string; votes: number }[];
 }
 
+export interface PollResultDetail {
+  pollId: string;
+  question: string;
+  totalVotes: number;
+  options: { id: string; label: string; votes: number; percentage: number }[];
+}
+
+interface ApiPollResultsList {
+  results: ApiPollResults[];
+}
+
+/**
+ * Fetch results for every poll from the legacy backend (/poll_results, proxied
+ * by the API Server). Used by the "Poll Results" screen to show outcomes of all
+ * previous polls.
+ */
+export async function getAllPollResults(): Promise<PollResultDetail[]> {
+  const res = await apiFetch("/polls/results");
+  if (!res.ok) {
+    throw new Error(`Failed to load poll results (${res.status})`);
+  }
+  const data = (await res.json()) as ApiPollResultsList;
+  return data.results.map((r) => ({
+    pollId: r.pollId,
+    question: r.question,
+    totalVotes: r.totalVotes,
+    options: r.options.map((o) => ({
+      id: o.id,
+      label: o.label,
+      votes: o.votes,
+      percentage: o.percentage,
+    })),
+  }));
+}
+
 export async function votePoll(
   pollId: string,
   optionId: string,

@@ -227,6 +227,10 @@ export interface PollResults {
   options: PollResultOption[];
 }
 
+export interface PollResultsList {
+  results: PollResults[];
+}
+
 export interface HomeSection {
   id: string;
   title: string;
