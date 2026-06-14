@@ -26,6 +26,61 @@ import {
   validateZipCode,
 } from "@/utils/validation";
 
+// Defined at module scope (NOT inside RegisterScreen) so its component identity
+// is stable across renders. A component declared inside render is recreated on
+// every keystroke, which makes React unmount/remount each TextInput — dropping
+// keyboard focus and causing the fields to visibly jump/overlap as you type.
+function Field({
+  label,
+  value,
+  onChangeText,
+  icon,
+  placeholder,
+  secureTextEntry,
+  keyboardType,
+  error,
+  rightAction,
+  maxLength,
+}: {
+  label: string;
+  value: string;
+  onChangeText: (v: string) => void;
+  icon: string;
+  placeholder: string;
+  secureTextEntry?: boolean;
+  keyboardType?: "email-address" | "default" | "numeric";
+  error?: string;
+  rightAction?: React.ReactNode;
+  maxLength?: number;
+}) {
+  return (
+    <View style={styles.field}>
+      <Text style={styles.label}>{label}</Text>
+      <View style={[styles.inputWrap, error ? styles.inputError : null]}>
+        <MaterialIcons name={icon as never} size={18} color="#6B7A8D" />
+        <TextInput
+          style={styles.input}
+          placeholder={placeholder}
+          placeholderTextColor="#8892A0"
+          value={value}
+          onChangeText={onChangeText}
+          secureTextEntry={secureTextEntry}
+          keyboardType={keyboardType ?? "default"}
+          autoCapitalize={
+            keyboardType === "email-address" || keyboardType === "numeric"
+              ? "none"
+              : "words"
+          }
+          autoCorrect={false}
+          maxLength={maxLength}
+        />
+        {rightAction}
+      </View>
+      {error ? <Text style={styles.errorText}>{error}</Text> : null}
+    </View>
+  );
+}
+
 export default function RegisterScreen() {
   const insets = useSafeAreaInsets();
   const { register } = useAuth();
@@ -73,53 +128,6 @@ export default function RegisterScreen() {
     }
   }
 
-  function Field({
-    label,
-    value,
-    onChangeText,
-    icon,
-    placeholder,
-    secureTextEntry,
-    keyboardType,
-    errorKey,
-    rightAction,
-    maxLength,
-  }: {
-    label: string;
-    value: string;
-    onChangeText: (v: string) => void;
-    icon: string;
-    placeholder: string;
-    secureTextEntry?: boolean;
-    keyboardType?: "email-address" | "default" | "numeric";
-    errorKey: string;
-    rightAction?: React.ReactNode;
-    maxLength?: number;
-  }) {
-    return (
-      <View style={styles.field}>
-        <Text style={styles.label}>{label}</Text>
-        <View style={[styles.inputWrap, errors[errorKey] ? styles.inputError : null]}>
-          <MaterialIcons name={icon as never} size={18} color="#6B7A8D" />
-          <TextInput
-            style={styles.input}
-            placeholder={placeholder}
-            placeholderTextColor="#8892A0"
-            value={value}
-            onChangeText={onChangeText}
-            secureTextEntry={secureTextEntry}
-            keyboardType={keyboardType ?? "default"}
-            autoCapitalize={keyboardType === "email-address" || keyboardType === "numeric" ? "none" : "words"}
-            autoCorrect={false}
-            maxLength={maxLength}
-          />
-          {rightAction}
-        </View>
-        {errors[errorKey] ? <Text style={styles.errorText}>{errors[errorKey]}</Text> : null}
-      </View>
-    );
-  }
-
   return (
     <LinearGradient colors={["#1F3E63", "#2A4E7A", "#355F8E"]} style={styles.gradient}>
       <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === "ios" ? "padding" : undefined}>
@@ -159,7 +167,7 @@ export default function RegisterScreen() {
               onChangeText={setFirstName}
               icon="person"
               placeholder="Jane"
-              errorKey="firstName"
+              error={errors.firstName}
             />
             <Field
               label="Last Name"
@@ -167,7 +175,7 @@ export default function RegisterScreen() {
               onChangeText={setLastName}
               icon="person-outline"
               placeholder="Smith"
-              errorKey="lastName"
+              error={errors.lastName}
             />
             <Field
               label="Email"
@@ -176,7 +184,7 @@ export default function RegisterScreen() {
               icon="email"
               placeholder="your@email.com"
               keyboardType="email-address"
-              errorKey="email"
+              error={errors.email}
             />
             <Field
               label="Password"
@@ -185,7 +193,7 @@ export default function RegisterScreen() {
               icon="lock"
               placeholder="Min. 8 characters"
               secureTextEntry={!showPassword}
-              errorKey="password"
+              error={errors.password}
               rightAction={
                 <Pressable onPress={() => setShowPassword((v) => !v)} hitSlop={8}>
                   <MaterialIcons name={showPassword ? "visibility-off" : "visibility"} size={18} color="#6B7A8D" />
@@ -199,7 +207,7 @@ export default function RegisterScreen() {
               icon="lock-outline"
               placeholder="Re-enter password"
               secureTextEntry={!showPassword}
-              errorKey="confirmPassword"
+              error={errors.confirmPassword}
             />
             <Field
               label="City"
@@ -207,7 +215,7 @@ export default function RegisterScreen() {
               onChangeText={setCity}
               icon="location-city"
               placeholder="Your city"
-              errorKey="city"
+              error={errors.city}
             />
             <Field
               label="ZIP Code"
@@ -217,7 +225,7 @@ export default function RegisterScreen() {
               placeholder="12345"
               keyboardType="numeric"
               maxLength={10}
-              errorKey="zipCode"
+              error={errors.zipCode}
             />
 
             <Pressable
