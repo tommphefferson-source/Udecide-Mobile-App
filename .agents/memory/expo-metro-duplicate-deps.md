@@ -11,6 +11,9 @@ Expo (udecide) app intermittently fails at load with `UnableToResolveError Unabl
 ## Root cause
 Running `expo install --fix` (or any in-place version bump) updates a package's direct deps but pnpm can leave the OLD version directories orphaned in `node_modules/.pnpm`. These orphans form a self-referential cluster (e.g. old `expo` bundles old `@expo/cli` which pins old `expo-router` as a peer). `pnpm install` will NOT garbage-collect them when it reports "Lockfile is up to date, resolution step is skipped." Metro crawls the whole virtual store and bundles both copies → ambiguous resolution → intermittent crash.
 
+## Variant: a SECOND major Expo SDK pulled in by a stray root dep
+A stray `"expo": "^56.0.11"` added to the **root** `package.json` `dependencies` (root is tooling-only; udecide pins `expo@~54`) made pnpm install a whole second SDK tree — `expo@56` + `react-dom@19.2`/`@types/react@19.2` alongside udecide's `expo@54`/`react@19.1`. Metro then failed hard (not intermittently): `Cannot find module './utils/env'` from `@expo/cli`, `Unable to resolve module scheduler`/`react`/`expo-router/entry-classic`, and `ENOENT scandir .../@expo/metro-runtime/assets`. **Fix:** remove the stray dep from root `package.json`, then do the clean rebuild below. Never put `expo` (or any app runtime dep) in the root `package.json` — the SDK version lives only in the artifact.
+
 ## Durable fix
 Rebuild node_modules from the (already-correct) lockfile so orphans are dropped:
 `rm -rf node_modules artifacts/*/node_modules lib/*/node_modules scripts/node_modules && pnpm install`
