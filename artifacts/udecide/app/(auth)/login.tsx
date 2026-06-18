@@ -21,6 +21,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useAuth } from "@/context/AuthContext";
 import { googleStartUrl } from "@/services/authApi";
+import { openGoogleWebPopup } from "@/utils/googleWebAuth";
 import { validateEmail, validatePassword } from "@/utils/validation";
 
 // Completes the OAuth redirect when the auth browser returns to the app.
@@ -36,12 +37,57 @@ export default function LoginScreen() {
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
 
+  // Handle the {status, code} the OAuth flow returns on its return URL, shared
+  // by the native (deep link) and web (popup postMessage) paths.
+  async function processGoogleResult(
+    status: string | undefined,
+    code: string | undefined,
+    hadMessage: boolean,
+  ) {
+    // Verified Google identity with no linked account yet: collect the few
+    // remaining required fields before creating the account.
+    if (status === "register" && typeof code === "string") {
+      router.push({ pathname: "/(auth)/google-setup", params: { code } });
+      return;
+    }
+    if (status !== "success" || typeof code !== "string") {
+      setErrors({
+        general: hadMessage
+          ? "Google sign-in was not completed."
+          : "Google sign-in failed. Please try again.",
+      });
+      return;
+    }
+    const session = await signInWithGoogleCode(code);
+    if (!session.success) {
+      setErrors({ general: session.error });
+    } else {
+      router.replace("/(tabs)");
+    }
+  }
+
   async function handleGoogleSignIn() {
     setErrors({});
     setGoogleLoading(true);
     try {
-      // The server drives the OAuth handshake; we only open the browser and
-      // wait for it to redirect back to this deep link with a one-time code.
+      if (Platform.OS === "web") {
+        // Web (incl. the iframed canvas preview) can't use the native deep-link
+        // flow, so open the server-mediated OAuth in a popup and wait for it to
+        // post the result back to this window.
+        const result = await openGoogleWebPopup(googleStartUrl);
+        if (!result) {
+          // Popup blocked or closed before finishing — leave the form as-is.
+          return;
+        }
+        await processGoogleResult(
+          result.status,
+          result.code,
+          typeof result.message === "string",
+        );
+        return;
+      }
+      // Native: the server drives the OAuth handshake; we only open the browser
+      // and wait for it to redirect back to this deep link with a one-time code.
       const returnUri = makeRedirectUri({ scheme: "udecide" });
       const result = await WebBrowser.openAuthSessionAsync(
         googleStartUrl(returnUri),
@@ -52,28 +98,11 @@ export default function LoginScreen() {
         return;
       }
       const { queryParams } = Linking.parse(result.url);
-      const status = queryParams?.status;
-      const code = queryParams?.code;
-      // Verified Google identity with no linked account yet: collect the few
-      // remaining required fields before creating the account.
-      if (status === "register" && typeof code === "string") {
-        router.push({ pathname: "/(auth)/google-setup", params: { code } });
-        return;
-      }
-      if (status !== "success" || typeof code !== "string") {
-        const message =
-          typeof queryParams?.message === "string"
-            ? "Google sign-in was not completed."
-            : "Google sign-in failed. Please try again.";
-        setErrors({ general: message });
-        return;
-      }
-      const session = await signInWithGoogleCode(code);
-      if (!session.success) {
-        setErrors({ general: session.error });
-      } else {
-        router.replace("/(tabs)");
-      }
+      await processGoogleResult(
+        typeof queryParams?.status === "string" ? queryParams.status : undefined,
+        typeof queryParams?.code === "string" ? queryParams.code : undefined,
+        typeof queryParams?.message === "string",
+      );
     } catch (err) {
       setErrors({
         general: err instanceof Error ? err.message : "Google sign-in failed. Please try again.",

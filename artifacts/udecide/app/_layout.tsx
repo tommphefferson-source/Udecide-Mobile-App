@@ -16,6 +16,11 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { AddressProvider } from "@/context/AddressContext";
 import { AuthProvider, useAuth } from "@/context/AuthContext";
+import { completeGoogleWebPopupIfNeeded } from "@/utils/googleWebAuth";
+
+// On web, when this window is the Google OAuth popup returning with a result,
+// forward it to the opener and close before booting the rest of the app.
+const isGoogleOAuthPopup = completeGoogleWebPopupIfNeeded();
 
 SplashScreen.preventAutoHideAsync();
 
@@ -72,6 +77,9 @@ export default function RootLayout() {
       SplashScreen.hideAsync();
     }
   }, [fontsLoaded, fontError]);
+
+  // This window is the OAuth popup; it has posted its result and is closing.
+  if (isGoogleOAuthPopup) return null;
 
   if (!fontsLoaded && !fontError) return null;
 
