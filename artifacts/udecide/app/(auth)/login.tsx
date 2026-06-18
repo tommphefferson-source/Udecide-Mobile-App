@@ -157,6 +157,13 @@ export default function LoginScreen() {
               <Text style={styles.label}>Password</Text>
               <View style={[styles.inputWrap, errors.password ? styles.inputError : null]}>
                 <MaterialIcons name="lock" size={18} color="#6B7A8D" />
+                <Pressable onPress={() => setShowPassword((v) => !v)} hitSlop={8}>
+                  <MaterialIcons
+                    name={showPassword ? "visibility-off" : "visibility"}
+                    size={18}
+                    color="#6B7A8D"
+                  />
+                </Pressable>
                 <TextInput
                   style={styles.input}
                   placeholder="Enter password"
@@ -166,13 +173,6 @@ export default function LoginScreen() {
                   secureTextEntry={!showPassword}
                   autoCapitalize="none"
                 />
-                <Pressable onPress={() => setShowPassword((v) => !v)} hitSlop={8}>
-                  <MaterialIcons
-                    name={showPassword ? "visibility-off" : "visibility"}
-                    size={18}
-                    color="#6B7A8D"
-                  />
-                </Pressable>
               </View>
               {errors.password ? <Text style={styles.errorText}>{errors.password}</Text> : null}
             </View>
