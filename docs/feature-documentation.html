@@ -1,0 +1,453 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>UDecide — Feature Documentation</title>
+<style>
+  :root {
+    --navy: #1f3e63;
+    --red: #c8102e;
+    --ink: #1a2333;
+    --muted: #5b6675;
+    --line: #dde3ea;
+    --bg-soft: #f4f6f9;
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: "Inter", "Helvetica Neue", Arial, sans-serif;
+    color: var(--ink);
+    margin: 0;
+    font-size: 11.5px;
+    line-height: 1.55;
+  }
+  .page { page-break-after: always; padding: 40px 48px; }
+  .page:last-child { page-break-after: auto; }
+
+  /* Cover */
+  .cover {
+    height: 100vh; display: flex; flex-direction: column; justify-content: center;
+    background: linear-gradient(160deg, var(--navy) 0%, #16304e 60%, #122741 100%);
+    color: #fff; padding: 64px;
+  }
+  .cover .brand { font-size: 44px; font-weight: 800; letter-spacing: -1px; }
+  .cover .brand span { color: #ff5a70; }
+  .cover .subtitle { font-size: 20px; margin-top: 10px; color: #c9d6e6; }
+  .cover .meta { margin-top: 48px; font-size: 12px; color: #9db2ca; }
+  .cover .badge {
+    display: inline-block; margin-top: 24px; padding: 6px 14px; border: 1px solid #43608a;
+    border-radius: 999px; font-size: 11px; color: #c9d6e6; letter-spacing: 1px;
+  }
+
+  h1 { font-size: 22px; color: var(--navy); margin: 0 0 4px; letter-spacing: -0.3px; }
+  h2 { font-size: 15px; color: var(--navy); margin: 22px 0 6px; }
+  h3 { font-size: 12.5px; margin: 14px 0 4px; }
+  p { margin: 6px 0; }
+  .rule { height: 3px; width: 56px; background: var(--red); border-radius: 2px; margin: 8px 0 18px; }
+  .lead { color: var(--muted); font-size: 12.5px; }
+
+  table { width: 100%; border-collapse: collapse; margin: 10px 0; font-size: 10.5px; }
+  th { text-align: left; background: var(--bg-soft); color: var(--navy); padding: 6px 8px; border: 1px solid var(--line); }
+  td { padding: 6px 8px; border: 1px solid var(--line); vertical-align: top; }
+
+  ul { margin: 6px 0 6px 18px; padding: 0; }
+  li { margin: 3px 0; }
+
+  /* Feature layout: text + phone screenshot */
+  .feature { display: flex; gap: 28px; align-items: flex-start; }
+  .feature .text { flex: 1; }
+  .phone {
+    width: 218px; flex: 0 0 218px; border: 1px solid var(--line); border-radius: 18px;
+    overflow: hidden; box-shadow: 0 4px 14px rgba(16,32,54,.12); background:#fff;
+  }
+  .phone img { width: 100%; display: block; }
+  .caption { text-align: center; font-size: 9.5px; color: var(--muted); margin-top: 6px; }
+  .shotcol { flex: 0 0 218px; }
+
+  .pill {
+    display: inline-block; font-size: 9px; font-weight: 600; letter-spacing: .6px;
+    text-transform: uppercase; color: var(--red); background: #fdecef;
+    border-radius: 999px; padding: 2px 10px; margin-bottom: 6px;
+  }
+  .note {
+    background: var(--bg-soft); border-left: 3px solid var(--navy);
+    padding: 8px 12px; margin: 10px 0; font-size: 10.5px; color: var(--muted);
+  }
+  .footer-note { color: var(--muted); font-size: 10px; margin-top: 28px; border-top: 1px solid var(--line); padding-top: 10px; }
+  .toc td { border: none; border-bottom: 1px solid var(--line); padding: 7px 4px; }
+  .toc .n { color: var(--red); font-weight: 700; width: 26px; }
+</style>
+</head>
+<body>
+
+<!-- COVER -->
+<div class="page cover">
+  <div class="brand">U<span>Decide</span></div>
+  <div class="subtitle">Feature Documentation</div>
+  <div class="badge">NONPARTISAN POLITICAL &amp; VOTER INFORMATION APP</div>
+  <div class="meta">
+    Version 1.0 &nbsp;•&nbsp; July 2026<br/>
+    Platforms: iOS &amp; Android (Expo / React Native), Web preview
+  </div>
+</div>
+
+<!-- OVERVIEW -->
+<div class="page">
+  <h1>Application Overview</h1>
+  <div class="rule"></div>
+  <p class="lead">UDecide is a mobile app that helps U.S. voters understand their government and participate in elections. It brings together a citizen's elected representatives, upcoming elections, active legislation, voter registration tools, and civic education — all presented from a strictly nonpartisan standpoint. The app never ranks parties, endorses candidates, or editorializes.</p>
+
+  <h2>How it works</h2>
+  <p>Everything in the app is driven by the user's location. After creating an account, the user provides their address; the app then tailors representatives, elections, and legislation to their federal, state, county, and city jurisdictions. A location override lets users explore any other U.S. address without changing their profile.</p>
+
+  <h2>Technology at a glance</h2>
+  <table>
+    <tr><th>Layer</th><th>Description</th></tr>
+    <tr><td>Mobile app</td><td>Expo / React Native (iOS &amp; Android), with a web preview build. Five-tab navigation with a native "liquid glass" tab bar on modern iOS.</td></tr>
+    <tr><td>API server</td><td>A Node.js (Express) backend that securely brokers sign-in, profile, representative, election, and news requests, keeping those service credentials (such as the Cicero key) on the server rather than on the device.</td></tr>
+    <tr><td>Data sources</td><td>Legacy UDecide member system (accounts, polls, questionnaires, news), Cicero (elected officials by address), LegiScan (state legislation), Congress.gov (federal data), Google Gemini (AI fact-checking).</td></tr>
+    <tr><td>Sign-in options</td><td>Email &amp; password, or Sign in with Google (server-verified OAuth).</td></tr>
+  </table>
+
+  <h2>Contents</h2>
+  <table class="toc">
+    <tr><td class="n">1</td><td>Account &amp; Sign-in (Login, Registration, Password Reset, Google Sign-In)</td></tr>
+    <tr><td class="n">2</td><td>Dashboard (Home)</td></tr>
+    <tr><td class="n">3</td><td>Representatives</td></tr>
+    <tr><td class="n">4</td><td>Elections &amp; Ballots</td></tr>
+    <tr><td class="n">5</td><td>Legislation Tracker</td></tr>
+    <tr><td class="n">6</td><td>More Menu</td></tr>
+    <tr><td class="n">7</td><td>Voter Tools</td></tr>
+    <tr><td class="n">8</td><td>Political Parties</td></tr>
+    <tr><td class="n">9</td><td>Political System Guide &amp; Civics Quiz</td></tr>
+    <tr><td class="n">10</td><td>Polls &amp; Issue Questionnaires</td></tr>
+    <tr><td class="n">11</td><td>AI Fact Checker</td></tr>
+    <tr><td class="n">12</td><td>Profile &amp; Location Override</td></tr>
+  </table>
+
+  <div class="note">Screenshots in this document were captured from the live application (web preview build) using a demo account. Native iOS/Android rendering is visually equivalent with platform-native fonts, safe areas, and tab bar treatments.</div>
+</div>
+
+<!-- 1. AUTH -->
+<div class="page">
+  <span class="pill">Section 1</span>
+  <h1>Account &amp; Sign-in</h1>
+  <div class="rule"></div>
+  <div class="feature">
+    <div class="text">
+      <h2>Sign In</h2>
+      <ul>
+        <li>Email + password sign-in against the UDecide member system.</li>
+        <li>Password visibility toggle and inline validation with clear error messages.</li>
+        <li><b>Sign in with Google</b> — one-tap sign-in. Google verifies the identity on the server; the app can never forge an account. On the web build this opens a secure popup; on phones it uses the system browser.</li>
+        <li>New Google users are guided through a short "Almost there" step (city + ZIP) to finish creating their account.</li>
+        <li>Sessions persist securely on the device; users stay signed in between launches.</li>
+      </ul>
+      <h2>Create Account</h2>
+      <ul>
+        <li>Collects name, email, password, and location (city, state, ZIP).</li>
+        <li>Validation on every field before submission.</li>
+        <li>After registration, a profile-setup step captures the full street address that powers representative and election matching.</li>
+      </ul>
+      <h2>Forgot Password</h2>
+      <ul>
+        <li>Self-service reset: the user enters their account email and receives reset instructions.</li>
+      </ul>
+    </div>
+    <div class="shotcol">
+      <div class="phone"><img src="screenshots/01-login.png" /></div>
+      <div class="caption">Sign In screen</div>
+    </div>
+  </div>
+</div>
+
+<div class="page">
+  <div class="feature">
+    <div class="shotcol">
+      <div class="phone"><img src="screenshots/02-register.png" /></div>
+      <div class="caption">Create Account</div>
+    </div>
+    <div class="text" style="padding-top:8px">
+      <h3>Registration flow</h3>
+      <p>Account creation runs through the secure API server to the UDecide member system. Duplicate emails and invalid entries return friendly, actionable messages. All traffic between the app and the API server is encrypted (HTTPS).</p>
+    </div>
+    <div class="shotcol">
+      <div class="phone"><img src="screenshots/03-forgot-password.png" /></div>
+      <div class="caption">Forgot Password</div>
+    </div>
+  </div>
+</div>
+
+<!-- 2. DASHBOARD -->
+<div class="page">
+  <span class="pill">Section 2</span>
+  <h1>Dashboard (Home)</h1>
+  <div class="rule"></div>
+  <div class="feature">
+    <div class="text">
+      <p class="lead">The dashboard is the user's civic home base — a card-driven layout that surfaces the most relevant information and provides one-tap access to every feature.</p>
+      <ul>
+        <li>Personalized greeting and the user's current civic location.</li>
+        <li>Quick-access cards to Representatives, Elections, Legislation, Voter Tools, Polls, Fact Checker, and more.</li>
+        <li>Political news access via the member news feed, opened as readable in-app articles.</li>
+        <li>Reference links (state/town resources) supplied by the member system.</li>
+        <li>Nonpartisanship notice reinforcing the app's neutral stance.</li>
+      </ul>
+      <div class="note">All personalized content follows the user's <b>effective location</b> — their profile address, or the temporary override set in Location Override (Section 12).</div>
+    </div>
+    <div class="shotcol">
+      <div class="phone"><img src="screenshots/04-dashboard.png" /></div>
+      <div class="caption">Dashboard</div>
+    </div>
+  </div>
+</div>
+
+<!-- 3. REPRESENTATIVES -->
+<div class="page">
+  <span class="pill">Section 3</span>
+  <h1>Representatives</h1>
+  <div class="rule"></div>
+  <div class="feature">
+    <div class="text">
+      <p class="lead">See every elected official who represents you — from the President down to city council — based on your exact address.</p>
+      <ul>
+        <li>Officials grouped by level: <b>Federal, State, County, City</b> with an easy filter row.</li>
+        <li>Live data from the Cicero civic-data service, requested securely through the API server.</li>
+        <li>Each official shows their photo, office, party affiliation, and contact channels (phone, email, website, social).</li>
+        <li>Detail view includes term information and, where available, voting-record context.</li>
+        <li>Updates automatically when the user's effective location changes.</li>
+      </ul>
+    </div>
+    <div class="shotcol">
+      <div class="phone"><img src="screenshots/05-representatives.png" /></div>
+      <div class="caption">Representatives tab</div>
+    </div>
+  </div>
+</div>
+
+<!-- 4. ELECTIONS -->
+<div class="page">
+  <span class="pill">Section 4</span>
+  <h1>Elections &amp; Ballots</h1>
+  <div class="rule"></div>
+  <div class="feature">
+    <div class="text">
+      <p class="lead">A forward-looking view of every election that affects the user, with the practical details needed to participate.</p>
+      <ul>
+        <li>Upcoming federal, state, and local elections for the user's jurisdictions.</li>
+        <li>Key dates: election day, registration deadlines, early-voting windows, and absentee deadlines.</li>
+        <li>Candidate listings presented neutrally — no endorsements or rankings.</li>
+        <li>Countdown context so users know how soon each election is.</li>
+      </ul>
+    </div>
+    <div class="shotcol">
+      <div class="phone"><img src="screenshots/06-elections.png" /></div>
+      <div class="caption">Elections tab</div>
+    </div>
+  </div>
+</div>
+
+<!-- 5. LEGISLATION -->
+<div class="page">
+  <span class="pill">Section 5</span>
+  <h1>Legislation Tracker</h1>
+  <div class="rule"></div>
+  <div class="feature">
+    <div class="text">
+      <p class="lead">Follow bills as they move through the user's state legislature and Congress.</p>
+      <ul>
+        <li>State legislation from the LegiScan service; federal data from Congress.gov.</li>
+        <li>Bill cards show number, title, plain-language status (Introduced, In Committee, Passed, Signed, etc.), and last action.</li>
+        <li>Search and filtering to find bills by topic.</li>
+        <li>Detail view summarizes the bill and its progress timeline.</li>
+      </ul>
+    </div>
+    <div class="shotcol">
+      <div class="phone"><img src="screenshots/07-legislation.png" /></div>
+      <div class="caption">Legislation tab</div>
+    </div>
+  </div>
+</div>
+
+<!-- 6. MORE -->
+<div class="page">
+  <span class="pill">Section 6</span>
+  <h1>More Menu</h1>
+  <div class="rule"></div>
+  <div class="feature">
+    <div class="text">
+      <p class="lead">The fifth tab collects the app's remaining tools and account controls in one organized menu.</p>
+      <ul>
+        <li>Voter Tools, Political Parties, Political System Guide, Civics Quiz, Polls, Issue Questionnaire, and the AI Fact Checker.</li>
+        <li>Profile management and Location Override.</li>
+        <li>Static informational pages (about, terms, privacy) provided by the member system.</li>
+        <li>Sign out.</li>
+      </ul>
+    </div>
+    <div class="shotcol">
+      <div class="phone"><img src="screenshots/08-more.png" /></div>
+      <div class="caption">More tab</div>
+    </div>
+  </div>
+</div>
+
+<!-- 7. VOTER TOOLS -->
+<div class="page">
+  <span class="pill">Section 7</span>
+  <h1>Voter Tools</h1>
+  <div class="rule"></div>
+  <div class="feature">
+    <div class="text">
+      <p class="lead">Practical, state-aware guidance that turns intent into a cast ballot.</p>
+      <ul>
+        <li>Voter-registration status guidance and links to official state registration resources.</li>
+        <li>Polling-place information for the user's address.</li>
+        <li>Absentee / mail-in voting rules and deadlines for the user's state.</li>
+        <li>Early-voting availability and windows.</li>
+        <li>ID requirements and what to bring on election day.</li>
+      </ul>
+    </div>
+    <div class="shotcol">
+      <div class="phone"><img src="screenshots/09-voter-tools.png" /></div>
+      <div class="caption">Voter Tools</div>
+    </div>
+  </div>
+</div>
+
+<!-- 8. PARTIES -->
+<div class="page">
+  <span class="pill">Section 8</span>
+  <h1>Political Parties</h1>
+  <div class="rule"></div>
+  <div class="feature">
+    <div class="text">
+      <p class="lead">A balanced reference on America's political parties.</p>
+      <ul>
+        <li>Profiles of the major and notable minor parties.</li>
+        <li>Neutral platform summaries — history, core positions, and organization.</li>
+        <li>Identical presentation for every party: no ordering by preference, no rankings, no commentary.</li>
+      </ul>
+    </div>
+    <div class="shotcol">
+      <div class="phone"><img src="screenshots/10-parties.png" /></div>
+      <div class="caption">Political Parties</div>
+    </div>
+  </div>
+</div>
+
+<!-- 9. GUIDE + QUIZ -->
+<div class="page">
+  <span class="pill">Section 9</span>
+  <h1>Political System Guide &amp; Civics Quiz</h1>
+  <div class="rule"></div>
+  <div class="feature">
+    <div class="shotcol">
+      <div class="phone"><img src="screenshots/11-political-guide.png" /></div>
+      <div class="caption">Political System Guide</div>
+    </div>
+    <div class="text" style="padding-top:8px">
+      <h3>Political System Guide</h3>
+      <ul>
+        <li>Civic-education explainers: the three branches of government, how a bill becomes law, the Constitution and amendments, and how elections work.</li>
+        <li>Written in plain language for readers of any background.</li>
+      </ul>
+      <h3>Civics Quiz</h3>
+      <ul>
+        <li>An interactive quiz that lets users test their civic knowledge.</li>
+        <li>Instant feedback per question and a score summary at the end.</li>
+      </ul>
+    </div>
+    <div class="shotcol">
+      <div class="phone"><img src="screenshots/12-civics-quiz.png" /></div>
+      <div class="caption">Civics Quiz</div>
+    </div>
+  </div>
+</div>
+
+<!-- 10. POLLS -->
+<div class="page">
+  <span class="pill">Section 10</span>
+  <h1>Polls &amp; Issue Questionnaires</h1>
+  <div class="rule"></div>
+  <div class="feature">
+    <div class="shotcol">
+      <div class="phone"><img src="screenshots/13-polls.png" /></div>
+      <div class="caption">Community Polls</div>
+    </div>
+    <div class="text" style="padding-top:8px">
+      <h3>Community Polls</h3>
+      <ul>
+        <li>Members vote on current civic questions from the UDecide community.</li>
+        <li>One vote per member per poll; results are viewable after voting.</li>
+        <li>Live results with vote counts and percentages.</li>
+      </ul>
+      <h3>Issue Questionnaires</h3>
+      <ul>
+        <li>Structured issue sets that let users record where they stand on policy topics.</li>
+        <li>Stances are private to the user — an informational self-assessment, not a public poll.</li>
+      </ul>
+    </div>
+    <div class="shotcol">
+      <div class="phone"><img src="screenshots/17-issue-questionnaire.png" /></div>
+      <div class="caption">Issue Questionnaire</div>
+    </div>
+  </div>
+</div>
+
+<!-- 11. FACT CHECKER -->
+<div class="page">
+  <span class="pill">Section 11</span>
+  <h1>AI Fact Checker</h1>
+  <div class="rule"></div>
+  <div class="feature">
+    <div class="text">
+      <p class="lead">A conversational assistant, powered by Google's Gemini AI, purpose-built for neutral political fact-checking.</p>
+      <ul>
+        <li>Users paste a claim or ask a question; the assistant responds with factual, sourced-style context.</li>
+        <li>A strict nonpartisan system prompt keeps answers neutral — the assistant describes, it never advocates.</li>
+        <li>Streaming, chat-style interface with conversation history during the session.</li>
+        <li>Clear disclaimer that AI answers are informational and users should verify with primary sources.</li>
+      </ul>
+    </div>
+    <div class="shotcol">
+      <div class="phone"><img src="screenshots/14-fact-checker.png" /></div>
+      <div class="caption">AI Fact Checker</div>
+    </div>
+  </div>
+</div>
+
+<!-- 12. PROFILE -->
+<div class="page">
+  <span class="pill">Section 12</span>
+  <h1>Profile &amp; Location Override</h1>
+  <div class="rule"></div>
+  <div class="feature">
+    <div class="shotcol">
+      <div class="phone"><img src="screenshots/15-profile.png" /></div>
+      <div class="caption">Profile</div>
+    </div>
+    <div class="text" style="padding-top:8px">
+      <h3>Profile</h3>
+      <ul>
+        <li>Edit name, contact details, and the home address that drives all location-based features.</li>
+        <li>Profile photo upload from the device photo library.</li>
+        <li>Changes save to the UDecide member system and take effect across the app immediately.</li>
+      </ul>
+      <h3>Location Override</h3>
+      <ul>
+        <li>Explore the political landscape of <b>any U.S. address</b> — representatives, elections, and legislation for that location — without changing the saved profile.</li>
+        <li>A visible indicator shows when an override is active; one tap returns to the home address.</li>
+      </ul>
+    </div>
+    <div class="shotcol">
+      <div class="phone"><img src="screenshots/16-address-override.png" /></div>
+      <div class="caption">Location Override</div>
+    </div>
+  </div>
+
+  <div class="footer-note">
+    UDecide is nonpartisan and does not endorse any candidate or party. &nbsp;•&nbsp; Feature Documentation, v1.0 — July 2026.
+  </div>
+</div>
+
+</body>
+</html>

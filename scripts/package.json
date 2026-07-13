@@ -9,6 +9,7 @@
   },
   "devDependencies": {
     "@types/node": "catalog:",
+    "puppeteer-core": "^25.3.0",
     "tsx": "catalog:"
   }
 }

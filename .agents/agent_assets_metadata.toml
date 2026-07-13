@@ -71,3 +71,9 @@ id = "xcmvM8zVofAGSl-ebVooK"
 uri = "file://screenshots/udecide-more.jpg"
 type = "image"
 title = "Screen 9 — More Menu"
+
+[[outputs]]
+id = "2EC8exBiTuKul6D41H_FN"
+uri = "file://docs/UDecide-Feature-Documentation.pdf"
+type = "pdf"
+title = "UDecide — Feature Documentation (PDF)"
