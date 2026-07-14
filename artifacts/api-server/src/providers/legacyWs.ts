@@ -1,5 +1,8 @@
+import { Agent, fetch as undiciFetch } from "undici";
+
 import { config } from "../config";
 import { AppError, UpstreamError } from "../lib/errors";
+import { logger } from "../lib/logger";
 
 /**
  * Provider for the legacy UDecide web service (CodeIgniter backend at
@@ -12,6 +15,38 @@ import { AppError, UpstreamError } from "../lib/errors";
  */
 
 const TIMEOUT_MS = 12_000;
+
+/**
+ * The legacy EC2 host serves HTTPS with a self-signed certificate. When the
+ * base URL points at that raw IP over https (or the operator explicitly opts
+ * in via LEGACY_WS_ALLOW_SELF_SIGNED=1), use a dedicated undici Agent that
+ * skips certificate validation for legacy calls ONLY — all other outbound
+ * traffic keeps normal TLS verification.
+ */
+const legacyDispatcher: Agent | undefined =
+  config.legacyWsBaseUrl.startsWith("https://52.45.60.139") ||
+  process.env.LEGACY_WS_ALLOW_SELF_SIGNED === "1"
+    ? new Agent({ connect: { rejectUnauthorized: false } })
+    : undefined;
+
+if (legacyDispatcher) {
+  logger.warn(
+    { legacyWsBaseUrl: config.legacyWsBaseUrl },
+    "Legacy WS TLS certificate validation is DISABLED (self-signed upstream); transport is encrypted but not authenticated",
+  );
+}
+
+async function legacyFetch(url: string, init: RequestInit): Promise<Response> {
+  // The undici package's Agent is only compatible with the undici package's
+  // own fetch (Node's built-in fetch rejects it with "invalid onRequestStart
+  // method"), so legacy calls go through undici's fetch. The returned Response
+  // is structurally identical at runtime; the cast bridges the two type trees.
+  const res = await undiciFetch(
+    url,
+    { ...init, dispatcher: legacyDispatcher } as Parameters<typeof undiciFetch>[1],
+  );
+  return res as unknown as Response;
+}
 
 interface WsEnvelope {
   settings?: { success?: string; message?: string };
@@ -182,7 +217,7 @@ async function wsPost(
 
   let res: Response;
   try {
-    res = await fetch(`${config.legacyWsBaseUrl}${path}`, {
+    res = await legacyFetch(`${config.legacyWsBaseUrl}${path}`, {
       method: "POST",
       headers: {
         "Content-Type": "application/x-www-form-urlencoded",
@@ -241,7 +276,7 @@ async function wsPostJson(
 ): Promise<unknown[]> {
   let res: Response;
   try {
-    res = await fetch(`${config.legacyWsBaseUrl}${path}`, {
+    res = await legacyFetch(`${config.legacyWsBaseUrl}${path}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
@@ -479,7 +514,7 @@ export async function uploadProfilePhoto(
 
   let res: Response;
   try {
-    res = await fetch(`${config.legacyWsBaseUrl}/edit_profile`, {
+    res = await legacyFetch(`${config.legacyWsBaseUrl}/edit_profile`, {
       method: "POST",
       headers: { AUTHTOKEN: token },
       body: form,
@@ -700,7 +735,7 @@ export async function fetchStaticPage(
 ): Promise<LegacyStaticPage | null> {
   let res: Response;
   try {
-    res = await fetch(`${config.legacyWsBaseUrl}/static_pages`, {
+    res = await legacyFetch(`${config.legacyWsBaseUrl}/static_pages`, {
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
       body: new URLSearchParams({ page_code: code }).toString(),
