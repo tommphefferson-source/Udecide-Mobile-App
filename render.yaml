@@ -12,8 +12,10 @@ services:
     runtime: node
     plan: free # free spins down when idle (cold start ~50s); upgrade to "starter" for always-on
     rootDir: . # repo root — required so the pnpm workspace installs correctly
-    # Pin pnpm to match the committed lockfile, install the workspace, bundle the server.
-    buildCommand: corepack enable && corepack prepare pnpm@11.5.2 --activate && pnpm install --no-frozen-lockfile && pnpm --filter @workspace/api-server run build
+    # pnpm is provisioned by Render from the root package.json "packageManager"
+    # field (do NOT run `corepack enable` — it can't write to /usr/bin on Render's
+    # read-only builders). Install the workspace, then bundle the server.
+    buildCommand: pnpm install --no-frozen-lockfile && pnpm --filter @workspace/api-server run build
     startCommand: node --enable-source-maps artifacts/api-server/dist/index.mjs
     healthCheckPath: /api/healthz # server exposes GET /api/healthz → { status: "ok" }
     autoDeploy: true # redeploy on every push to the connected branch
