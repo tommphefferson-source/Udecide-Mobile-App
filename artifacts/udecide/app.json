@@ -35,7 +35,7 @@
       [
         "expo-router",
         {
-          "origin": "https://replit.com/"
+          "origin": "https://udecide-api.onrender.com"
         }
       ],
       "expo-font",
