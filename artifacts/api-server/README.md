@@ -4,7 +4,7 @@ A single backend service that consolidates the civic-information app's backend
 dependencies. It replaces:
 
 1. Direct Google Civic API calls the iOS app made from the client, and
-2. The legacy backend at `http://52.45.60.139/WS`.
+2. The legacy backend at `https://api-legacy.udecide.app/WS`.
 
 It exposes a clean REST API under `/api`, validated end-to-end with Zod schemas
 generated from the OpenAPI contract.

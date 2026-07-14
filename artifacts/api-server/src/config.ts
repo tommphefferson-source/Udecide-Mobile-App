@@ -57,7 +57,7 @@ export const config: AppConfig = {
     ? `https://${process.env.REPLIT_EXPO_DEV_DOMAIN}`
     : undefined,
   sessionSecret: process.env.SESSION_SECRET,
-  legacyWsBaseUrl: process.env.LEGACY_WS_BASE_URL ?? "http://52.45.60.139/WS",
+  legacyWsBaseUrl: process.env.LEGACY_WS_BASE_URL ?? "https://api-legacy.udecide.app/WS",
   legacyWsAuthToken: process.env.LEGACY_WS_AUTHTOKEN,
   host: process.env.HOST ?? "0.0.0.0",
   port: Number(process.env.PORT ?? 8080),
