@@ -2,6 +2,7 @@
   "expo": {
     "name": "UDecide App",
     "slug": "udecide",
+    "owner": "udecide-apps-organization",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -15,7 +16,10 @@
     },
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "com.udecide.app"
+      "bundleIdentifier": "com.udecide.app",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -45,7 +49,12 @@
     ],
     "experiments": {
       "typedRoutes": true,
-      "reactCompiler": true
+      "reactCompiler": false
+    },
+    "extra": {
+      "eas": {
+        "projectId": "164677c7-6539-4eae-ab59-fb5c6a999c3a"
+      }
     }
   }
 }

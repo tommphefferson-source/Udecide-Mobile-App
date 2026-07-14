@@ -9,6 +9,7 @@ import civicsRouter from "./civics";
 import authRouter from "./auth";
 import googleOauthRouter from "./googleOauth";
 import pagesRouter from "./pages";
+import factCheckRouter from "./factCheck";
 
 const router: IRouter = Router();
 
@@ -22,5 +23,6 @@ router.use(homeRouter);
 router.use(newsRouter);
 router.use(civicsRouter);
 router.use(pagesRouter);
+router.use(factCheckRouter);
 
 export default router;

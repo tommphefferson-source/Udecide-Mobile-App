@@ -48,6 +48,11 @@ export const config: AppConfig = {
   googleOAuthClientId: process.env.GOOGLE_CLIENT_ID,
   googleOAuthClientSecret: process.env.GOOGLE_CLIENT_SECRET,
   publicOrigin: (() => {
+    // Explicit override for non-Replit hosts (e.g. Render): set PUBLIC_ORIGIN to
+    // the full https origin, e.g. https://udecide-api.onrender.com. Falls back to
+    // the Replit domain derivation when running on Replit.
+    const explicit = process.env.PUBLIC_ORIGIN?.trim().replace(/\/+$/, "");
+    if (explicit) return explicit;
     const domain =
       process.env.REPLIT_DOMAINS?.split(",")[0]?.trim() ??
       process.env.REPLIT_DEV_DOMAIN;

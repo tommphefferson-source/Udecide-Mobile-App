@@ -88,11 +88,30 @@ export default function LoginScreen() {
       }
       // Native: the server drives the OAuth handshake; we only open the browser
       // and wait for it to redirect back to this deep link with a one-time code.
-      const returnUri = makeRedirectUri({ scheme: "udecide" });
-      const result = await WebBrowser.openAuthSessionAsync(
-        googleStartUrl(returnUri),
-        returnUri
-      );
+      // makeRedirectUri can throw on some configs — never let that crash the app.
+      let returnUri: string;
+      try {
+        returnUri = makeRedirectUri({ scheme: "udecide" });
+      } catch {
+        setErrors({
+          general: "Google sign-in is unavailable right now. Please use email sign-in.",
+        });
+        return;
+      }
+      const startUrl = googleStartUrl(returnUri);
+      // Guard: iOS ASWebAuthenticationSession HARD-CRASHES (uncatchable by a JS
+      // try/catch) when handed a scheme-less/relative URL. That happens when the
+      // API host (EXPO_PUBLIC_DOMAIN) is not configured, so API_BASE falls back
+      // to a relative "/api". Require an absolute https URL + a valid return
+      // scheme before ever calling into native, and fail gracefully otherwise.
+      if (!/^https:\/\//i.test(startUrl) || !returnUri) {
+        setErrors({
+          general:
+            "Google sign-in isn't configured for this build yet. Please use email sign-in.",
+        });
+        return;
+      }
+      const result = await WebBrowser.openAuthSessionAsync(startUrl, returnUri);
       if (result.type !== "success" || !result.url) {
         // User dismissed/cancelled the browser, or it failed to open.
         return;

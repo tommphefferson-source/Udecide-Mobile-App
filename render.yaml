@@ -1,0 +1,48 @@
+# Render Blueprint — deploys the UDecide api-server (Node/Express) from this repo.
+# In Render: New +  →  Blueprint  →  connect this GitHub repo  →  Apply.
+# Docs: https://render.com/docs/blueprint-spec
+#
+# After the first deploy you'll get a URL like https://udecide-api.onrender.com.
+# Set PUBLIC_ORIGIN (below) to that URL, and add
+#   https://<that-url>/api/auth/google/callback
+# to your Google OAuth client's authorized redirect URIs.
+services:
+  - type: web
+    name: udecide-api
+    runtime: node
+    plan: free # free spins down when idle (cold start ~50s); upgrade to "starter" for always-on
+    rootDir: . # repo root — required so the pnpm workspace installs correctly
+    # Pin pnpm to match the committed lockfile, install the workspace, bundle the server.
+    buildCommand: corepack enable && corepack prepare pnpm@11.5.2 --activate && pnpm install --no-frozen-lockfile && pnpm --filter @workspace/api-server run build
+    startCommand: node --enable-source-maps artifacts/api-server/dist/index.mjs
+    healthCheckPath: /api/healthz # server exposes GET /api/healthz → { status: "ok" }
+    autoDeploy: true # redeploy on every push to the connected branch
+    envVars:
+      - key: NODE_ENV
+        value: production
+      # Render injects PORT automatically — the server reads process.env.PORT. Do not set it.
+
+      # REQUIRED for Google OAuth: set this to your Render URL after the first deploy.
+      - key: PUBLIC_ORIGIN
+        sync: false # e.g. https://udecide-api.onrender.com
+
+      # Signs the OAuth state — Render can auto-generate a strong value.
+      - key: SESSION_SECRET
+        generateValue: true
+
+      # Google "Sign in with Google" web client (you have these).
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
+
+      # Optional feature keys — set to enable live data (else the app uses mock/demo).
+      - key: GEMINI_API_KEY # Fact Checker
+        sync: false
+      - key: CICERO_API_KEY # live representatives
+        sync: false
+      - key: GOOGLE_CIVIC_API_KEY # live elections
+        sync: false
+      - key: LEGACY_WS_AUTHTOKEN # live polls/news/questionnaires
+        sync: false
+      # LEGACY_WS_BASE_URL defaults to http://52.45.60.139/WS — override only if it moves.

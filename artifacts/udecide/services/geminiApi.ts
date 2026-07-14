@@ -1,8 +1,4 @@
-import { GEMINI_SYSTEM_PROMPT } from "@/utils/constants";
-
-const API_KEY = process.env.EXPO_PUBLIC_GEMINI_API_KEY;
-const BASE_URL =
-  "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent";
+import { apiFetch } from "./apiClient";
 
 export interface GeminiMessage {
   role: "user" | "model";
@@ -12,89 +8,50 @@ export interface GeminiMessage {
 export interface GeminiResponse {
   text: string;
   error?: string;
+  /** True when the server returned a canned demo answer (no key configured). */
+  mock?: boolean;
 }
 
+/**
+ * Sends the Fact Checker conversation to the API Server's `/fact-check` proxy,
+ * which calls Google Gemini with a **server-side** key.
+ *
+ * The Gemini key is intentionally NOT bundled into the app (there is no
+ * `EXPO_PUBLIC_GEMINI_API_KEY` anymore) — an inlined key would be extractable
+ * from the shipped binary. When the server has no key configured, it responds
+ * with a canned demo answer and `mock: true`, so the feature still works in
+ * demos.
+ *
+ * `onChunk` is retained for API compatibility; the server replies with the full
+ * text in one shot, so it's invoked once with the complete answer when provided.
+ */
 export async function sendGeminiMessage(
   messages: GeminiMessage[],
-  onChunk?: (chunk: string) => void
+  onChunk?: (chunk: string) => void,
 ): Promise<GeminiResponse> {
-  if (!API_KEY) {
-    const mockResponse = generateMockResponse(messages[messages.length - 1]?.content ?? "");
-    if (onChunk) {
-      for (const word of mockResponse.split(" ")) {
-        await new Promise((resolve) => setTimeout(resolve, 50));
-        onChunk(word + " ");
-      }
-    }
-    return { text: mockResponse };
-  }
-
   try {
-    const contents = [
-      {
-        role: "user",
-        parts: [{ text: GEMINI_SYSTEM_PROMPT }],
-      },
-      {
-        role: "model",
-        parts: [{ text: "Understood. I will provide neutral, factual political information as requested." }],
-      },
-      ...messages.map((m) => ({
-        role: m.role === "user" ? "user" : "model",
-        parts: [{ text: m.content }],
-      })),
-    ];
-
-    const res = await fetch(BASE_URL + `?key=${API_KEY}`, {
+    const res = await apiFetch("/fact-check", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        contents,
-        generationConfig: {
-          temperature: 0.3,
-          maxOutputTokens: 1024,
-        },
-      }),
+      body: JSON.stringify({ messages }),
     });
 
+    const data = (await res.json().catch(() => ({}))) as Partial<GeminiResponse>;
+
     if (!res.ok) {
-      let body = "";
-      try { body = await res.text(); } catch { /* ignore */ }
-      throw new Error(`Gemini API error ${res.status}: ${body}`);
+      return {
+        text: "",
+        error:
+          data.error ?? `AI service error (${res.status}). Please try again.`,
+      };
     }
 
-    const data = (await res.json()) as {
-      candidates?: { content?: { parts?: { text?: string }[] } }[];
-    };
-    const text = data.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
-
-    if (onChunk) onChunk(text);
-    return { text };
+    const text = data.text ?? "";
+    if (onChunk && text) onChunk(text);
+    return { text, mock: data.mock };
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
-    console.error("[Gemini]", msg);
-    return {
-      text: "",
-      error: `AI service error: ${msg}`,
-    };
+    console.error("[FactCheck]", msg);
+    return { text: "", error: "The AI service is unavailable. Please try again." };
   }
-}
-
-function generateMockResponse(userMessage: string): string {
-  const lower = userMessage.toLowerCase();
-
-  if (lower.includes("electoral college")) {
-    return "The Electoral College is the formal body that elects the President and Vice President. Each state receives electoral votes equal to its Congressional representation (House seats + 2 Senate seats), totaling 538 votes. A candidate needs 270 to win. In most states, the winner of the popular vote receives all electoral votes (winner-take-all). Maine and Nebraska use a proportional system by congressional district.\n\nSources: U.S. Constitution, Article II; 23rd Amendment\nDate Checked: " + new Date().toLocaleDateString();
-  }
-  if (lower.includes("fact check") || lower.includes("claim") || lower.includes("true") || lower.includes("false")) {
-    return "To fact-check a political claim, I need you to share the specific statement or claim you'd like me to evaluate.\n\nI will assess it using publicly available, nonpartisan sources and provide:\n• Claim summary\n• Verification status\n• Neutral explanation\n• Sources referenced\n• Date checked\n\nPlease share the specific claim you'd like me to review. Note: I do not have real-time internet access. For current events, please also consult fact-checking organizations like PolitiFact, FactCheck.org, or Snopes.";
-  }
-  if (lower.includes("bill") || lower.includes("legislation") || lower.includes("law")) {
-    return "To summarize legislation in plain language, please provide the bill number or name (e.g., 'H.R. 1234' or 'Inflation Reduction Act').\n\nFor any bill, I can help you understand:\n• What the bill proposes to do\n• Who sponsored it\n• What the key provisions are\n• Its current status in Congress\n• Nonpartisan analysis of potential effects\n\nNote: For real-time bill status and full text, visit Congress.gov or your state legislature's official website.";
-  }
-  if (lower.includes("representative") || lower.includes("senator") || lower.includes("voting record")) {
-    return "To look up a representative's voting record, I recommend:\n\n1. Congress.gov — Official record of all House and Senate votes\n2. GovTrack.us — Voting records with nonpartisan analysis\n3. VoteSmart.org — Comprehensive voting records and positions\n\nVoting records are public information and can be searched by representative's name, bill title, or vote date. I can help you interpret what a particular vote means or explain the legislation involved.";
-  }
-
-  return "Thank you for your question about U.S. politics and government. I'm UDecide's nonpartisan fact-checking assistant.\n\nI can help you:\n• Understand government processes and how laws are made\n• Summarize legislation in plain language\n• Explain political terms and concepts\n• Look up voting records and representative information\n• Fact-check political claims against public sources\n\nPlease note: I remain strictly neutral and do not endorse any candidate, party, or policy. For the most current information, always verify with official government sources.\n\nWhat would you like to know?";
 }

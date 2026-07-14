@@ -54,7 +54,9 @@ export default function FactCheckerScreen() {
   const topPad = Platform.OS === "web" ? 67 : insets.top;
   const bottomPad = Platform.OS === "web" ? 34 : insets.bottom;
 
-  const apiKey = process.env.EXPO_PUBLIC_GEMINI_API_KEY;
+  // Set from the server's `mock` flag on the first reply: true means the API
+  // Server has no Gemini key configured and is returning demo responses.
+  const [demoMode, setDemoMode] = useState(false);
 
   async function handleSend() {
     const text = input.trim();
@@ -78,6 +80,7 @@ export default function FactCheckerScreen() {
 
     const result = await sendGeminiMessage(history);
     setLoading(false);
+    if (result.mock) setDemoMode(true);
 
     const assistantMsg: ChatMessage = {
       id: Date.now().toString() + "a",
@@ -137,11 +140,11 @@ export default function FactCheckerScreen() {
         </View>
       </LinearGradient>
 
-      {!apiKey && (
+      {demoMode && (
         <View style={[styles.devWarning, { backgroundColor: "#D4AF3720", borderColor: "#D4AF3740" }]}>
           <MaterialIcons name="warning" size={16} color="#D4AF37" />
           <Text style={[styles.devWarningText, { color: colors.foreground }]}>
-            GEMINI_API_KEY not set. Using demo responses. Add your key to .env for live AI responses.
+            Demo mode — no AI key is configured on the server, so responses are samples. Set GEMINI_API_KEY on the API Server for live AI responses.
           </Text>
         </View>
       )}

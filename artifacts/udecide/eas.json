@@ -1,0 +1,40 @@
+{
+  "cli": {
+    "version": ">= 13.0.0",
+    "appVersionSource": "remote"
+  },
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal"
+    },
+    "preview": {
+      "distribution": "internal",
+      "android": {
+        "buildType": "apk"
+      }
+    },
+    "production": {
+      "autoIncrement": true,
+      "android": {
+        "buildType": "app-bundle"
+      },
+      "ios": {}
+    }
+  },
+  "submit": {
+    "production": {
+      "ios": {
+        "ascAppId": "6783990826",
+        "ascApiKeyPath": "/Users/andersonlawson/appstoreconnect/AuthKey_43WC63FP4M.p8",
+        "ascApiKeyId": "43WC63FP4M",
+        "ascApiKeyIssuerId": "0e781ff4-de54-4c98-8b63-d111fd42f509",
+        "appleTeamId": "DG74FTMU5Y"
+      },
+      "android": {
+        "track": "internal",
+        "releaseStatus": "draft"
+      }
+    }
+  }
+}
