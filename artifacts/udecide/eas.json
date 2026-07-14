@@ -16,6 +16,7 @@
     },
     "production": {
       "autoIncrement": true,
+      "node": "22.14.0",
       "android": {
         "buildType": "app-bundle"
       },
