@@ -27,6 +27,12 @@ import { validateEmail, validatePassword } from "@/utils/validation";
 // Completes the OAuth redirect when the auth browser returns to the app.
 WebBrowser.maybeCompleteAuthSession();
 
+// Google sign-in is hidden for the 1.0 release: the OAuth client isn't
+// configured on the server yet, and offering a third-party login would also
+// trigger Apple's guideline 4.8 requirement to add "Sign in with Apple".
+// Flip to true once the server OAuth is set up (and Sign in with Apple ships).
+const SHOW_GOOGLE_SIGNIN = false;
+
 export default function LoginScreen() {
   const insets = useSafeAreaInsets();
   const { login, signInWithGoogleCode } = useAuth();
@@ -264,31 +270,35 @@ export default function LoginScreen() {
               )}
             </Pressable>
 
-            <View style={styles.dividerRow}>
-              <View style={styles.divider} />
-              <Text style={styles.dividerText}>or continue with</Text>
-              <View style={styles.divider} />
-            </View>
+            {SHOW_GOOGLE_SIGNIN && (
+              <>
+                <View style={styles.dividerRow}>
+                  <View style={styles.divider} />
+                  <Text style={styles.dividerText}>or continue with</Text>
+                  <View style={styles.divider} />
+                </View>
 
-            <View style={styles.socialRow}>
-              <Pressable
-                style={({ pressed }) => [
-                  styles.socialBtn,
-                  { opacity: pressed || googleLoading ? 0.7 : 1 },
-                ]}
-                onPress={handleGoogleSignIn}
-                disabled={googleLoading}
-              >
-                {googleLoading ? (
-                  <ActivityIndicator size="small" color="#4285F4" />
-                ) : (
-                  <>
-                    <MaterialIcons name="g-mobiledata" size={22} color="#4285F4" />
-                    <Text style={styles.socialText}>Google</Text>
-                  </>
-                )}
-              </Pressable>
-            </View>
+                <View style={styles.socialRow}>
+                  <Pressable
+                    style={({ pressed }) => [
+                      styles.socialBtn,
+                      { opacity: pressed || googleLoading ? 0.7 : 1 },
+                    ]}
+                    onPress={handleGoogleSignIn}
+                    disabled={googleLoading}
+                  >
+                    {googleLoading ? (
+                      <ActivityIndicator size="small" color="#4285F4" />
+                    ) : (
+                      <>
+                        <MaterialIcons name="g-mobiledata" size={22} color="#4285F4" />
+                        <Text style={styles.socialText}>Google</Text>
+                      </>
+                    )}
+                  </Pressable>
+                </View>
+              </>
+            )}
 
             <View style={styles.registerRow}>
               <Text style={styles.registerPrompt}>Don't have an account?</Text>
