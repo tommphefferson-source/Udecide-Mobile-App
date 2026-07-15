@@ -111,6 +111,26 @@ export default function LoginScreen() {
         });
         return;
       }
+      // Pre-flight: the /start endpoint 302s to accounts.google.com when the
+      // server is configured. If it errors (e.g. 503 when Google OAuth env vars
+      // are missing), show an inline message instead of opening a browser onto
+      // a raw server error page. RN fetch follows redirects, so a healthy flow
+      // lands on Google and reports ok.
+      try {
+        const preflight = await fetch(startUrl);
+        if (!preflight.ok) {
+          setErrors({
+            general:
+              "Google sign-in is temporarily unavailable. Please use email sign-in.",
+          });
+          return;
+        }
+      } catch {
+        setErrors({
+          general: "Can't reach the sign-in service. Check your connection and try again.",
+        });
+        return;
+      }
       const result = await WebBrowser.openAuthSessionAsync(startUrl, returnUri);
       if (result.type !== "success" || !result.url) {
         // User dismissed/cancelled the browser, or it failed to open.
