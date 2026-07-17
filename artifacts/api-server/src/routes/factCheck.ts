@@ -1,6 +1,46 @@
+import crypto from "node:crypto";
 import { Router, type IRouter } from "express";
 
+import { tokenFromRequest } from "../lib/requestToken";
+
 const router: IRouter = Router();
+
+// Server-side rate limit, mirroring the app's 10-questions-per-session cap so
+// the limit can't be bypassed by calling the endpoint directly. Keyed by the
+// user's AUTHTOKEN (hashed — no raw tokens held as map keys), falling back to
+// the client IP for unauthenticated calls. In-memory sliding window, matching
+// the single-process pattern used by googleOauth's pendingSessions.
+const RATE_LIMIT = Number(process.env.FACT_CHECK_LIMIT ?? 10);
+const RATE_WINDOW_MS = Number(process.env.FACT_CHECK_WINDOW_MINUTES ?? 15) * 60_000;
+const requestLog = new Map<string, number[]>();
+
+function rateLimitKey(req: Parameters<typeof tokenFromRequest>[0]): string {
+  const token = tokenFromRequest(req);
+  if (token) {
+    return "t:" + crypto.createHash("sha256").update(token).digest("hex").slice(0, 32);
+  }
+  return "ip:" + (req.ip ?? "unknown");
+}
+
+/** Returns true when the caller is within the limit (and records the request). */
+function allowRequest(key: string): boolean {
+  const now = Date.now();
+  const cutoff = now - RATE_WINDOW_MS;
+  const recent = (requestLog.get(key) ?? []).filter((t) => t > cutoff);
+  if (recent.length >= RATE_LIMIT) {
+    requestLog.set(key, recent);
+    return false;
+  }
+  recent.push(now);
+  requestLog.set(key, recent);
+  // Lazy sweep: drop stale entries so the map doesn't grow unbounded.
+  if (requestLog.size > 10_000) {
+    for (const [k, times] of requestLog) {
+      if (times.every((t) => t <= cutoff)) requestLog.delete(k);
+    }
+  }
+  return true;
+}
 
 // Server-only secret — never expose via an EXPO_PUBLIC_* name (that would bundle
 // it into the public mobile-app build and let anyone extract it). Mirrors the
@@ -52,6 +92,16 @@ interface ChatMessage {
  *   - mock=false → the live Gemini response
  */
 router.post("/fact-check", async (req, res) => {
+  if (!allowRequest(rateLimitKey(req))) {
+    res.status(429).json({
+      text: "",
+      mock: false,
+      error:
+        "You've reached the Fact Checker limit for now. Please wait a few minutes and try again.",
+    });
+    return;
+  }
+
   const body = req.body as { messages?: unknown };
   const messages: ChatMessage[] = (
     Array.isArray(body?.messages) ? body.messages : []
