@@ -24,24 +24,6 @@ import { STATIC_PAGE_CODES } from "@/services/pagesApi";
 import { SUPPORT_EMAIL, US_STATES } from "@/utils/constants";
 import { validateName, validateRequired, validateState, validateZipCode } from "@/utils/validation";
 
-/** Format the legacy subscription expiry date into a friendly label. */
-function formatSubscription(expiry?: string, isSubscribed?: boolean): string {
-  const raw = (expiry ?? "").trim();
-  if (!raw || raw.startsWith("0000") || raw === "0") {
-    return isSubscribed ? "Active" : "Free plan";
-  }
-  const parsed = new Date(raw.replace(" ", "T"));
-  if (Number.isNaN(parsed.getTime())) {
-    return isSubscribed ? `Renews ${raw}` : raw;
-  }
-  const label = parsed.toLocaleDateString(undefined, {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  });
-  return `Expires ${label}`;
-}
-
 export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
   const colors = useColors();
@@ -160,7 +142,6 @@ export default function ProfileScreen() {
 
   const displayPhoto = localPhotoUri ?? (user?.profileImage || null);
   const stateName = US_STATES.find((s) => s.code === user?.state)?.name ?? user?.state ?? "Not set";
-  const subscriptionLabel = formatSubscription(user?.subscribeExpiryDate, user?.isSubscribed);
 
   const supportLinks: {
     key: string;
@@ -351,13 +332,9 @@ export default function ProfileScreen() {
             </View>
             <MaterialIcons name="chevron-right" size={20} color={colors.mutedForeground} />
           </Pressable>
-          <View style={styles.settingsRow}>
-            <MaterialIcons name="card-membership" size={20} color={colors.accent} />
-            <View style={styles.settingsRowText}>
-              <Text style={[styles.settingsRowTitle, { color: colors.foreground }]}>Subscription</Text>
-              <Text style={[styles.settingsRowValue, { color: colors.mutedForeground }]}>{subscriptionLabel}</Text>
-            </View>
-          </View>
+          {/* Subscription status row removed: the app has no paid subscriptions.
+              The legacy backend's is_subscribe flag surfaced here as a label and
+              triggered App Review questions about purchases (guideline 3.1.1). */}
         </View>
 
         <View style={[styles.section, { backgroundColor: colors.card, borderColor: colors.border }]}>
