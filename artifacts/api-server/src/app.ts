@@ -8,6 +8,13 @@ import { errorHandler } from "./lib/errors";
 
 const app: Express = express();
 
+// Behind Render's (and Replit's) proxy, the socket peer is an internal LB
+// address that varies per request. Trust the proxy chain so req.ip resolves to
+// the client IP from X-Forwarded-For — the /fact-check rate limiter keys
+// anonymous callers by it. Best-effort: XFF is spoofable, but authenticated
+// traffic (the real app) is keyed by AUTHTOKEN instead.
+app.set("trust proxy", true);
+
 app.use(
   pinoHttp({
     logger,
