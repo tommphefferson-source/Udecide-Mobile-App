@@ -20,6 +20,10 @@ import { useColors } from "@/hooks/useColors";
 import { sendGeminiMessage } from "@/services/geminiApi";
 import type { GeminiMessage } from "@/services/geminiApi";
 
+// Cap AI usage per screen session to control API cost and abuse. Counted from
+// the user messages in the thread, so it resets when the screen remounts.
+const AI_REQUEST_LIMIT = 10;
+
 const SUGGESTED_PROMPTS = [
   "Summarize a bill in plain English",
   "What does the Electoral College do?",
@@ -58,9 +62,13 @@ export default function FactCheckerScreen() {
   // Server has no Gemini key configured and is returning demo responses.
   const [demoMode, setDemoMode] = useState(false);
 
+  const requestsUsed = messages.filter((m) => m.role === "user").length;
+  const requestsLeft = Math.max(0, AI_REQUEST_LIMIT - requestsUsed);
+  const limitReached = requestsLeft === 0;
+
   async function handleSend() {
     const text = input.trim();
-    if (!text || loading) return;
+    if (!text || loading || limitReached) return;
 
     const userMsg: ChatMessage = {
       id: Date.now().toString() + "u",
@@ -192,10 +200,22 @@ export default function FactCheckerScreen() {
           </View>
         )}
 
+        {limitReached && (
+          <View style={[styles.limitBanner, { backgroundColor: colors.card, borderTopColor: colors.border }]}>
+            <MaterialIcons name="hourglass-empty" size={16} color={colors.mutedForeground} />
+            <Text style={[styles.limitBannerText, { color: colors.mutedForeground }]}>
+              You've reached the limit of {AI_REQUEST_LIMIT} questions for this session. Leave and reopen the Fact Checker to start a new session.
+            </Text>
+          </View>
+        )}
         <View style={[styles.inputBar, { backgroundColor: colors.card, borderTopColor: colors.border, paddingBottom: bottomPad + 8 }]}>
           <TextInput
             style={[styles.input, { backgroundColor: colors.background, borderColor: colors.border, color: colors.foreground }]}
-            placeholder="Ask about a political claim, bill, or government process..."
+            placeholder={
+              limitReached
+                ? "Session limit reached"
+                : "Ask about a political claim, bill, or government process..."
+            }
             placeholderTextColor={colors.mutedForeground}
             value={input}
             onChangeText={setInput}
@@ -203,16 +223,17 @@ export default function FactCheckerScreen() {
             maxLength={500}
             returnKeyType="send"
             onSubmitEditing={handleSend}
+            editable={!limitReached}
           />
           <Pressable
             style={({ pressed }) => [
               styles.sendBtn,
-              { backgroundColor: input.trim() && !loading ? colors.accent : colors.muted, opacity: pressed ? 0.8 : 1 },
+              { backgroundColor: input.trim() && !loading && !limitReached ? colors.accent : colors.muted, opacity: pressed ? 0.8 : 1 },
             ]}
             onPress={handleSend}
-            disabled={!input.trim() || loading}
+            disabled={!input.trim() || loading || limitReached}
           >
-            <MaterialIcons name="send" size={20} color={input.trim() && !loading ? "#FFF" : colors.mutedForeground} />
+            <MaterialIcons name="send" size={20} color={input.trim() && !loading && !limitReached ? "#FFF" : colors.mutedForeground} />
           </Pressable>
         </View>
       </KeyboardAvoidingView>
@@ -246,6 +267,15 @@ const styles = StyleSheet.create({
   suggestedLabel: { fontSize: 12, fontFamily: "Inter_500Medium", paddingHorizontal: 16 },
   suggestedChip: { paddingHorizontal: 12, paddingVertical: 8, borderRadius: 20, borderWidth: 1, maxWidth: 200 },
   suggestedChipText: { fontSize: 12, fontFamily: "Inter_400Regular" },
+  limitBanner: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderTopWidth: 1,
+  },
+  limitBannerText: { flex: 1, fontSize: 12, fontFamily: "Inter_400Regular", lineHeight: 16 },
   inputBar: { flexDirection: "row", gap: 8, padding: 12, borderTopWidth: 1, alignItems: "flex-end" },
   input: { flex: 1, borderWidth: 1, borderRadius: 16, paddingHorizontal: 14, paddingVertical: 10, fontSize: 14, fontFamily: "Inter_400Regular", maxHeight: 120 },
   sendBtn: { width: 44, height: 44, borderRadius: 22, alignItems: "center", justifyContent: "center" },
