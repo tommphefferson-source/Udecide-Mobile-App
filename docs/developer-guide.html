@@ -111,12 +111,12 @@
 │   ├── api-server/       # THE BACKEND (Node/Express proxy) — @workspace/api-server
 │   └── mockup-sandbox/   # design/mockup sandbox (not shipped)
 ├── lib/                  # shared workspace packages (api-spec/openapi.yaml, api-zod, …)
-├── render.yaml           # Render Blueprint — production deploy of api-server (§3)
+├── render.yaml           # Render Blueprint — production deploy of api-server (Section 3)
 ├── eas.json              # (root, STALE) — active config is artifacts/udecide/eas.json
 ├── mobile/               # blank Expo template — NOT the product (ignore)
 └── pnpm-workspace.yaml</pre>
   <div class="warn"><b>Warning:</b> Two decoy directories: <code>mobile/</code> is an empty Expo starter, and the root <code>eas.json</code> is stale. The real app is <code>artifacts/udecide/</code> and the real EAS config is <code>artifacts/udecide/eas.json</code>. Run all eas/expo commands from <code>artifacts/udecide/</code>.</div>
-  <p>Install everything from the repo root: <code>pnpm install</code>. GitHub: <code>tommphefferson-source/Udecide-Mobile-App</code> (branch <code>main</code>; pushes auto-deploy the backend, see §3).</p>
+  <p>Install everything from the repo root: <code>pnpm install</code>. GitHub: <code>tommphefferson-source/Udecide-Mobile-App</code> (branch <code>main</code>; pushes auto-deploy the backend, see Section 3).</p>
 </div>
 
 <!-- 2 ARCHITECTURE -->
@@ -195,7 +195,7 @@
     <tr><td>GOOGLE_CIVIC_API_KEY</td><td>Server /elections route (optional — the app currently calls Civic directly).</td></tr>
     <tr><td>LEGACY_WS_AUTHTOKEN</td><td>Shared legacy token; absent → polls/news/questionnaires serve mock until a user signs in.</td></tr>
     <tr><td>GOOGLE_CLIENT_ID / SECRET</td><td>Google sign-in (currently unset; feature hidden in app).</td></tr>
-    <tr><td>FACT_CHECK_LIMIT / FACT_CHECK_WINDOW_MINUTES</td><td>AI rate limit tuning (defaults 10 / 15). See §6.3.</td></tr>
+    <tr><td>FACT_CHECK_LIMIT / FACT_CHECK_WINDOW_MINUTES</td><td>AI rate limit tuning (defaults 10 / 15). See Section 6.3.</td></tr>
   </table>
 
   <h2>3.3 Build-environment gotchas (learned the hard way)</h2>
@@ -281,7 +281,7 @@
   <span class="pill">Section 6</span>
   <h1>Backend — api-server</h1>
   <div class="rule"></div>
-  <p class="lead">Node + Express 5 + TypeScript (ESM, esbuild-bundled). Exists to (1) hide paid keys, (2) proxy the legacy CodeIgniter backend at <code>https://52.45.60.139/WS</code> and translate its envelope into clean Zod-validated REST, (3) avoid CORS. Deployed on Render (§3).</p>
+  <p class="lead">Node + Express 5 + TypeScript (ESM, esbuild-bundled). Exists to (1) hide paid keys, (2) proxy the legacy CodeIgniter backend at <code>https://52.45.60.139/WS</code> and translate its envelope into clean Zod-validated REST, (3) avoid CORS. Deployed on Render (Section 3).</p>
 
   <h2>6.1 Routes (all under /api)</h2>
   <ul>
@@ -289,7 +289,7 @@
     <li><b>googleOauth.ts</b> — GET /auth/google/start &amp; /callback, POST /auth/google/exchange &amp; /register (server-verified; dormant while the feature is hidden).</li>
     <li><b>representatives.ts</b> — GET /representatives → Cicero; {live, officials}; 502 on upstream failure.</li>
     <li><b>elections.ts</b> — GET /elections, /elections/voter-info → Google Civic v2.</li>
-    <li><b>factCheck.ts</b> — POST /fact-check → Gemini (server key, nonpartisan system prompt, per-user rate limit — §6.3). Returns {text, mock}.</li>
+    <li><b>factCheck.ts</b> — POST /fact-check → Gemini (server key, nonpartisan system prompt, per-user rate limit — Section 6.3). Returns {text, mock}.</li>
     <li><b>polls.ts / news.ts / civics.ts / pages.ts / home.ts / health.ts</b> — polls (live-or-mock), RSS news with SSRF guard, quiz/questionnaires/terminology/parties, legacy static pages, healthz.</li>
   </ul>
 
@@ -322,7 +322,7 @@
   <div class="rule"></div>
 
   <h2>7.1 The release pipeline (EAS)</h2>
-  <p>EAS Build is the single store pipeline; production builds load the EAS environment (§5.3), so binaries always point at the Render backend. EAS project: <code>@udecide-apps-organization/udecide</code>. iOS submission is fully automated via an App Store Connect API key (<code>ascAppId 6783990826</code>, team DG74FTMU5Y) configured in <code>artifacts/udecide/eas.json</code>.</p>
+  <p>EAS Build is the single store pipeline; production builds load the EAS environment (Section 5.3), so binaries always point at the Render backend. EAS project: <code>@udecide-apps-organization/udecide</code>. iOS submission is fully automated via an App Store Connect API key (<code>ascAppId 6783990826</code>, team DG74FTMU5Y) configured in <code>artifacts/udecide/eas.json</code>.</p>
 <pre># from artifacts/udecide/
 eas build --platform all --profile production          # cloud build, env auto-loaded
 eas submit --platform ios --profile production --latest # → TestFlight / App Store Connect
@@ -354,17 +354,17 @@ eas submit --platform ios --profile production --latest # → TestFlight / App S
     <li><b>Legacy backend uses a self-signed certificate.</b> https://52.45.60.139/WS is encrypted but not CA-authenticated (NODE_TLS_REJECT_UNAUTHORIZED=0 on the api-server). The app must never call it directly.</li>
     <li><b>Do not delete the reviewer demo account.</b> Both stores' reviewers use the demo credentials registered in App Review Information / Play App access.</li>
     <li><b>Monorepo decoys.</b> <code>mobile/</code> and the root <code>eas.json</code> are not the product; install from the repo root; the minimumReleaseAge supply-chain guard stays on.</li>
-    <li><b>AI cost control.</b> The Fact Checker is capped client- and server-side (§6.3); if Gemini quota issues appear, lower FACT_CHECK_LIMIT on Render before touching code.</li>
+    <li><b>AI cost control.</b> The Fact Checker is capped client- and server-side (Section 6.3); if Gemini quota issues appear, lower FACT_CHECK_LIMIT on Render before touching code.</li>
   </ol>
 
   <h2>Getting started (new developer)</h2>
   <ol>
     <li><code>pnpm install</code> at the repo root.</li>
     <li>App: <code>pnpm --filter @workspace/udecide run dev</code> from artifacts/udecide (Expo dev server).</li>
-    <li>Backend: <code>pnpm --filter @workspace/api-server run dev</code> (needs PORT; §3.2 secrets for live features) — or just use the production Render API.</li>
+    <li>Backend: <code>pnpm --filter @workspace/api-server run dev</code> (needs PORT; Section 3.2 secrets for live features) — or just use the production Render API.</li>
     <li>Typecheck everything: <code>pnpm run typecheck</code> at the root.</li>
     <li>Where things live: screens → <code>artifacts/udecide/app/</code>; data → <code>artifacts/udecide/services/</code>; theming → <code>constants/colors.ts</code>; backend routes → <code>artifacts/api-server/src/routes/</code>; deploy → <code>render.yaml</code>.</li>
-    <li>Ship: build with EAS (§7.1), verify in TestFlight/Internal testing, then submit.</li>
+    <li>Ship: build with EAS (Section 7.1), verify in TestFlight/Internal testing, then submit.</li>
   </ol>
 
   <div class="footer-note">
