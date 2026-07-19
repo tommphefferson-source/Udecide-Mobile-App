@@ -85,8 +85,8 @@
   <div class="subtitle">Feature Documentation</div>
   <div class="badge">NONPARTISAN POLITICAL &amp; VOTER INFORMATION APP</div>
   <div class="meta">
-    Version 1.0 &nbsp;•&nbsp; July 2026<br/>
-    Platforms: iOS &amp; Android (Expo / React Native), Web preview
+    Version 1.0 (Build 8) &nbsp;•&nbsp; July 2026 &nbsp;•&nbsp; Live on the App Store<br/>
+    Platforms: iOS (App Store) &amp; Android (Google Play rollout in progress), Web preview
   </div>
 </div>
 
@@ -103,9 +103,9 @@
   <table>
     <tr><th>Layer</th><th>Description</th></tr>
     <tr><td>Mobile app</td><td>Expo / React Native (iOS &amp; Android), with a web preview build. Five-tab navigation with a native "liquid glass" tab bar on modern iOS.</td></tr>
-    <tr><td>API server</td><td>A Node.js (Express) backend that securely brokers sign-in, profile, representative, election, and news requests, keeping those service credentials (such as the Cicero key) on the server rather than on the device.</td></tr>
-    <tr><td>Data sources</td><td>Legacy UDecide member system (accounts, polls, questionnaires, news), Cicero (elected officials by address), LegiScan (state legislation), Congress.gov (federal data), Google Gemini (AI fact-checking).</td></tr>
-    <tr><td>Sign-in options</td><td>Email &amp; password, or Sign in with Google (server-verified OAuth).</td></tr>
+    <tr><td>API server</td><td>A Node.js (Express) backend that securely brokers sign-in, profile, representative, news, and AI fact-check requests, keeping those service credentials (such as the Cicero and Gemini keys) on the server rather than on the device. <b>Hosted in production on Render</b> at <code>udecide-api.onrender.com</code>, deployed automatically from GitHub.</td></tr>
+    <tr><td>Data sources</td><td>Legacy UDecide member system (accounts, polls, questionnaires, news), Cicero (elected officials by address), Google Civic Information API (live elections), LegiScan (state legislation), Congress.gov (federal data), Google Gemini (AI fact-checking).</td></tr>
+    <tr><td>Sign-in options</td><td>Email &amp; password. (Sign in with Google is built and server-verified but disabled in the 1.0 release; it returns in a future update alongside Sign in with Apple.)</td></tr>
   </table>
 
   <h2>Contents</h2>
@@ -138,9 +138,8 @@
       <ul>
         <li>Email + password sign-in against the UDecide member system.</li>
         <li>Password visibility toggle and inline validation with clear error messages.</li>
-        <li><b>Sign in with Google</b> — one-tap sign-in. Google verifies the identity on the server; the app can never forge an account. On the web build this opens a secure popup; on phones it uses the system browser.</li>
-        <li>New Google users are guided through a short "Almost there" step (city + ZIP) to finish creating their account.</li>
         <li>Sessions persist securely on the device; users stay signed in between launches.</li>
+        <li><b>Sign in with Google</b> (currently disabled): the full server-verified flow is implemented — Google confirms the identity on the server, so the app can never forge an account, and new users finish with a short city + ZIP step. The button is hidden in the 1.0 store release and will be re-enabled in a future update together with Sign in with Apple.</li>
       </ul>
       <h2>Create Account</h2>
       <ul>
@@ -405,6 +404,8 @@
         <li>Users paste a claim or ask a question; the assistant responds with factual, sourced-style context.</li>
         <li>A strict nonpartisan system prompt keeps answers neutral — the assistant describes, it never advocates.</li>
         <li>Streaming, chat-style interface with conversation history during the session.</li>
+        <li><b>Usage limit:</b> 10 questions per session in the app, enforced again on the server (10 requests per 15 minutes per account) to control AI costs and prevent abuse — even direct API calls cannot bypass it.</li>
+        <li>All AI requests are proxied through the UDecide API server; the Gemini credential never ships inside the app.</li>
         <li>Clear disclaimer that AI answers are informational and users should verify with primary sources.</li>
       </ul>
     </div>
@@ -445,7 +446,7 @@
   </div>
 
   <div class="footer-note">
-    UDecide is nonpartisan and does not endorse any candidate or party. &nbsp;•&nbsp; Feature Documentation, v1.0 — July 2026.
+    UDecide is nonpartisan and does not endorse any candidate or party. &nbsp;•&nbsp; Feature Documentation, v1.1 — July 2026 (app v1.0, build 8 — live on the App Store).
   </div>
 </div>
 

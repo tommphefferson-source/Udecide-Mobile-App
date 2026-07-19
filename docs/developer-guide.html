@@ -1,0 +1,376 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>UDecide — Developer Guide</title>
+<style>
+  :root {
+    --navy: #1f3e63;
+    --red: #c8102e;
+    --ink: #1a2333;
+    --muted: #5b6675;
+    --line: #dde3ea;
+    --bg-soft: #f4f6f9;
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: "Inter", "Helvetica Neue", Arial, sans-serif;
+    color: var(--ink);
+    margin: 0;
+    font-size: 11.5px;
+    line-height: 1.55;
+  }
+  .page { page-break-after: always; padding: 40px 48px; }
+  .page:last-child { page-break-after: auto; }
+
+  .cover {
+    height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center;
+    background: linear-gradient(160deg, var(--navy) 0%, #16304e 60%, #122741 100%);
+    color: #fff; padding: 64px; text-align: center;
+  }
+  .cover .part { display:inline-block; background: var(--red); color:#fff; border-radius:999px; padding:4px 22px; font-size:11px; letter-spacing:1.5px; font-weight:700; }
+  .cover .title { font-size: 40px; font-weight: 800; letter-spacing: -1px; margin-top: 22px; }
+  .cover .tsub { font-size: 14px; margin-top: 12px; color: #c9d6e6; max-width: 460px; }
+  .cover .meta { margin-top: 40px; font-size: 12px; color: #9db2ca; }
+
+  h1 { font-size: 22px; color: var(--navy); margin: 0 0 4px; letter-spacing: -0.3px; }
+  h2 { font-size: 15px; color: var(--navy); margin: 22px 0 6px; }
+  h3 { font-size: 12.5px; margin: 14px 0 4px; }
+  p { margin: 6px 0; }
+  .rule { height: 3px; width: 56px; background: var(--red); border-radius: 2px; margin: 8px 0 18px; }
+  .lead { color: var(--muted); font-size: 12.5px; }
+
+  table { width: 100%; border-collapse: collapse; margin: 10px 0; font-size: 10.5px; }
+  th { text-align: left; background: var(--bg-soft); color: var(--navy); padding: 6px 8px; border: 1px solid var(--line); }
+  td { padding: 6px 8px; border: 1px solid var(--line); vertical-align: top; }
+
+  ul, ol { margin: 6px 0 6px 18px; padding: 0; }
+  li { margin: 3px 0; }
+
+  .pill {
+    display: inline-block; font-size: 9px; font-weight: 600; letter-spacing: .6px;
+    text-transform: uppercase; color: var(--red); background: #fdecef;
+    border-radius: 999px; padding: 2px 10px; margin-bottom: 6px;
+  }
+  .note {
+    background: var(--bg-soft); border-left: 3px solid var(--navy);
+    padding: 8px 12px; margin: 10px 0; font-size: 10.5px; color: var(--muted);
+  }
+  .warn {
+    background: #fdf3e7; border-left: 3px solid #d97706;
+    padding: 8px 12px; margin: 10px 0; font-size: 10.5px; color: #7a4a06;
+  }
+  .good {
+    background: #ecf7ef; border-left: 3px solid #2e7d32;
+    padding: 8px 12px; margin: 10px 0; font-size: 10.5px; color: #235c27;
+  }
+  pre {
+    background: var(--bg-soft); border: 1px solid var(--line); border-radius: 6px;
+    padding: 10px 12px; font-size: 9.5px; line-height: 1.5; overflow: hidden; white-space: pre-wrap;
+    font-family: "SF Mono", Menlo, Consolas, monospace;
+  }
+  code { font-family: "SF Mono", Menlo, Consolas, monospace; font-size: 10px; background: var(--bg-soft); padding: 1px 4px; border-radius: 3px; }
+  .footer-note { color: var(--muted); font-size: 10px; margin-top: 28px; border-top: 1px solid var(--line); padding-top: 10px; }
+
+  /* Architecture diagram */
+  .arch { border: 1px solid var(--line); border-radius: 10px; padding: 16px; margin: 12px 0; background: #fff; }
+  .tier { display: flex; align-items: center; gap: 14px; margin: 8px 0; }
+  .tierlabel { flex: 0 0 92px; font-size: 9px; font-weight: 700; letter-spacing: 1px; color: #fff; background: var(--navy); border-radius: 6px; padding: 10px 8px; text-align: center; text-transform: uppercase; }
+  .tierlabel.render { background: #46456e; }
+  .tierlabel.ext { background: #5b3a6e; }
+  .boxes { flex: 1; display: flex; gap: 10px; flex-wrap: wrap; }
+  .box { border: 1px solid var(--line); border-radius: 8px; padding: 8px 12px; background: var(--bg-soft); font-size: 10px; flex: 1; min-width: 110px; }
+  .box b { display: block; color: var(--navy); font-size: 10.5px; }
+  .box.hero { background: var(--navy); color: #dbe6f3; border-color: var(--navy); }
+  .box.hero b { color: #fff; }
+  .flow { text-align: center; color: var(--muted); font-size: 9.5px; margin: 2px 0 2px 106px; }
+</style>
+</head>
+<body>
+
+<!-- PART 2 COVER -->
+<div class="page cover">
+  <div class="part">PART 2</div>
+  <div class="title">Developer Guide</div>
+  <div class="tsub">Architecture, production hosting on Render, codebase setup, environment configuration, build &amp; release, and known issues for engineers.</div>
+  <div class="meta">
+    App v1.0 (Build 8) — Live on the App Store &nbsp;•&nbsp; Guide v1.1 — July 2026<br/>
+    Backend: udecide-api.onrender.com (Render) &nbsp;•&nbsp; Internal / Confidential
+  </div>
+</div>
+
+<!-- 1 REPO -->
+<div class="page">
+  <span class="pill">Section 1</span>
+  <h1>Repository Layout (pnpm monorepo)</h1>
+  <div class="rule"></div>
+  <p>The repo root is a pnpm workspace (<code>pnpm-workspace.yaml</code>; packages: <code>artifacts/*</code>, <code>lib/*</code>, <code>lib/integrations/*</code>, <code>scripts</code>). Uses <code>catalog:</code> for shared dependency versions and a <code>minimumReleaseAge</code> supply-chain guard — do not disable.</p>
+<pre>Udecide-Mobile-App/
+├── artifacts/
+│   ├── udecide/          # THE MOBILE APP (Expo / React Native) — @workspace/udecide
+│   ├── api-server/       # THE BACKEND (Node/Express proxy) — @workspace/api-server
+│   └── mockup-sandbox/   # design/mockup sandbox (not shipped)
+├── lib/                  # shared workspace packages (api-spec/openapi.yaml, api-zod, …)
+├── render.yaml           # Render Blueprint — production deploy of api-server (§3)
+├── eas.json              # (root, STALE) — active config is artifacts/udecide/eas.json
+├── mobile/               # blank Expo template — NOT the product (ignore)
+└── pnpm-workspace.yaml</pre>
+  <div class="warn"><b>Warning:</b> Two decoy directories: <code>mobile/</code> is an empty Expo starter, and the root <code>eas.json</code> is stale. The real app is <code>artifacts/udecide/</code> and the real EAS config is <code>artifacts/udecide/eas.json</code>. Run all eas/expo commands from <code>artifacts/udecide/</code>.</div>
+  <p>Install everything from the repo root: <code>pnpm install</code>. GitHub: <code>tommphefferson-source/Udecide-Mobile-App</code> (branch <code>main</code>; pushes auto-deploy the backend, see §3).</p>
+</div>
+
+<!-- 2 ARCHITECTURE -->
+<div class="page">
+  <span class="pill">Section 2</span>
+  <h1>Architecture Overview</h1>
+  <div class="rule"></div>
+  <p>Three tiers. The mobile app never talks to the database or paid APIs directly for sensitive paths — the api-server (hosted on <b>Render</b>) proxies them so keys stay server-side.</p>
+
+  <div class="arch">
+    <div class="tier">
+      <div class="tierlabel">Client<br/>Tier</div>
+      <div class="boxes"><div class="box hero"><b>UDecide Mobile App</b>Expo SDK 54 · React Native 0.81 · iOS App Store + Google Play</div></div>
+    </div>
+    <div class="flow">HTTPS &nbsp;/api/* &nbsp;+ AUTHTOKEN header &nbsp;→&nbsp; https://udecide-api.onrender.com</div>
+    <div class="tier">
+      <div class="tierlabel render">Server Tier<br/>(Render)</div>
+      <div class="boxes"><div class="box hero"><b>api-server — Node + Express 5 (ESM)</b>Auto-deployed from GitHub main via render.yaml Blueprint · health: /api/healthz · AI rate limiting</div></div>
+    </div>
+    <div class="flow">server-side keys (Cicero, Gemini, Civic, legacy token, OAuth secret)</div>
+    <div class="tier">
+      <div class="tierlabel ext">External<br/>Services</div>
+      <div class="boxes">
+        <div class="box"><b>Legacy WS</b>CodeIgniter<br/>52.45.60.139/WS</div>
+        <div class="box"><b>Cicero</b>Officials by address</div>
+        <div class="box"><b>Gemini</b>AI fact-check</div>
+        <div class="box"><b>Google OAuth</b>(disabled in 1.0)</div>
+      </div>
+    </div>
+    <div class="flow">direct client calls with EXPO_PUBLIC_* keys (dashed path)</div>
+    <div class="tier">
+      <div class="tierlabel ext">Client-Direct<br/>APIs</div>
+      <div class="boxes">
+        <div class="box"><b>Google Civic</b>Live elections ✓ (key set)</div>
+        <div class="box"><b>Congress.gov</b>Federal bills (mock — key not set)</div>
+        <div class="box"><b>LegiScan</b>State bills (mock — key not set)</div>
+      </div>
+    </div>
+  </div>
+
+  <h2>Two request families in services/</h2>
+  <ul>
+    <li><b>API-server-proxied</b> (auth, representatives, quiz, news, polls, questionnaires, fact-check, pages) — go to <code>https://udecide-api.onrender.com/api</code> with the custom <code>AUTHTOKEN</code> header. Real upstream keys live on the server.</li>
+    <li><b>Direct-to-external</b> (electionsApi, congressApi, legiscanApi) — call third-party APIs from the client with an <code>EXPO_PUBLIC_*</code> key and fall back to bundled mock data when the key is missing. Elections is live (key baked in since build 11); Congress/LegiScan still serve samples.</li>
+  </ul>
+
+  <h2>Auth model</h2>
+  <p>The legacy backend uses a custom <code>AUTHTOKEN</code> header (NOT <code>Authorization: Bearer</code>). Login/signup return an <code>auth_token</code>; the app stores it and the api-server forwards it upstream. A 401 anywhere clears the session and returns the user to login.</p>
+  <div class="note">Sign in with Google is fully implemented (server-verified OAuth) but <b>hidden in the 1.0 release</b> behind <code>SHOW_GOOGLE_SIGNIN=false</code> in <code>login.tsx</code> — the server OAuth client is not yet configured, and offering third-party login triggers Apple's guideline 4.8 requirement to also ship Sign in with Apple. Both return together in a future release.</div>
+</div>
+
+<!-- 3 RENDER -->
+<div class="page">
+  <span class="pill">Section 3</span>
+  <h1>Production Hosting on Render</h1>
+  <div class="rule"></div>
+  <p class="lead">The api-server runs in production on Render at <b>https://udecide-api.onrender.com</b>, deployed automatically from GitHub. This replaced the original Replit-only setup, which had no public production URL (native apps received 403s from the Replit dev domain — the root cause of the early TestFlight login failures).</p>
+
+  <h2>3.1 How deployment works</h2>
+  <ul>
+    <li><b>Blueprint:</b> <code>render.yaml</code> at the repo root defines the service (type <code>web</code>, runtime <code>node</code>, rootDir <code>.</code> so the pnpm workspace installs correctly).</li>
+    <li><b>Auto-deploy:</b> every push to <code>main</code> triggers a fresh build and deploy (<code>autoDeploy: true</code>). Server changes ship with a <code>git push</code> — no dashboard action needed.</li>
+    <li><b>Build:</b> <code>pnpm install --no-frozen-lockfile &amp;&amp; pnpm --filter @workspace/api-server run build</code> (esbuild bundles to <code>dist/index.mjs</code>).</li>
+    <li><b>Start:</b> <code>node --enable-source-maps artifacts/api-server/dist/index.mjs</code>. Render injects <code>PORT</code>.</li>
+    <li><b>Health check:</b> <code>GET /api/healthz</code> → <code>{"status":"ok"}</code>. Render gates deploys on it.</li>
+  </ul>
+
+  <h2>3.2 Render environment variables</h2>
+  <table>
+    <tr><th>Variable</th><th>Purpose</th></tr>
+    <tr><td>NODE_ENV</td><td>production</td></tr>
+    <tr><td>PUBLIC_ORIGIN</td><td>The service's own https origin (<code>https://udecide-api.onrender.com</code>). Added for Render — on Replit this was derived from REPLIT_* vars. Drives the Google OAuth redirect URI.</td></tr>
+    <tr><td>SESSION_SECRET</td><td>HMAC-signs the OAuth state (Render auto-generates).</td></tr>
+    <tr><td>GEMINI_API_KEY / GEMINI_MODEL</td><td>Fact Checker. Absent → demo responses (<code>mock:true</code>). Model default <code>gemini-3.5-flash</code>, overridable without a deploy.</td></tr>
+    <tr><td>CICERO_API_KEY</td><td>Live representatives. Absent → app shows per-state samples.</td></tr>
+    <tr><td>GOOGLE_CIVIC_API_KEY</td><td>Server /elections route (optional — the app currently calls Civic directly).</td></tr>
+    <tr><td>LEGACY_WS_AUTHTOKEN</td><td>Shared legacy token; absent → polls/news/questionnaires serve mock until a user signs in.</td></tr>
+    <tr><td>GOOGLE_CLIENT_ID / SECRET</td><td>Google sign-in (currently unset; feature hidden in app).</td></tr>
+    <tr><td>FACT_CHECK_LIMIT / FACT_CHECK_WINDOW_MINUTES</td><td>AI rate limit tuning (defaults 10 / 15). See §6.3.</td></tr>
+  </table>
+
+  <h2>3.3 Build-environment gotchas (learned the hard way)</h2>
+  <ul>
+    <li><b>No <code>corepack enable</code></b> — Render builders have a read-only <code>/usr/bin</code> (EROFS). pnpm is provisioned via the root package.json <code>"packageManager": "pnpm@11.5.2"</code> field instead.</li>
+    <li><b>esbuild build script</b> — pnpm treats unapproved build scripts as fatal in CI (<code>ERR_PNPM_IGNORED_BUILDS</code>). esbuild is declared in <code>ignoredBuiltDependencies</code>; its Linux binary ships via the kept <code>@esbuild/linux-x64</code> optional dependency.</li>
+    <li><b>trust proxy</b> — <code>app.set("trust proxy", true)</code> is required behind Render's load balancer so <code>req.ip</code> resolves to the real client IP (the AI rate limiter keys anonymous callers by it).</li>
+  </ul>
+
+  <div class="warn"><b>Free-tier cold starts:</b> the current instance spins down when idle; the first request after sleep takes ~50 seconds. For store reviews and real traffic, upgrade the service to the Starter plan (always-on) or run an uptime pinger against <code>/api/healthz</code>.</div>
+  <div class="note"><b>Replit relationship:</b> the Replit workspace remains usable for development (the <code>.replit-artifact</code> config still works there), but Render is the production system of record. The app's production builds point at Render via <code>EXPO_PUBLIC_DOMAIN</code>.</div>
+</div>
+
+<!-- 4 TECH STACK -->
+<div class="page">
+  <span class="pill">Section 4</span>
+  <h1>Tech Stack</h1>
+  <div class="rule"></div>
+  <table>
+    <tr><th>Layer</th><th>Technology</th></tr>
+    <tr><td>Mobile</td><td>Expo SDK 54 (expo ~54.0.35), React Native 0.81.5, React 19, New Architecture ON</td></tr>
+    <tr><td>Routing</td><td>expo-router 6 (file-based, typed routes)</td></tr>
+    <tr><td>Server state</td><td>TanStack React Query</td></tr>
+    <tr><td>Local state / persist</td><td>React Context + @react-native-async-storage/async-storage</td></tr>
+    <tr><td>UI libs</td><td>expo-linear-gradient, expo-blur, expo-glass-effect, expo-haptics, expo-symbols, react-native-reanimated 4, react-native-gesture-handler, react-native-keyboard-controller, react-native-webview, @expo/vector-icons</td></tr>
+    <tr><td>Fonts</td><td>Inter (400/500/600/700) via @expo-google-fonts/inter</td></tr>
+    <tr><td>Backend</td><td>Node + Express 5 + TypeScript (ESM), esbuild-bundled; pino logging; Zod validation from @workspace/api-zod</td></tr>
+    <tr><td><b>Production hosting</b></td><td><b>Render</b> (web service, auto-deploy from GitHub main via render.yaml; Node 24 runtime)</td></tr>
+    <tr><td>Build / release</td><td>EAS Build (cloud) for store binaries — Node 22.14.0 pinned in the production profile; pnpm 11.5.2 via packageManager</td></tr>
+    <tr><td>Identifiers</td><td>Bundle ID com.udecide.app (iOS + Android); scheme udecide; Apple App ID 6783990826</td></tr>
+  </table>
+
+  <h2>Current version</h2>
+  <table>
+    <tr><th>Track</th><th>Version</th><th>Status</th></tr>
+    <tr><td>iOS — App Store</td><td><b>1.0 (build 8)</b></td><td><b>Approved &amp; LIVE</b> (July 2026)</td></tr>
+    <tr><td>iOS — TestFlight</td><td>1.0.0 (build 11)</td><td>Next-update candidate: live elections, AI request cap, subscription label removed</td></tr>
+    <tr><td>Android — Google Play</td><td>1.0.0 (versionCode 7)</td><td>Uploaded for Internal testing; Play listing/review checklist in progress</td></tr>
+    <tr><td>Backend</td><td>main (auto-deployed)</td><td>Live at udecide-api.onrender.com</td></tr>
+  </table>
+  <div class="note">Builds 9–11 differ from the approved build 8 as follows — 9: Google sign-in button hidden; 10: vestigial Profile "Subscription" label removed (per App Review correspondence) + Fact Checker 10-question session cap; 11: live elections via the bundled Google Civic key. Ship these as the 1.0.1 update.</div>
+</div>
+
+<!-- 5 MOBILE SERVICES -->
+<div class="page">
+  <span class="pill">Section 5</span>
+  <h1>Mobile App — Services &amp; Configuration</h1>
+  <div class="rule"></div>
+  <p class="lead">Screens live in <code>artifacts/udecide/app/</code> (expo-router file-based; 5-tab shell + card/modal screens — see Part 1 for the user-facing inventory). All data flows through <code>services/</code>.</p>
+
+  <h2>5.1 API client core</h2>
+  <ul>
+    <li><code>apiClient.ts</code> — <code>API_BASE = EXPO_PUBLIC_DOMAIN ? "https://&lt;domain&gt;/api" : "/api"</code>. In production builds <code>EXPO_PUBLIC_DOMAIN=udecide-api.onrender.com</code> is baked in from the EAS environment, so API_BASE is always absolute. <code>apiFetch()</code> attaches <code>AUTHTOKEN</code>; a 401 clears the session and routes to login.</li>
+    <li><code>session.ts</code> — non-React token store bridged to AuthContext.</li>
+  </ul>
+
+  <h2>5.2 Service reference</h2>
+  <table>
+    <tr><th>Service</th><th>Talks to</th><th>Key / auth</th><th>Fallback</th></tr>
+    <tr><td>authApi</td><td>api-server /auth/*</td><td>AUTHTOKEN (profile routes)</td><td>none — always live</td></tr>
+    <tr><td>civicApi</td><td>api-server /representatives (Cicero)</td><td>server CICERO_API_KEY</td><td>per-state samples</td></tr>
+    <tr><td>geminiApi</td><td>api-server /fact-check (Gemini proxy)</td><td>server GEMINI_API_KEY</td><td>server demo answers (mock:true)</td></tr>
+    <tr><td>pollsApi / newsApi / questionnairesApi / pagesApi / quizApi</td><td>api-server</td><td>AUTHTOKEN</td><td>server-owned</td></tr>
+    <tr><td>electionsApi</td><td>Google Civic v2 direct</td><td>client EXPO_PUBLIC_CIVIC_API_KEY <b>(set — LIVE)</b></td><td>MOCK_ELECTIONS</td></tr>
+    <tr><td>congressApi</td><td>Congress.gov v3 direct</td><td>client key <b>not set → mock</b></td><td>MOCK_REPRESENTATIVES/BILLS</td></tr>
+    <tr><td>legiscanApi</td><td>LegiScan direct</td><td>client key <b>not set → mock</b></td><td>MOCK_BILLS</td></tr>
+    <tr><td>voterApi</td><td>none (static)</td><td>—</td><td>official gov URLs</td></tr>
+  </table>
+
+  <h2>5.3 EAS production environment (baked into store builds)</h2>
+  <table>
+    <tr><th>Variable</th><th>Value / state</th></tr>
+    <tr><td>EXPO_PUBLIC_DOMAIN</td><td><code>udecide-api.onrender.com</code> — set (this fixed production login)</td></tr>
+    <tr><td>EXPO_PUBLIC_CIVIC_API_KEY</td><td>set (sensitive) — live elections since build 11. Restrict the key to the Civic Information API in Google Cloud.</td></tr>
+    <tr><td>EXPO_PUBLIC_CONGRESS_GOV_API_KEY</td><td>not set — federal bills use sample data</td></tr>
+    <tr><td>EXPO_PUBLIC_LEGISCAN_API_KEY</td><td>not set — state bills use sample data</td></tr>
+  </table>
+  <div class="note"><code>EXPO_PUBLIC_GEMINI_API_KEY</code> was <b>removed</b> (2026): the Fact Checker calls the api-server <code>/fact-check</code> proxy and the Gemini key lives only on Render — it is never bundled into the app. Manage variables with <code>eas env:list/create</code>; new values take effect on the next build.</div>
+</div>
+
+<!-- 6 BACKEND -->
+<div class="page">
+  <span class="pill">Section 6</span>
+  <h1>Backend — api-server</h1>
+  <div class="rule"></div>
+  <p class="lead">Node + Express 5 + TypeScript (ESM, esbuild-bundled). Exists to (1) hide paid keys, (2) proxy the legacy CodeIgniter backend at <code>https://52.45.60.139/WS</code> and translate its envelope into clean Zod-validated REST, (3) avoid CORS. Deployed on Render (§3).</p>
+
+  <h2>6.1 Routes (all under /api)</h2>
+  <ul>
+    <li><b>auth.ts</b> — POST /auth/login, /auth/signup, /auth/profile, DELETE /auth/account, POST /auth/profile/photo (multipart, 8&nbsp;MB cap) → legacy /user_login, /user_sign_up, /edit_profile, /delete_account.</li>
+    <li><b>googleOauth.ts</b> — GET /auth/google/start &amp; /callback, POST /auth/google/exchange &amp; /register (server-verified; dormant while the feature is hidden).</li>
+    <li><b>representatives.ts</b> — GET /representatives → Cicero; {live, officials}; 502 on upstream failure.</li>
+    <li><b>elections.ts</b> — GET /elections, /elections/voter-info → Google Civic v2.</li>
+    <li><b>factCheck.ts</b> — POST /fact-check → Gemini (server key, nonpartisan system prompt, per-user rate limit — §6.3). Returns {text, mock}.</li>
+    <li><b>polls.ts / news.ts / civics.ts / pages.ts / home.ts / health.ts</b> — polls (live-or-mock), RSS news with SSRF guard, quiz/questionnaires/terminology/parties, legacy static pages, healthz.</li>
+  </ul>
+
+  <h2>6.2 Auth flows</h2>
+  <p><b>Email/password:</b> proxied to the legacy service; failures map to 401/400 with friendly messages. <b>Google OAuth:</b> full server-mediated flow (HMAC state, code exchange with the server-side secret, verified email required, one-time exchange codes) — implemented and tested, awaiting OAuth client configuration + Sign in with Apple before re-enabling in the app.</p>
+
+  <h2>6.3 AI rate limiting (added July 2026)</h2>
+  <ul>
+    <li><b>Client:</b> the Fact Checker screen caps at <b>10 questions per session</b> (input disables with an explanatory banner; a new session starts when the screen is reopened).</li>
+    <li><b>Server backstop:</b> /fact-check enforces <b>10 requests per 15-minute sliding window per user</b>, keyed by SHA-256-hashed AUTHTOKEN (client IP fallback via trust proxy). Over-limit → HTTP 429 with a friendly message the chat UI surfaces. Verified live in production (requests 11+ receive 429 on both keying paths).</li>
+    <li>Tunable on Render via FACT_CHECK_LIMIT / FACT_CHECK_WINDOW_MINUTES — no deploy needed.</li>
+  </ul>
+
+  <h2>6.4 External API inventory</h2>
+  <table>
+    <tr><th>API</th><th>Provides</th><th>Key location</th></tr>
+    <tr><td>Legacy UDecide WS (52.45.60.139/WS)</td><td>Auth, profile, polls, questionnaires, quiz, pages, news feed URL</td><td>server + per-user AUTHTOKEN</td></tr>
+    <tr><td>Cicero</td><td>All-levels officials by address</td><td>server CICERO_API_KEY</td></tr>
+    <tr><td>Google Civic v2</td><td>Elections + voter info</td><td>client EXPO_PUBLIC_CIVIC_API_KEY (live); server GOOGLE_CIVIC_API_KEY (optional)</td></tr>
+    <tr><td>Congress.gov v3 / LegiScan</td><td>Federal / state bills</td><td>client EXPO_PUBLIC_* (not yet set → mock)</td></tr>
+    <tr><td>Google Gemini</td><td>Fact-checker chat</td><td><b>server</b> GEMINI_API_KEY (moved server-side 2026)</td></tr>
+    <tr><td>Google OAuth 2.0</td><td>Sign in with Google (disabled in 1.0)</td><td>server GOOGLE_CLIENT_ID/SECRET + SESSION_SECRET</td></tr>
+  </table>
+</div>
+
+<!-- 7 BUILD & RELEASE -->
+<div class="page">
+  <span class="pill">Section 7</span>
+  <h1>Build, Release &amp; Store Status</h1>
+  <div class="rule"></div>
+
+  <h2>7.1 The release pipeline (EAS)</h2>
+  <p>EAS Build is the single store pipeline; production builds load the EAS environment (§5.3), so binaries always point at the Render backend. EAS project: <code>@udecide-apps-organization/udecide</code>. iOS submission is fully automated via an App Store Connect API key (<code>ascAppId 6783990826</code>, team DG74FTMU5Y) configured in <code>artifacts/udecide/eas.json</code>.</p>
+<pre># from artifacts/udecide/
+eas build --platform all --profile production          # cloud build, env auto-loaded
+eas submit --platform ios --profile production --latest # → TestFlight / App Store Connect
+# Android: download the .aab from the build page and upload in Play Console
+#          (or configure a Google service-account JSON for eas submit -p android)</pre>
+  <div class="warn"><b>Node/pnpm pinning:</b> the root package.json pins <code>pnpm@11.5.2</code> (required for Render). pnpm 11 needs Node ≥ 22.13, but EAS builders default to Node 20 — so <code>"node": "22.14.0"</code> is pinned in the eas.json production profile. Do not remove either pin; removing one breaks the other platform's build.</div>
+
+  <h2>7.2 Store status (July 2026)</h2>
+  <table>
+    <tr><th>Item</th><th>Status</th></tr>
+    <tr><td>iOS App Store</td><td><b>v1.0 (build 8) approved and live.</b> Listing complete: screenshots, description, keywords, support URL (www.udecideapp.com), privacy policy (udecideapp.com/?page_id=3), age rating 17+/18+.</td></tr>
+    <tr><td>App Review history</td><td>Build 4 rejected (launch crash — OAuth URL bug + experimental React Compiler; both fixed). Guideline 3.1.1 subscription questions answered ("app is entirely free"); the vestigial Profile subscription label is removed as of build 10.</td></tr>
+    <tr><td>iOS 1.0.1 candidate</td><td>Build 11 in TestFlight (live elections, AI cap, label removal). Bump the version string and submit when ready.</td></tr>
+    <tr><td>Google Play</td><td>App record created; vc7 .aab delivered for Internal-testing upload. Remaining: demo account in App access, Data Safety + deletion-request URL, content rating, target audience, listing assets (all prepared in ~/Udecide_Assets/play/ incl. PLAY_CONSOLE_GUIDE.md), then Production review. Personal accounts created after Nov 2023 require a 12-tester × 14-day closed test first.</td></tr>
+    <tr><td>Store assets</td><td>~/Udecide_Assets/ — iOS screenshots (1284×2778), Play screenshots (1080×1920), feature graphic, icons, descriptions, delete-account page copy.</td></tr>
+  </table>
+</div>
+
+<!-- 8 KNOWN ISSUES -->
+<div class="page">
+  <span class="pill">Section 8</span>
+  <h1>Known Issues &amp; Gotchas — Read This First</h1>
+  <div class="rule"></div>
+  <ol>
+    <li><b>Render free-tier cold starts.</b> ~50&nbsp;s to wake after idle; first app request may time out. Upgrade to Starter (always-on) or ping /api/healthz. This is the most user-visible operational issue.</li>
+    <li><b>Congress.gov &amp; LegiScan keys not set.</b> Federal and state bill tabs silently serve sample data in production. Add the two EXPO_PUBLIC_* keys in the EAS environment and rebuild for live data.</li>
+    <li><b>Google sign-in is hidden, not removed.</b> Flip <code>SHOW_GOOGLE_SIGNIN</code> in login.tsx only after (a) GOOGLE_CLIENT_ID/SECRET + PUBLIC_ORIGIN are set on Render, (b) the redirect URI <code>https://udecide-api.onrender.com/api/auth/google/callback</code> is registered in Google Cloud, and (c) Sign in with Apple is implemented (App Store guideline 4.8).</li>
+    <li><b>Concurrent file churn.</b> A background Replit agent also commits to this repo (it once re-added an unused RECORD_AUDIO permission). Always <code>git fetch</code>/rebase before pushing, and review <code>git diff</code> before each build.</li>
+    <li><b>Legacy backend uses a self-signed certificate.</b> https://52.45.60.139/WS is encrypted but not CA-authenticated (NODE_TLS_REJECT_UNAUTHORIZED=0 on the api-server). The app must never call it directly.</li>
+    <li><b>Do not delete the reviewer demo account.</b> Both stores' reviewers use the demo credentials registered in App Review Information / Play App access.</li>
+    <li><b>Monorepo decoys.</b> <code>mobile/</code> and the root <code>eas.json</code> are not the product; install from the repo root; the minimumReleaseAge supply-chain guard stays on.</li>
+    <li><b>AI cost control.</b> The Fact Checker is capped client- and server-side (§6.3); if Gemini quota issues appear, lower FACT_CHECK_LIMIT on Render before touching code.</li>
+  </ol>
+
+  <h2>Getting started (new developer)</h2>
+  <ol>
+    <li><code>pnpm install</code> at the repo root.</li>
+    <li>App: <code>pnpm --filter @workspace/udecide run dev</code> from artifacts/udecide (Expo dev server).</li>
+    <li>Backend: <code>pnpm --filter @workspace/api-server run dev</code> (needs PORT; §3.2 secrets for live features) — or just use the production Render API.</li>
+    <li>Typecheck everything: <code>pnpm run typecheck</code> at the root.</li>
+    <li>Where things live: screens → <code>artifacts/udecide/app/</code>; data → <code>artifacts/udecide/services/</code>; theming → <code>constants/colors.ts</code>; backend routes → <code>artifacts/api-server/src/routes/</code>; deploy → <code>render.yaml</code>.</li>
+    <li>Ship: build with EAS (§7.1), verify in TestFlight/Internal testing, then submit.</li>
+  </ol>
+
+  <div class="footer-note">
+    UDecide is nonpartisan and does not endorse any candidate or party. &nbsp;•&nbsp; Developer Guide, v1.1 — July 2026 (app v1.0 build 8 live; backend udecide-api.onrender.com).
+  </div>
+</div>
+
+</body>
+</html>
