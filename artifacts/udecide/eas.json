@@ -33,6 +33,7 @@
         "appleTeamId": "DG74FTMU5Y"
       },
       "android": {
+        "serviceAccountKeyPath": "/Users/andersonlawson/playconsole/play-publisher.json",
         "track": "internal",
         "releaseStatus": "draft"
       }
