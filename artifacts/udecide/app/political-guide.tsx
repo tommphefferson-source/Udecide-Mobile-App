@@ -6,6 +6,7 @@ import { Platform, Pressable, ScrollView, StyleSheet, Text, View } from "react-n
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useColors } from "@/hooks/useColors";
+import { t } from "@/i18n";
 import { MOCK_POLITICAL_GUIDE } from "@/services/mockData";
 import type { PoliticalGuideItem } from "@/types/politics";
 
@@ -34,7 +35,7 @@ export default function PoliticalGuideScreen() {
           <View style={[styles.sourceCard, { backgroundColor: colors.muted, borderColor: colors.border }]}>
             <MaterialIcons name="info-outline" size={16} color={colors.mutedForeground} />
             <Text style={[styles.sourceText, { color: colors.mutedForeground }]}>
-              This educational content is based on official U.S. government sources and nonpartisan civic education materials.
+              {t("This educational content is based on official U.S. government sources and nonpartisan civic education materials.")}
             </Text>
           </View>
         </ScrollView>
@@ -48,8 +49,8 @@ export default function PoliticalGuideScreen() {
         <Pressable style={styles.backBtn} onPress={() => router.back()}>
           <MaterialIcons name="arrow-back" size={24} color="#FFF" />
         </Pressable>
-        <Text style={styles.screenTitle}>Political System Guide</Text>
-        <Text style={styles.screenSubtitle}>Nonpartisan civic education</Text>
+        <Text style={styles.screenTitle}>{t("Political System Guide")}</Text>
+        <Text style={styles.screenSubtitle}>{t("Nonpartisan civic education")}</Text>
       </LinearGradient>
 
       <ScrollView contentContainerStyle={{ padding: 16, gap: 12, paddingBottom: bottomPad }}>

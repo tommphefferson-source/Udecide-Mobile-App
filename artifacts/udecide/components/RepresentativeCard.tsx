@@ -5,6 +5,7 @@ import React, { useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { useColors } from "@/hooks/useColors";
+import { t } from "@/i18n";
 import type { Representative } from "@/types/politics";
 import { PARTY_COLORS } from "@/utils/constants";
 import { formatPhoneNumber } from "@/utils/formatters";
@@ -62,7 +63,7 @@ export function RepresentativeCard({ rep }: RepresentativeCardProps) {
         </View>
         <View style={[styles.levelTag, { backgroundColor: colors.muted }]}>
           <Text style={[styles.levelText, { color: colors.mutedForeground }]}>
-            {rep.level.charAt(0).toUpperCase() + rep.level.slice(1)}
+            {t(rep.level.charAt(0).toUpperCase() + rep.level.slice(1))}
           </Text>
         </View>
       </View>
@@ -89,7 +90,7 @@ export function RepresentativeCard({ rep }: RepresentativeCardProps) {
             <Pressable style={styles.detailRow} onPress={handleWebsite}>
               <MaterialIcons name="language" size={16} color={colors.accent} />
               <Text style={[styles.detailText, { color: colors.accent }]} numberOfLines={1}>
-                Official Website
+                {t("Official Website")}
               </Text>
             </Pressable>
           ) : null}
@@ -103,7 +104,7 @@ export function RepresentativeCard({ rep }: RepresentativeCardProps) {
 
           {rep.recentVotes && rep.recentVotes.length > 0 ? (
             <View style={[styles.votesSection, { borderTopColor: colors.border }]}>
-              <Text style={[styles.votesTitle, { color: colors.foreground }]}>Recent Votes</Text>
+              <Text style={[styles.votesTitle, { color: colors.foreground }]}>{t("Recent Votes")}</Text>
               {rep.recentVotes.slice(0, 3).map((v, i) => (
                 <View key={i} style={styles.voteRow}>
                   <View
@@ -132,7 +133,7 @@ export function RepresentativeCard({ rep }: RepresentativeCardProps) {
                         },
                       ]}
                     >
-                      {v.vote}
+                      {t(v.vote)}
                     </Text>
                   </View>
                   <Text style={[styles.voteBill, { color: colors.foreground }]} numberOfLines={2}>
@@ -144,7 +145,7 @@ export function RepresentativeCard({ rep }: RepresentativeCardProps) {
           ) : null}
 
           <Text style={[styles.source, { color: colors.mutedForeground }]}>
-            Source: {rep.source}
+            {t("Source:")} {t(rep.source)}
           </Text>
         </View>
       )}

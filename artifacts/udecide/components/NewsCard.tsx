@@ -5,6 +5,7 @@ import { ActivityIndicator, Pressable, StyleSheet, Text, View } from "react-nati
 
 import { useAuth } from "@/context/AuthContext";
 import { useColors } from "@/hooks/useColors";
+import { t } from "@/i18n";
 import { getNews, type NewsArticle, type NewsFeed } from "@/services/newsApi";
 
 function formatDate(iso: string): string {
@@ -62,9 +63,9 @@ export function NewsCard() {
           <MaterialIcons name="newspaper" size={18} color="#1A4A8A" />
         </View>
         <View style={styles.headerText}>
-          <Text style={[styles.title, { color: colors.foreground }]}>Political News</Text>
+          <Text style={[styles.title, { color: colors.foreground }]}>{t("Political News")}</Text>
           <Text style={[styles.subtitle, { color: colors.mutedForeground }]}>
-            {feed?.source ? `Nonpartisan • ${feed.source}` : "Nonpartisan updates"}
+            {feed?.source ? `${t("Nonpartisan")} • ${feed.source}` : t("Nonpartisan updates")}
           </Text>
         </View>
       </View>
@@ -76,20 +77,20 @@ export function NewsCard() {
       ) : error ? (
         <Pressable style={styles.stateBox} onPress={() => void load()}>
           <Text style={[styles.stateText, { color: colors.mutedForeground }]}>
-            Couldn&apos;t load news. Tap to retry.
+            {t("Couldn't load news. Tap to retry.")}
           </Text>
         </Pressable>
       ) : feed && feed.articles.length === 0 && feed.newsUrl ? (
         <Pressable
           style={({ pressed }) => [styles.row, { opacity: pressed ? 0.6 : 1 }]}
-          onPress={() => openExternal(feed.newsUrl, "Political News")}
+          onPress={() => openExternal(feed.newsUrl, t("Political News"))}
         >
           <View style={styles.rowText}>
             <Text style={[styles.rowTitle, { color: colors.foreground }]} numberOfLines={2}>
-              Read the latest political news
+              {t("Read the latest political news")}
             </Text>
             <Text style={[styles.rowMeta, { color: colors.mutedForeground }]}>
-              {feed.source || "Open in app"}
+              {feed.source || t("Open in app")}
             </Text>
           </View>
           <MaterialIcons name="chevron-right" size={20} color={colors.mutedForeground} />
@@ -97,7 +98,7 @@ export function NewsCard() {
       ) : !feed || feed.articles.length === 0 ? (
         <View style={styles.stateBox}>
           <Text style={[styles.stateText, { color: colors.mutedForeground }]}>
-            No news available right now.
+            {t("No news available right now.")}
           </Text>
         </View>
       ) : (

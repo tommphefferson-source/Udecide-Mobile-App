@@ -17,6 +17,7 @@ import { HorizontalScroller } from "@/components/HorizontalScroller";
 import { LoadingState } from "@/components/LoadingState";
 import { useAuth } from "@/context/AuthContext";
 import { useColors } from "@/hooks/useColors";
+import { t } from "@/i18n";
 import {
   getQuestionnaires,
   type IssueQuestionnaire,
@@ -76,9 +77,9 @@ export default function IssueQuestionnaireScreen() {
         <Pressable style={styles.backBtn} onPress={() => router.back()}>
           <MaterialIcons name="arrow-back" size={24} color="#FFF" />
         </Pressable>
-        <Text style={styles.screenTitle}>Issue Questionnaire</Text>
+        <Text style={styles.screenTitle}>{t("Issue Questionnaire")}</Text>
         <Text style={styles.screenSubtitle}>
-          Explore where you stand on the issues
+          {t("Explore where you stand on the issues")}
         </Text>
       </LinearGradient>
 
@@ -86,17 +87,17 @@ export default function IssueQuestionnaireScreen() {
         <LoadingState rows={4} />
       ) : error ? (
         <ErrorState
-          message="We couldn't load the questionnaire right now."
+          message={t("We couldn't load the questionnaire right now.")}
           onRetry={() => void load()}
         />
       ) : questionnaires.length === 0 ? (
         <View style={styles.emptyState}>
           <MaterialIcons name="ballot" size={48} color={colors.mutedForeground} />
           <Text style={[styles.emptyTitle, { color: colors.foreground }]}>
-            No Questions
+            {t("No Questions")}
           </Text>
           <Text style={[styles.emptyText, { color: colors.mutedForeground }]}>
-            No issue questions are available right now.
+            {t("No issue questions are available right now.")}
           </Text>
         </View>
       ) : (
@@ -154,7 +155,7 @@ export default function IssueQuestionnaireScreen() {
                 ]}
               >
                 <Text style={[styles.questionNumber, { color: colors.accent }]}>
-                  Question {qIdx + 1}
+                  {t("Question")} {qIdx + 1}
                 </Text>
                 <Text style={[styles.questionText, { color: colors.foreground }]}>
                   {question.prompt}
@@ -216,8 +217,7 @@ export default function IssueQuestionnaireScreen() {
               <Text
                 style={[styles.neutralityText, { color: colors.mutedForeground }]}
               >
-                Your selections are kept on this device to help you reflect on
-                where you stand. UDecide does not rank or endorse any stance.
+                {t("Your selections are kept on this device to help you reflect on where you stand. UDecide does not rank or endorse any stance.")}
               </Text>
             </View>
           </ScrollView>

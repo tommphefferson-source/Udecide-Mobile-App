@@ -19,6 +19,7 @@ import { CandidateCard } from "@/components/CandidateCard";
 import { LoadingState } from "@/components/LoadingState";
 import { useAddress } from "@/context/AddressContext";
 import { useColors } from "@/hooks/useColors";
+import { t } from "@/i18n";
 import { getElections, isElectionsMockMode } from "@/services/electionsApi";
 import type { Election } from "@/types/politics";
 import { ELECTION_DISCLAIMER } from "@/utils/constants";
@@ -80,14 +81,15 @@ export default function ElectionsScreen() {
         </LinearGradient>
         <ScrollView contentContainerStyle={{ padding: 16, gap: 12, paddingBottom: bottomPad }}>
           <Text style={[styles.sectionLabel, { color: colors.mutedForeground }]}>
-            {selectedOffice.candidates.length} candidate{selectedOffice.candidates.length !== 1 ? "s" : ""}
+            {selectedOffice.candidates.length}{" "}
+            {selectedOffice.candidates.length !== 1 ? t("candidates") : t("candidate")}
           </Text>
           {selectedOffice.candidates.map((c) => (
             <CandidateCard key={c.id} candidate={c} office={selectedOffice.title} />
           ))}
           <View style={[styles.infoCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
             <MaterialIcons name="info-outline" size={16} color={colors.mutedForeground} />
-            <Text style={[styles.infoText, { color: colors.mutedForeground }]}>{ELECTION_DISCLAIMER}</Text>
+            <Text style={[styles.infoText, { color: colors.mutedForeground }]}>{t(ELECTION_DISCLAIMER)}</Text>
           </View>
         </ScrollView>
       </View>
@@ -106,9 +108,9 @@ export default function ElectionsScreen() {
             <MaterialIcons name="arrow-back" size={24} color="#FFF" />
           </Pressable>
         )}
-        <Text style={styles.screenTitle}>Elections & Ballots</Text>
+        <Text style={styles.screenTitle}>{t("Elections & Ballots")}</Text>
         <Text style={styles.screenSubtitle}>
-          Upcoming elections in {effectiveAddress.state || "your area"}
+          {t("Upcoming elections in")} {effectiveAddress.state || t("your area")}
         </Text>
         <AddressOverrideBanner />
       </LinearGradient>
@@ -123,7 +125,7 @@ export default function ElectionsScreen() {
             <DataSourceBadge usingLiveData={usingLiveData} colors={colors} />
             <View style={[styles.infoCard, { backgroundColor: "#C41E3A10", borderColor: "#C41E3A30" }]}>
               <MaterialIcons name="warning-amber" size={16} color="#C41E3A" />
-              <Text style={[styles.infoText, { color: colors.foreground }]}>{ELECTION_DISCLAIMER}</Text>
+              <Text style={[styles.infoText, { color: colors.foreground }]}>{t(ELECTION_DISCLAIMER)}</Text>
             </View>
           </View>
         }
@@ -140,9 +142,9 @@ export default function ElectionsScreen() {
         ListEmptyComponent={
           <View style={styles.emptyState}>
             <MaterialIcons name="how-to-vote" size={48} color={colors.mutedForeground} />
-            <Text style={[styles.emptyTitle, { color: colors.foreground }]}>No Upcoming Elections</Text>
+            <Text style={[styles.emptyTitle, { color: colors.foreground }]}>{t("No Upcoming Elections")}</Text>
             <Text style={[styles.emptyText, { color: colors.mutedForeground }]}>
-              No elections found for {effectiveAddress.state || "your state"} at this time.
+              {t("No elections found for")} {effectiveAddress.state || t("your state")} {t("at this time.")}
             </Text>
           </View>
         }
@@ -179,7 +181,7 @@ function ElectionCard({
     <View style={[styles.electionCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
       <View style={styles.electionHeader}>
         <View style={[styles.typeBadge, { backgroundColor: colors.accent + "20" }]}>
-          <Text style={[styles.typeText, { color: colors.accent }]}>{election.type} Election</Text>
+          <Text style={[styles.typeText, { color: colors.accent }]}>{t(election.type)} {t("Election")}</Text>
         </View>
         <Text style={[styles.stateText, { color: colors.mutedForeground }]}>{election.state}</Text>
       </View>
@@ -188,10 +190,10 @@ function ElectionCard({
 
       {/* Key dates */}
       <View style={styles.datesGrid}>
-        <DateRow icon="event" label="Election Day" value={formatDate(election.date)} colors={colors} />
+        <DateRow icon="event" label={t("Election Day")} value={formatDate(election.date)} colors={colors} />
         <DateRow
           icon="assignment"
-          label="Registration"
+          label={t("Registration")}
           value={election.registrationDeadline}
           url={regUrl}
           colors={colors}
@@ -199,7 +201,7 @@ function ElectionCard({
         {election.earlyVotingStart ? (
           <DateRow
             icon="access-time"
-            label="Early Voting"
+            label={t("Early Voting")}
             value={`${formatDate(election.earlyVotingStart)} – ${formatDate(election.earlyVotingEnd ?? "")}`}
             colors={colors}
           />
@@ -207,7 +209,7 @@ function ElectionCard({
         {election.absenteeDeadline ? (
           <DateRow
             icon="mail"
-            label="Absentee"
+            label={t("Absentee")}
             value={election.absenteeDeadline}
             colors={colors}
           />
@@ -218,10 +220,10 @@ function ElectionCard({
       {(infoUrl || locationUrl) ? (
         <View style={styles.linksRow}>
           {infoUrl ? (
-            <LinkBtn label="Election Info" url={infoUrl} colors={colors} />
+            <LinkBtn label={t("Election Info")} url={infoUrl} colors={colors} />
           ) : null}
           {locationUrl ? (
-            <LinkBtn label="Find Polling Place" url={locationUrl} colors={colors} />
+            <LinkBtn label={t("Find Polling Place")} url={locationUrl} colors={colors} />
           ) : null}
         </View>
       ) : null}
@@ -230,7 +232,7 @@ function ElectionCard({
       {hasCandidates ? (
         <>
           <Text style={[styles.officesTitle, { color: colors.foreground }]}>
-            Offices on the Ballot ({election.offices.length})
+            {t("Offices on the Ballot")} ({election.offices.length})
           </Text>
           {election.offices.map((office) => (
             <Pressable
@@ -247,7 +249,8 @@ function ElectionCard({
                   <Text style={[styles.officeDistrict, { color: colors.mutedForeground }]}>{office.district}</Text>
                 ) : null}
                 <Text style={[styles.candidateCount, { color: colors.mutedForeground }]}>
-                  {office.candidates.length} candidate{office.candidates.length !== 1 ? "s" : ""}
+                  {office.candidates.length}{" "}
+                  {office.candidates.length !== 1 ? t("candidates") : t("candidate")}
                 </Text>
               </View>
               <MaterialIcons name="chevron-right" size={20} color={colors.mutedForeground} />
@@ -258,8 +261,8 @@ function ElectionCard({
         <View style={[styles.pendingBox, { backgroundColor: colors.muted, borderColor: colors.border }]}>
           <MaterialIcons name="schedule" size={15} color={colors.mutedForeground} />
           <Text style={[styles.pendingText, { color: colors.mutedForeground }]}>
-            Candidate and ballot information will appear here as it becomes available closer to election day.
-            {infoUrl ? " Tap 'Election Info' above for the latest details." : ""}
+            {t("Candidate and ballot information will appear here as it becomes available closer to election day.")}
+            {infoUrl ? " " + t("Tap 'Election Info' above for the latest details.") : ""}
           </Text>
         </View>
       )}
@@ -298,7 +301,7 @@ function DateRow({
           style={[styles.dateValue, { color: isLink ? colors.accent : colors.foreground }]}
           numberOfLines={2}
         >
-          {isLink ? "Open registration page" : value}
+          {isLink ? t("Open registration page") : value}
         </Text>
       </View>
       {isLink ? <MaterialIcons name="open-in-new" size={13} color={colors.accent} /> : null}
@@ -353,8 +356,8 @@ function DataSourceBadge({
       />
       <Text style={[styles.sourceBadgeText, { color: usingLiveData ? "#16a34a" : "#d97706" }]}>
         {usingLiveData
-          ? "Live · Google Civic Information API"
-          : "Sample data · Add CIVIC_API_KEY for live elections"}
+          ? t("Live · Google Civic Information API")
+          : t("Sample data · Add CIVIC_API_KEY for live elections")}
       </Text>
     </View>
   );

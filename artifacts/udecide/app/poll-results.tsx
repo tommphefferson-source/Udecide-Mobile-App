@@ -9,6 +9,7 @@ import { useQuery } from "@tanstack/react-query";
 import { ErrorState } from "@/components/ErrorState";
 import { LoadingState } from "@/components/LoadingState";
 import { useColors } from "@/hooks/useColors";
+import { t } from "@/i18n";
 import { getAllPollResults, type PollResultDetail } from "@/services/pollsApi";
 import { formatNumber } from "@/utils/formatters";
 
@@ -35,14 +36,14 @@ export default function PollResultsScreen() {
         <Pressable style={styles.backBtn} onPress={() => router.back()}>
           <MaterialIcons name="arrow-back" size={24} color="#FFF" />
         </Pressable>
-        <Text style={styles.screenTitle}>Poll Results</Text>
-        <Text style={styles.screenSubtitle}>Outcomes from previous community polls</Text>
+        <Text style={styles.screenTitle}>{t("Poll Results")}</Text>
+        <Text style={styles.screenSubtitle}>{t("Outcomes from previous community polls")}</Text>
       </LinearGradient>
 
       {isLoading ? (
         <LoadingState rows={4} />
       ) : isError ? (
-        <ErrorState message="We couldn't load poll results right now." onRetry={() => void refetch()} />
+        <ErrorState message={t("We couldn't load poll results right now.")} onRetry={() => void refetch()} />
       ) : (
         <FlatList
           data={data ?? []}
@@ -53,9 +54,9 @@ export default function PollResultsScreen() {
           ListEmptyComponent={
             <View style={styles.emptyState}>
               <MaterialIcons name="bar-chart" size={48} color={colors.mutedForeground} />
-              <Text style={[styles.emptyTitle, { color: colors.foreground }]}>No Results</Text>
+              <Text style={[styles.emptyTitle, { color: colors.foreground }]}>{t("No Results")}</Text>
               <Text style={[styles.emptyText, { color: colors.mutedForeground }]}>
-                There are no poll results to show yet.
+                {t("There are no poll results to show yet.")}
               </Text>
             </View>
           }
@@ -78,7 +79,7 @@ function ResultCard({
     <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
       <View style={styles.topRow}>
         <Text style={[styles.votes, { color: colors.mutedForeground }]}>
-          {formatNumber(result.totalVotes)} votes
+          {formatNumber(result.totalVotes)} {t("votes")}
         </Text>
       </View>
       <Text style={[styles.question, { color: colors.foreground }]}>{result.question}</Text>

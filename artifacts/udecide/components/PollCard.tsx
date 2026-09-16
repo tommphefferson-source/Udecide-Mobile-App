@@ -3,6 +3,7 @@ import React from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { useColors } from "@/hooks/useColors";
+import { t } from "@/i18n";
 import type { Poll } from "@/types/politics";
 import { formatNumber, formatPercent } from "@/utils/formatters";
 
@@ -25,10 +26,10 @@ export function PollCard({ poll, onVote }: PollCardProps) {
     <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
       <View style={styles.topicRow}>
         <View style={[styles.topicBadge, { backgroundColor: colors.accent + "20" }]}>
-          <Text style={[styles.topicText, { color: colors.accent }]}>{poll.topic}</Text>
+          <Text style={[styles.topicText, { color: colors.accent }]}>{t(poll.topic)}</Text>
         </View>
         <Text style={[styles.votes, { color: colors.mutedForeground }]}>
-          {formatNumber(poll.totalVotes)} votes
+          {formatNumber(poll.totalVotes)} {t("votes")}
         </Text>
       </View>
 
@@ -85,12 +86,12 @@ export function PollCard({ poll, onVote }: PollCardProps) {
 
       {!hasVoted && (
         <Text style={[styles.tapHint, { color: colors.mutedForeground }]}>
-          Tap an option to vote
+          {t("Tap an option to vote")}
         </Text>
       )}
 
       <Text style={[styles.disclaimer, { color: colors.mutedForeground }]}>
-        {poll.disclaimer}
+        {t(poll.disclaimer)}
       </Text>
     </View>
   );

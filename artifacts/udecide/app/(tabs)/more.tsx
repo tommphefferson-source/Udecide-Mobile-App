@@ -7,6 +7,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useAuth } from "@/context/AuthContext";
 import { useColors } from "@/hooks/useColors";
+import { t } from "@/i18n";
 
 const MORE_SECTIONS = [
   {
@@ -58,8 +59,8 @@ export default function MoreScreen() {
             <MaterialIcons name="arrow-back" size={24} color="#FFF" />
           </Pressable>
         )}
-        <Text style={styles.screenTitle}>More</Text>
-        <Text style={styles.screenSubtitle}>Tools, guides, and settings</Text>
+        <Text style={styles.screenTitle}>{t("More")}</Text>
+        <Text style={styles.screenSubtitle}>{t("Tools, guides, and settings")}</Text>
       </LinearGradient>
 
       <ScrollView
@@ -68,7 +69,7 @@ export default function MoreScreen() {
       >
         {MORE_SECTIONS.map((section) => (
           <View key={section.title} style={styles.section}>
-            <Text style={[styles.sectionTitle, { color: colors.mutedForeground }]}>{section.title.toUpperCase()}</Text>
+            <Text style={[styles.sectionTitle, { color: colors.mutedForeground }]}>{t(section.title).toUpperCase()}</Text>
             <View style={[styles.sectionCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
               {section.items.map((item, idx) => (
                 <Pressable
@@ -83,7 +84,7 @@ export default function MoreScreen() {
                   <View style={[styles.menuIcon, { backgroundColor: item.color + "20" }]}>
                     <MaterialIcons name={item.icon as never} size={20} color={item.color} />
                   </View>
-                  <Text style={[styles.menuLabel, { color: colors.foreground }]}>{item.label}</Text>
+                  <Text style={[styles.menuLabel, { color: colors.foreground }]}>{t(item.label)}</Text>
                   <MaterialIcons name="chevron-right" size={20} color={colors.mutedForeground} />
                 </Pressable>
               ))}
@@ -105,14 +106,14 @@ export default function MoreScreen() {
             <View style={[styles.menuIcon, { backgroundColor: "#C41E3A20" }]}>
               <MaterialIcons name="logout" size={20} color="#C41E3A" />
             </View>
-            <Text style={[styles.menuLabel, { color: "#C41E3A" }]}>Sign Out</Text>
+            <Text style={[styles.menuLabel, { color: "#C41E3A" }]}>{t("Sign Out")}</Text>
           </Pressable>
         </View>
 
         <View style={[styles.neutralityCard, { backgroundColor: colors.navy + "10", borderColor: colors.border }]}>
           <MaterialIcons name="balance" size={20} color={colors.navy} />
           <Text style={[styles.neutralityText, { color: colors.mutedForeground }]}>
-            UDecide is committed to political neutrality. We do not endorse or rank any candidate, party, or policy. Information is sourced from official government records and labeled by source.
+            {t("UDecide is committed to political neutrality. We do not endorse or rank any candidate, party, or policy. Information is sourced from official government records and labeled by source.")}
           </Text>
         </View>
 

@@ -3,6 +3,7 @@ import React from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { useColors } from "@/hooks/useColors";
+import { t } from "@/i18n";
 import type { Bill } from "@/types/politics";
 import { formatDateShort } from "@/utils/formatters";
 
@@ -43,7 +44,7 @@ export function BillCard({ bill, onPress }: BillCardProps) {
             style={[styles.statusText, { color: statusColor }]}
             numberOfLines={1}
           >
-            {bill.status}
+            {t(bill.status)}
           </Text>
         </View>
       </View>
@@ -69,7 +70,7 @@ export function BillCard({ bill, onPress }: BillCardProps) {
       </View>
       {onPress ? (
         <View style={styles.viewMore}>
-          <Text style={[styles.viewMoreText, { color: colors.accent }]}>View Details</Text>
+          <Text style={[styles.viewMoreText, { color: colors.accent }]}>{t("View Details")}</Text>
           <MaterialIcons name="chevron-right" size={16} color={colors.accent} />
         </View>
       ) : null}

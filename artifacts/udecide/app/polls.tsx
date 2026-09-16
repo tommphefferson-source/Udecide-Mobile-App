@@ -10,6 +10,7 @@ import { HorizontalScroller } from "@/components/HorizontalScroller";
 import { LoadingState } from "@/components/LoadingState";
 import { PollCard } from "@/components/PollCard";
 import { useColors } from "@/hooks/useColors";
+import { t } from "@/i18n";
 import { getPolls, votePoll } from "@/services/pollsApi";
 import type { Poll, PollTopic } from "@/types/politics";
 import { POLL_TOPICS } from "@/utils/constants";
@@ -76,8 +77,8 @@ export default function PollsScreen() {
         <Pressable style={styles.backBtn} onPress={() => router.back()}>
           <MaterialIcons name="arrow-back" size={24} color="#FFF" />
         </Pressable>
-        <Text style={styles.screenTitle}>Political Polls</Text>
-        <Text style={styles.screenSubtitle}>Community perspectives — not scientific unless stated</Text>
+        <Text style={styles.screenTitle}>{t("Political Polls")}</Text>
+        <Text style={styles.screenSubtitle}>{t("Community perspectives — not scientific unless stated")}</Text>
       </LinearGradient>
 
       <View style={[styles.filterContainer, { backgroundColor: colors.card, borderBottomColor: colors.border }]}>
@@ -98,7 +99,7 @@ export default function PollsScreen() {
                   { color: selectedTopic === topic ? "#FFF" : colors.mutedForeground },
                 ]}
               >
-                {topic}
+                {t(topic)}
               </Text>
             </Pressable>
           ))}
@@ -108,7 +109,7 @@ export default function PollsScreen() {
       {loading ? (
         <LoadingState rows={4} />
       ) : error ? (
-        <ErrorState message="We couldn't load polls right now." onRetry={() => void loadPolls()} />
+        <ErrorState message={t("We couldn't load polls right now.")} onRetry={() => void loadPolls()} />
       ) : (
         <FlatList
           data={filteredPolls}
@@ -125,14 +126,14 @@ export default function PollsScreen() {
               onPress={() => router.push("/poll-results")}
             >
               <MaterialIcons name="bar-chart" size={20} color="#FFF" />
-              <Text style={styles.resultsBtnText}>Poll Results</Text>
+              <Text style={styles.resultsBtnText}>{t("Poll Results")}</Text>
             </Pressable>
           }
           ListEmptyComponent={
             <View style={styles.emptyState}>
               <MaterialIcons name="poll" size={48} color={colors.mutedForeground} />
-              <Text style={[styles.emptyTitle, { color: colors.foreground }]}>No Polls</Text>
-              <Text style={[styles.emptyText, { color: colors.mutedForeground }]}>No polls available for this topic.</Text>
+              <Text style={[styles.emptyTitle, { color: colors.foreground }]}>{t("No Polls")}</Text>
+              <Text style={[styles.emptyText, { color: colors.mutedForeground }]}>{t("No polls available for this topic.")}</Text>
             </View>
           }
         />

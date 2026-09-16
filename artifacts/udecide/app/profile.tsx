@@ -20,6 +20,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useAuth } from "@/context/AuthContext";
 import { useColors } from "@/hooks/useColors";
+import { t } from "@/i18n";
 import { STATIC_PAGE_CODES } from "@/services/pagesApi";
 import { SUPPORT_EMAIL, US_STATES } from "@/utils/constants";
 import { validateName, validateRequired, validateState, validateZipCode } from "@/utils/validation";
@@ -72,7 +73,7 @@ export default function ProfileScreen() {
     });
     setSaving(false);
     if (!result.success) {
-      setErrors({ general: result.error ?? "Unable to save your profile. Please try again." });
+      setErrors({ general: result.error ?? t("Unable to save your profile. Please try again.") });
       return;
     }
     setEditing(false);
@@ -82,7 +83,7 @@ export default function ProfileScreen() {
     if (photoUploading) return;
     const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!perm.granted) {
-      setErrors({ general: "Photo library access is needed to choose a profile photo." });
+      setErrors({ general: t("Photo library access is needed to choose a profile photo.") });
       return;
     }
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -102,14 +103,14 @@ export default function ProfileScreen() {
     setPhotoUploading(false);
     if (!res.success) {
       setLocalPhotoUri(null);
-      setErrors({ general: res.error ?? "Unable to upload your photo. Please try again." });
+      setErrors({ general: res.error ?? t("Unable to upload your photo. Please try again.") });
     }
   }
 
   function openEmail(subject: string) {
     const url = `mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent(subject)}`;
     Linking.openURL(url).catch(() => {
-      setErrors({ general: `Couldn't open your email app. Reach us at ${SUPPORT_EMAIL}.` });
+      setErrors({ general: `${t("Couldn't open your email app. Reach us at")} ${SUPPORT_EMAIL}.` });
     });
   }
 
@@ -120,28 +121,28 @@ export default function ProfileScreen() {
     if (res.success) {
       router.replace("/(auth)/login");
     } else {
-      setErrors({ general: res.error ?? "Unable to delete your account. Please try again." });
+      setErrors({ general: res.error ?? t("Unable to delete your account. Please try again.") });
     }
   }
 
   function handleDeleteAccount() {
     if (deleting) return;
     const message =
-      "This permanently deletes your account and all associated data. This action cannot be undone.";
+      t("This permanently deletes your account and all associated data. This action cannot be undone.");
     if (Platform.OS === "web") {
-      if (typeof window !== "undefined" && window.confirm(`Delete Account\n\n${message}`)) {
+      if (typeof window !== "undefined" && window.confirm(`${t("Delete Account")}\n\n${message}`)) {
         void runDelete();
       }
     } else {
-      Alert.alert("Delete Account", message, [
-        { text: "Cancel", style: "cancel" },
-        { text: "Delete", style: "destructive", onPress: () => void runDelete() },
+      Alert.alert(t("Delete Account"), message, [
+        { text: t("Cancel"), style: "cancel" },
+        { text: t("Delete"), style: "destructive", onPress: () => void runDelete() },
       ]);
     }
   }
 
   const displayPhoto = localPhotoUri ?? (user?.profileImage || null);
-  const stateName = US_STATES.find((s) => s.code === user?.state)?.name ?? user?.state ?? "Not set";
+  const stateName = US_STATES.find((s) => s.code === user?.state)?.name ?? user?.state ?? t("Not set");
 
   const supportLinks: {
     key: string;
@@ -152,14 +153,14 @@ export default function ProfileScreen() {
   }[] = [
     {
       key: "about",
-      label: "About Us",
+      label: t("About Us"),
       icon: "info-outline",
       onPress: () =>
         router.push(`/static-page?code=${STATIC_PAGE_CODES.about}&title=About%20Us` as never),
     },
     {
       key: "privacy",
-      label: "Privacy Policy",
+      label: t("Privacy Policy"),
       icon: "privacy-tip",
       onPress: () =>
         router.push(
@@ -168,7 +169,7 @@ export default function ProfileScreen() {
     },
     {
       key: "terms",
-      label: "Terms & Conditions",
+      label: t("Terms & Conditions"),
       icon: "description",
       onPress: () =>
         router.push(
@@ -177,19 +178,19 @@ export default function ProfileScreen() {
     },
     {
       key: "feedback",
-      label: "Send Feedback",
+      label: t("Send Feedback"),
       icon: "feedback",
-      onPress: () => openEmail("UDecide App Feedback"),
+      onPress: () => openEmail(t("UDecide App Feedback")),
     },
     {
       key: "contact",
-      label: "Contact Us",
+      label: t("Contact Us"),
       icon: "mail-outline",
-      onPress: () => openEmail("UDecide Support Request"),
+      onPress: () => openEmail(t("UDecide Support Request")),
     },
     {
       key: "delete",
-      label: "Delete Account",
+      label: t("Delete Account"),
       icon: "delete-outline",
       onPress: handleDeleteAccount,
       destructive: true,
@@ -219,7 +220,7 @@ export default function ProfileScreen() {
               )}
             </View>
           </Pressable>
-          <Text style={styles.userName}>{`${user?.firstName ?? ""} ${user?.lastName ?? ""}`.trim() || "User"}</Text>
+          <Text style={styles.userName}>{`${user?.firstName ?? ""} ${user?.lastName ?? ""}`.trim() || t("User")}</Text>
           <Text style={styles.userEmail}>{user?.email ?? ""}</Text>
         </View>
       </LinearGradient>
@@ -233,7 +234,7 @@ export default function ProfileScreen() {
         ) : null}
         <View style={[styles.section, { backgroundColor: colors.card, borderColor: colors.border }]}>
           <View style={styles.sectionHeader}>
-            <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Account Information</Text>
+            <Text style={[styles.sectionTitle, { color: colors.foreground }]}>{t("Account Information")}</Text>
             {!editing && (
               <Pressable style={({ pressed }) => [{ opacity: pressed ? 0.7 : 1 }]} onPress={() => setEditing(true)}>
                 <MaterialIcons name="edit" size={20} color={colors.accent} />
@@ -250,12 +251,12 @@ export default function ProfileScreen() {
                 </View>
               ) : null}
               {[
-                { label: "First Name", key: "firstName", value: firstName, onChangeText: setFirstName, icon: "person" },
-                { label: "Last Name", key: "lastName", value: lastName, onChangeText: setLastName, icon: "person-outline" },
-                { label: "Street Address", key: "address", value: address, onChangeText: setAddress, icon: "home" },
-                { label: "City", key: "city", value: city, onChangeText: setCity, icon: "location-city" },
-                { label: "State (2-letter)", key: "state", value: state, onChangeText: (v: string) => setState(v.toUpperCase()), icon: "flag", maxLength: 2 },
-                { label: "ZIP Code", key: "zipCode", value: zipCode, onChangeText: setZipCode, icon: "markunread-mailbox", keyboardType: "numeric" as const },
+                { label: t("First Name"), key: "firstName", value: firstName, onChangeText: setFirstName, icon: "person" },
+                { label: t("Last Name"), key: "lastName", value: lastName, onChangeText: setLastName, icon: "person-outline" },
+                { label: t("Street Address"), key: "address", value: address, onChangeText: setAddress, icon: "home" },
+                { label: t("City"), key: "city", value: city, onChangeText: setCity, icon: "location-city" },
+                { label: t("State (2-letter)"), key: "state", value: state, onChangeText: (v: string) => setState(v.toUpperCase()), icon: "flag", maxLength: 2 },
+                { label: t("ZIP Code"), key: "zipCode", value: zipCode, onChangeText: setZipCode, icon: "markunread-mailbox", keyboardType: "numeric" as const },
               ].map((f) => (
                 <View key={f.key} style={styles.field}>
                   <Text style={[styles.fieldLabel, { color: colors.mutedForeground }]}>{f.label}</Text>
@@ -278,27 +279,27 @@ export default function ProfileScreen() {
                   style={({ pressed }) => [styles.cancelBtn, { borderColor: colors.border, opacity: pressed ? 0.7 : 1 }]}
                   onPress={() => { setEditing(false); setErrors({}); }}
                 >
-                  <Text style={[styles.cancelBtnText, { color: colors.foreground }]}>Cancel</Text>
+                  <Text style={[styles.cancelBtnText, { color: colors.foreground }]}>{t("Cancel")}</Text>
                 </Pressable>
                 <Pressable
                   style={({ pressed }) => [styles.saveBtn, { backgroundColor: colors.accent, opacity: pressed || saving ? 0.85 : 1 }]}
                   onPress={handleSave}
                   disabled={saving}
                 >
-                  {saving ? <ActivityIndicator color="#FFF" size="small" /> : <Text style={styles.saveBtnText}>Save Changes</Text>}
+                  {saving ? <ActivityIndicator color="#FFF" size="small" /> : <Text style={styles.saveBtnText}>{t("Save Changes")}</Text>}
                 </Pressable>
               </View>
             </View>
           ) : (
             <View style={styles.profileFields}>
               {[
-                { label: "First Name", value: user?.firstName || "Not set", icon: "person" },
-                { label: "Last Name", value: user?.lastName || "Not set", icon: "person-outline" },
-                { label: "Email", value: user?.email, icon: "email" },
-                { label: "Address", value: user?.address || "Not set", icon: "home" },
-                { label: "City", value: user?.city || "Not set", icon: "location-city" },
-                { label: "State", value: stateName, icon: "flag" },
-                { label: "ZIP Code", value: user?.zipCode || "Not set", icon: "markunread-mailbox" },
+                { label: t("First Name"), value: user?.firstName || t("Not set"), icon: "person" },
+                { label: t("Last Name"), value: user?.lastName || t("Not set"), icon: "person-outline" },
+                { label: t("Email"), value: user?.email, icon: "email" },
+                { label: t("Address"), value: user?.address || t("Not set"), icon: "home" },
+                { label: t("City"), value: user?.city || t("Not set"), icon: "location-city" },
+                { label: t("State"), value: stateName, icon: "flag" },
+                { label: t("ZIP Code"), value: user?.zipCode || t("Not set"), icon: "markunread-mailbox" },
               ].map((f, i, arr) => (
                 <View
                   key={f.label}
@@ -320,7 +321,7 @@ export default function ProfileScreen() {
 
         <View style={[styles.section, { backgroundColor: colors.card, borderColor: colors.border }]}>
           <View style={styles.sectionHeader}>
-            <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Account Settings</Text>
+            <Text style={[styles.sectionTitle, { color: colors.foreground }]}>{t("Account Settings")}</Text>
           </View>
           <Pressable
             style={({ pressed }) => [styles.settingsRow, { borderBottomWidth: 1, borderBottomColor: colors.border, opacity: pressed ? 0.7 : 1 }]}
@@ -328,7 +329,7 @@ export default function ProfileScreen() {
           >
             <MaterialIcons name="edit" size={20} color={colors.accent} />
             <View style={styles.settingsRowText}>
-              <Text style={[styles.settingsRowTitle, { color: colors.foreground }]}>Edit Profile</Text>
+              <Text style={[styles.settingsRowTitle, { color: colors.foreground }]}>{t("Edit Profile")}</Text>
             </View>
             <MaterialIcons name="chevron-right" size={20} color={colors.mutedForeground} />
           </Pressable>
@@ -339,7 +340,7 @@ export default function ProfileScreen() {
 
         <View style={[styles.section, { backgroundColor: colors.card, borderColor: colors.border }]}>
           <View style={styles.sectionHeader}>
-            <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Support</Text>
+            <Text style={[styles.sectionTitle, { color: colors.foreground }]}>{t("Support")}</Text>
           </View>
           {supportLinks.map((link, i, arr) => {
             const isDeleteRow = link.key === "delete";
@@ -384,8 +385,8 @@ export default function ProfileScreen() {
             <MaterialIcons name="location-on" size={20} color={colors.accent} />
           </View>
           <View style={styles.overrideBtnText}>
-            <Text style={[styles.overrideBtnTitle, { color: colors.foreground }]}>Address Override</Text>
-            <Text style={[styles.overrideBtnSubtitle, { color: colors.mutedForeground }]}>View political data for another location</Text>
+            <Text style={[styles.overrideBtnTitle, { color: colors.foreground }]}>{t("Address Override")}</Text>
+            <Text style={[styles.overrideBtnSubtitle, { color: colors.mutedForeground }]}>{t("View political data for another location")}</Text>
           </View>
           <MaterialIcons name="chevron-right" size={20} color={colors.mutedForeground} />
         </Pressable>
@@ -395,7 +396,7 @@ export default function ProfileScreen() {
           onPress={async () => { await logout(); router.replace("/(auth)/login"); }}
         >
           <MaterialIcons name="logout" size={20} color="#C41E3A" />
-          <Text style={styles.logoutBtnText}>Sign Out</Text>
+          <Text style={styles.logoutBtnText}>{t("Sign Out")}</Text>
         </Pressable>
       </ScrollView>
     </View>

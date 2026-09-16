@@ -13,6 +13,7 @@ import {
   type AuthUser,
   type ProfilePhotoFile,
 } from "@/services/authApi";
+import { t } from "@/i18n";
 import {
   setSessionToken,
   setUnauthorizedHandler,
@@ -117,7 +118,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       } catch (err) {
         return {
           success: false,
-          error: err instanceof Error ? err.message : "Unable to sign in. Please try again.",
+          error: err instanceof Error ? err.message : t("Unable to sign in. Please try again."),
         };
       }
     },
@@ -141,7 +142,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       } catch (err) {
         return {
           success: false,
-          error: err instanceof Error ? err.message : "Unable to sign in. Please try again.",
+          error: err instanceof Error ? err.message : t("Unable to sign in. Please try again."),
         };
       }
     },
@@ -173,7 +174,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       } catch (err) {
         return {
           success: false,
-          error: err instanceof Error ? err.message : "Unable to create account. Please try again.",
+          error: err instanceof Error ? err.message : t("Unable to create account. Please try again."),
         };
       }
     },
@@ -216,7 +217,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       } catch (err) {
         return {
           success: false,
-          error: err instanceof Error ? err.message : "Unable to create account. Please try again.",
+          error: err instanceof Error ? err.message : t("Unable to create account. Please try again."),
         };
       }
     },
@@ -231,7 +232,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
    */
   const persistProfile = useCallback(
     async (changes: Partial<UserProfile>): Promise<{ success: boolean; error?: string }> => {
-      if (!user) return { success: false, error: "You must be signed in to save your profile." };
+      if (!user) return { success: false, error: t("You must be signed in to save your profile.") };
       const merged = { ...user, ...changes };
       // Optimistic update so the UI reflects the change immediately.
       setUser(merged);
@@ -278,7 +279,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser(user);
         return {
           success: false,
-          error: err instanceof Error ? err.message : "Unable to save your profile. Please try again.",
+          error: err instanceof Error ? err.message : t("Unable to save your profile. Please try again."),
         };
       }
     },
@@ -302,7 +303,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
    */
   const uploadProfilePhoto = useCallback(
     async (file: ProfilePhotoFile): Promise<{ success: boolean; error?: string }> => {
-      if (!user) return { success: false, error: "You must be signed in to update your photo." };
+      if (!user) return { success: false, error: t("You must be signed in to update your photo.") };
       try {
         const { user: legacyUser } = await apiUploadProfilePhoto(file);
         const canonical = toUserProfile(legacyUser);
@@ -320,7 +321,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       } catch (err) {
         return {
           success: false,
-          error: err instanceof Error ? err.message : "Unable to upload your photo. Please try again.",
+          error: err instanceof Error ? err.message : t("Unable to upload your photo. Please try again."),
         };
       }
     },
@@ -342,13 +343,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
    * retry. Callers should route back to login on success.
    */
   const deleteAccount = useCallback(async (): Promise<{ success: boolean; error?: string }> => {
-    if (!user) return { success: false, error: "You must be signed in to delete your account." };
+    if (!user) return { success: false, error: t("You must be signed in to delete your account.") };
     try {
       await apiDeleteAccount();
     } catch (err) {
       return {
         success: false,
-        error: err instanceof Error ? err.message : "Unable to delete your account. Please try again.",
+        error: err instanceof Error ? err.message : t("Unable to delete your account. Please try again."),
       };
     }
     const keys = [STORAGE_KEY, AUTH_TOKEN_KEY, STORAGE_KEY + "_" + user.id];

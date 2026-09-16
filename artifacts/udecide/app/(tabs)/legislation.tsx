@@ -19,6 +19,7 @@ import { ErrorState } from "@/components/ErrorState";
 import { LoadingState } from "@/components/LoadingState";
 import { useAddress } from "@/context/AddressContext";
 import { useColors } from "@/hooks/useColors";
+import { t } from "@/i18n";
 import { getRecentBills, searchCongressBills } from "@/services/congressApi";
 import { getMasterList, searchBills } from "@/services/legiscanApi";
 import type { Bill } from "@/types/politics";
@@ -138,7 +139,7 @@ export default function LegislationScreen() {
             ]}
           >
             <Text style={[styles.detailLabel, { color: colors.mutedForeground }]}>
-              Status
+              {t("Status")}
             </Text>
             <Text style={[styles.detailValue, { color: colors.foreground }]}>
               {selectedBill.status}
@@ -151,7 +152,7 @@ export default function LegislationScreen() {
             ]}
           >
             <Text style={[styles.detailLabel, { color: colors.mutedForeground }]}>
-              Last Action
+              {t("Last Action")}
             </Text>
             <Text style={[styles.detailValue, { color: colors.foreground }]}>
               {selectedBill.lastAction}
@@ -167,7 +168,7 @@ export default function LegislationScreen() {
             ]}
           >
             <Text style={[styles.detailLabel, { color: colors.mutedForeground }]}>
-              Description
+              {t("Description")}
             </Text>
             <Text style={[styles.detailValue, { color: colors.foreground }]}>
               {selectedBill.description}
@@ -181,7 +182,7 @@ export default function LegislationScreen() {
               ]}
             >
               <Text style={[styles.detailLabel, { color: colors.mutedForeground }]}>
-                Sponsors
+                {t("Sponsors")}
               </Text>
               {selectedBill.sponsors.map((s, i) => (
                 <Text key={i} style={[styles.detailValue, { color: colors.foreground }]}>
@@ -198,7 +199,7 @@ export default function LegislationScreen() {
               ]}
             >
               <Text style={[styles.detailLabel, { color: colors.mutedForeground }]}>
-                Legislative History
+                {t("Legislative History")}
               </Text>
               {selectedBill.history.map((h, i) => (
                 <View key={i} style={styles.historyItem}>
@@ -232,7 +233,7 @@ export default function LegislationScreen() {
               ]}
             >
               <Text style={[styles.detailLabel, { color: colors.mutedForeground }]}>
-                Votes
+                {t("Votes")}
               </Text>
               {selectedBill.votes.map((v, i) => (
                 <View
@@ -248,17 +249,17 @@ export default function LegislationScreen() {
                       { color: v.result === "Passed" ? "#2E7D32" : colors.accent },
                     ]}
                   >
-                    {v.result}
+                    {t(v.result)}
                   </Text>
                   <Text style={[styles.voteNums, { color: colors.foreground }]}>
-                    Yea: {v.yea} · Nay: {v.nay} · Absent: {v.absent}
+                    {t("Yea:")} {v.yea} · {t("Nay:")} {v.nay} · {t("Absent:")} {v.absent}
                   </Text>
                 </View>
               ))}
             </View>
           )}
           <Text style={[styles.sourceText, { color: colors.mutedForeground }]}>
-            Source: {selectedBill.source}
+            {t("Source:")} {selectedBill.source}
           </Text>
         </ScrollView>
       </View>
@@ -280,11 +281,11 @@ export default function LegislationScreen() {
         >
           <MaterialIcons name="arrow-back" size={24} color="#FFF" />
         </Pressable>
-        <Text style={styles.screenTitle}>Legislation Tracker</Text>
+        <Text style={styles.screenTitle}>{t("Legislation Tracker")}</Text>
         <Text style={styles.screenSubtitle}>
           {activeTab === "federal"
-            ? "U.S. Congress — recent federal bills"
-            : "Bills and laws from your state"}
+            ? t("U.S. Congress — recent federal bills")
+            : t("Bills and laws from your state")}
         </Text>
 
         {/* Tab toggle */}
@@ -307,7 +308,7 @@ export default function LegislationScreen() {
                 activeTab === "federal" && styles.tabBtnTextActive,
               ]}
             >
-              Federal
+              {t("Federal")}
             </Text>
           </Pressable>
           <Pressable
@@ -328,7 +329,7 @@ export default function LegislationScreen() {
                 activeTab === "state" && styles.tabBtnTextActive,
               ]}
             >
-              State
+              {t("State")}
             </Text>
           </Pressable>
         </View>
@@ -371,8 +372,8 @@ export default function LegislationScreen() {
             style={[styles.searchInput, { color: colors.foreground }]}
             placeholder={
               activeTab === "federal"
-                ? "Search federal bills..."
-                : "Search state bills..."
+                ? t("Search federal bills...")
+                : t("Search state bills...")
             }
             placeholderTextColor={colors.mutedForeground}
             value={searchQuery}
@@ -442,17 +443,17 @@ export default function LegislationScreen() {
       {loading ? (
         <LoadingState rows={4} />
       ) : error ? (
-        <ErrorState message="Unable to load legislation data" onRetry={loadBills} />
+        <ErrorState message={t("Unable to load legislation data")} onRetry={loadBills} />
       ) : bills.length === 0 ? (
         <View style={styles.emptyState}>
           <MaterialIcons name="gavel" size={48} color={colors.mutedForeground} />
           <Text style={[styles.emptyTitle, { color: colors.foreground }]}>
-            No Bills Found
+            {t("No Bills Found")}
           </Text>
           <Text style={[styles.emptyText, { color: colors.mutedForeground }]}>
             {activeTab === "state"
-              ? "No bills available for this state yet. Try a different state or search term."
-              : "Try a different search term."}
+              ? t("No bills available for this state yet. Try a different state or search term.")
+              : t("Try a different search term.")}
           </Text>
         </View>
       ) : (

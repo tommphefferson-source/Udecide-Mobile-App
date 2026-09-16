@@ -16,6 +16,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useAuth } from "@/context/AuthContext";
+import { t } from "@/i18n";
 import { validateRequired, validateZipCode } from "@/utils/validation";
 
 /**
@@ -36,7 +37,7 @@ export default function GoogleSetupScreen() {
 
   async function handleContinue() {
     if (!code) {
-      setErrors({ general: "This sign-in link has expired. Please try signing in again." });
+      setErrors({ general: t("This sign-in link has expired. Please try signing in again.") });
       return;
     }
     const cityErr = validateRequired(city, "City");
@@ -53,7 +54,7 @@ export default function GoogleSetupScreen() {
     const result = await registerWithGoogleCode(code, city, zipCode);
     setLoading(false);
     if (!result.success) {
-      setErrors({ general: result.error ?? "Unable to create account. Please try again." });
+      setErrors({ general: result.error ?? t("Unable to create account. Please try again.") });
       return;
     }
     // Account created and signed in; finish collecting the full address.
@@ -75,9 +76,9 @@ export default function GoogleSetupScreen() {
             <View style={styles.stepIcon}>
               <MaterialIcons name="person-add" size={28} color="#C41E3A" />
             </View>
-            <Text style={styles.title}>Almost There</Text>
+            <Text style={styles.title}>{t("Almost There")}</Text>
             <Text style={styles.subtitle}>
-              We just need a couple of details to finish setting up your account.
+              {t("We just need a couple of details to finish setting up your account.")}
             </Text>
           </View>
 
@@ -90,12 +91,12 @@ export default function GoogleSetupScreen() {
             ) : null}
 
             <View style={styles.field}>
-              <Text style={styles.label}>City</Text>
+              <Text style={styles.label}>{t("City")}</Text>
               <View style={[styles.inputWrap, errors.city ? styles.inputError : null]}>
                 <MaterialIcons name="location-city" size={18} color="#6B7A8D" />
                 <TextInput
                   style={styles.input}
-                  placeholder="Your city"
+                  placeholder={t("Your city")}
                   placeholderTextColor="#8892A0"
                   value={city}
                   onChangeText={setCity}
@@ -106,7 +107,7 @@ export default function GoogleSetupScreen() {
             </View>
 
             <View style={styles.field}>
-              <Text style={styles.label}>ZIP Code</Text>
+              <Text style={styles.label}>{t("ZIP Code")}</Text>
               <View style={[styles.inputWrap, errors.zipCode ? styles.inputError : null]}>
                 <MaterialIcons name="markunread-mailbox" size={18} color="#6B7A8D" />
                 <TextInput
@@ -130,7 +131,7 @@ export default function GoogleSetupScreen() {
               {loading ? (
                 <ActivityIndicator color="#FFF" />
               ) : (
-                <Text style={styles.saveBtnText}>Continue</Text>
+                <Text style={styles.saveBtnText}>{t("Continue")}</Text>
               )}
             </Pressable>
 
@@ -139,13 +140,12 @@ export default function GoogleSetupScreen() {
               onPress={() => router.back()}
               disabled={loading}
             >
-              <Text style={styles.cancelText}>Cancel</Text>
+              <Text style={styles.cancelText}>{t("Cancel")}</Text>
             </Pressable>
           </View>
 
           <Text style={styles.privacyNote}>
-            Account creation can take a few seconds. Your information is used only to provide
-            relevant political information.
+            {t("Account creation can take a few seconds. Your information is used only to provide relevant political information.")}
           </Text>
         </ScrollView>
       </KeyboardAvoidingView>

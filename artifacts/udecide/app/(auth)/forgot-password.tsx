@@ -13,6 +13,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { t } from "@/i18n";
 import { validateEmail } from "@/utils/validation";
 
 export default function ForgotPasswordScreen() {
@@ -37,9 +38,9 @@ export default function ForgotPasswordScreen() {
           </Pressable>
 
           <View style={styles.header}>
-            <Text style={styles.title}>Reset Password</Text>
+            <Text style={styles.title}>{t("Reset Password")}</Text>
             <Text style={styles.subtitle}>
-              Enter your email and we'll send instructions to reset your password.
+              {t("Enter your email and we'll send instructions to reset your password.")}
             </Text>
           </View>
 
@@ -49,21 +50,21 @@ export default function ForgotPasswordScreen() {
                 <View style={styles.successIcon}>
                   <MaterialIcons name="check-circle" size={48} color="#2E7D32" />
                 </View>
-                <Text style={styles.successTitle}>Check Your Email</Text>
+                <Text style={styles.successTitle}>{t("Check Your Email")}</Text>
                 <Text style={styles.successText}>
-                  If an account exists for {email}, you'll receive password reset instructions shortly.
+                  {t("If an account exists for")} {email}, {t("you'll receive password reset instructions shortly.")}
                 </Text>
                 <Pressable
                   style={({ pressed }) => [styles.backToLoginBtn, { opacity: pressed ? 0.85 : 1 }]}
                   onPress={() => router.replace("/(auth)/login")}
                 >
-                  <Text style={styles.backToLoginText}>Back to Sign In</Text>
+                  <Text style={styles.backToLoginText}>{t("Back to Sign In")}</Text>
                 </Pressable>
               </View>
             ) : (
               <>
                 <View style={styles.field}>
-                  <Text style={styles.label}>Email Address</Text>
+                  <Text style={styles.label}>{t("Email Address")}</Text>
                   <View style={[styles.inputWrap, error ? styles.inputError : null]}>
                     <MaterialIcons name="email" size={18} color="#6B7A8D" />
                     <TextInput
@@ -84,11 +85,11 @@ export default function ForgotPasswordScreen() {
                   style={({ pressed }) => [styles.submitBtn, { opacity: pressed ? 0.85 : 1 }]}
                   onPress={handleSubmit}
                 >
-                  <Text style={styles.submitText}>Send Reset Instructions</Text>
+                  <Text style={styles.submitText}>{t("Send Reset Instructions")}</Text>
                 </Pressable>
 
                 <Pressable style={styles.backLink} onPress={() => router.back()}>
-                  <Text style={styles.backLinkText}>Back to Sign In</Text>
+                  <Text style={styles.backLinkText}>{t("Back to Sign In")}</Text>
                 </Pressable>
               </>
             )}

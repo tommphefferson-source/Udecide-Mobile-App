@@ -20,6 +20,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useAuth } from "@/context/AuthContext";
+import { t } from "@/i18n";
 import { googleStartUrl } from "@/services/authApi";
 import { openGoogleWebPopup } from "@/utils/googleWebAuth";
 import { validateEmail, validatePassword } from "@/utils/validation";
@@ -59,8 +60,8 @@ export default function LoginScreen() {
     if (status !== "success" || typeof code !== "string") {
       setErrors({
         general: hadMessage
-          ? "Google sign-in was not completed."
-          : "Google sign-in failed. Please try again.",
+          ? t("Google sign-in was not completed.")
+          : t("Google sign-in failed. Please try again."),
       });
       return;
     }
@@ -100,7 +101,7 @@ export default function LoginScreen() {
         returnUri = makeRedirectUri({ scheme: "udecide" });
       } catch {
         setErrors({
-          general: "Google sign-in is unavailable right now. Please use email sign-in.",
+          general: t("Google sign-in is unavailable right now. Please use email sign-in."),
         });
         return;
       }
@@ -113,7 +114,7 @@ export default function LoginScreen() {
       if (!/^https:\/\//i.test(startUrl) || !returnUri) {
         setErrors({
           general:
-            "Google sign-in isn't configured for this build yet. Please use email sign-in.",
+            t("Google sign-in isn't configured for this build yet. Please use email sign-in."),
         });
         return;
       }
@@ -127,13 +128,13 @@ export default function LoginScreen() {
         if (!preflight.ok) {
           setErrors({
             general:
-              "Google sign-in is temporarily unavailable. Please use email sign-in.",
+              t("Google sign-in is temporarily unavailable. Please use email sign-in."),
           });
           return;
         }
       } catch {
         setErrors({
-          general: "Can't reach the sign-in service. Check your connection and try again.",
+          general: t("Can't reach the sign-in service. Check your connection and try again."),
         });
         return;
       }
@@ -150,7 +151,7 @@ export default function LoginScreen() {
       );
     } catch (err) {
       setErrors({
-        general: err instanceof Error ? err.message : "Google sign-in failed. Please try again.",
+        general: err instanceof Error ? err.message : t("Google sign-in failed. Please try again."),
       });
     } finally {
       setGoogleLoading(false);
@@ -200,7 +201,7 @@ export default function LoginScreen() {
 
           {/* Card */}
           <View style={styles.card}>
-            <Text style={styles.cardTitle}>Sign In</Text>
+            <Text style={styles.cardTitle}>{t("Sign In")}</Text>
 
             {errors.general ? (
               <View style={styles.errorBanner}>
@@ -210,7 +211,7 @@ export default function LoginScreen() {
             ) : null}
 
             <View style={styles.field}>
-              <Text style={styles.label}>Email</Text>
+              <Text style={styles.label}>{t("Email")}</Text>
               <View style={[styles.inputWrap, errors.email ? styles.inputError : null]}>
                 <MaterialIcons name="email" size={18} color="#6B7A8D" />
                 <TextInput
@@ -228,7 +229,7 @@ export default function LoginScreen() {
             </View>
 
             <View style={styles.field}>
-              <Text style={styles.label}>Password</Text>
+              <Text style={styles.label}>{t("Password")}</Text>
               <View style={[styles.inputWrap, errors.password ? styles.inputError : null]}>
                 <MaterialIcons name="lock" size={18} color="#6B7A8D" />
                 <Pressable onPress={() => setShowPassword((v) => !v)} hitSlop={8}>
@@ -240,7 +241,7 @@ export default function LoginScreen() {
                 </Pressable>
                 <TextInput
                   style={styles.input}
-                  placeholder="Enter password"
+                  placeholder={t("Enter password")}
                   placeholderTextColor="#8892A0"
                   value={password}
                   onChangeText={setPassword}
@@ -255,7 +256,7 @@ export default function LoginScreen() {
               style={styles.forgotLink}
               onPress={() => router.push("/(auth)/forgot-password")}
             >
-              <Text style={styles.forgotText}>Forgot password?</Text>
+              <Text style={styles.forgotText}>{t("Forgot password?")}</Text>
             </Pressable>
 
             <Pressable
@@ -266,7 +267,7 @@ export default function LoginScreen() {
               {loading ? (
                 <ActivityIndicator color="#FFF" />
               ) : (
-                <Text style={styles.loginBtnText}>Sign In</Text>
+                <Text style={styles.loginBtnText}>{t("Sign In")}</Text>
               )}
             </Pressable>
 
@@ -274,7 +275,7 @@ export default function LoginScreen() {
               <>
                 <View style={styles.dividerRow}>
                   <View style={styles.divider} />
-                  <Text style={styles.dividerText}>or continue with</Text>
+                  <Text style={styles.dividerText}>{t("or continue with")}</Text>
                   <View style={styles.divider} />
                 </View>
 
@@ -301,15 +302,15 @@ export default function LoginScreen() {
             )}
 
             <View style={styles.registerRow}>
-              <Text style={styles.registerPrompt}>Don't have an account?</Text>
+              <Text style={styles.registerPrompt}>{t("Don't have an account?")}</Text>
               <Pressable onPress={() => router.push("/(auth)/register")}>
-                <Text style={styles.registerLink}>Create Account</Text>
+                <Text style={styles.registerLink}>{t("Create Account")}</Text>
               </Pressable>
             </View>
           </View>
 
           <Text style={styles.neutralityNote}>
-            UDecide is nonpartisan and does not endorse any candidate or party.
+            {t("UDecide is nonpartisan and does not endorse any candidate or party.")}
           </Text>
         </ScrollView>
       </KeyboardAvoidingView>

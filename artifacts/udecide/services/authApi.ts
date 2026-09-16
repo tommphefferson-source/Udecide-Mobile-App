@@ -4,6 +4,7 @@
 import { Platform } from "react-native";
 
 import { apiFetch } from "./apiClient";
+import { t } from "@/i18n";
 
 const API_BASE = process.env.EXPO_PUBLIC_DOMAIN
   ? `https://${process.env.EXPO_PUBLIC_DOMAIN}/api`
@@ -62,7 +63,7 @@ async function parseError(res: Response): Promise<string> {
   } catch {
     // fall through to status-based message
   }
-  return `Request failed (${res.status})`;
+  return `${t("Request failed")} (${res.status})`;
 }
 
 export async function login(email: string, password: string): Promise<AuthResult> {

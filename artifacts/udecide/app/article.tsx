@@ -6,6 +6,7 @@ import { Image, Pressable, ScrollView, StyleSheet, Text, View } from "react-nati
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useColors } from "@/hooks/useColors";
+import { t } from "@/i18n";
 
 function formatDate(iso: string): string {
   const d = new Date(iso);
@@ -35,7 +36,7 @@ export default function ArticleScreen() {
     url?: string;
   }>();
 
-  const title = paramString(params.title) || "Article";
+  const title = paramString(params.title) || t("Article");
   const source = paramString(params.source);
   const author = paramString(params.author);
   const publishedAt = paramString(params.publishedAt);
@@ -69,7 +70,7 @@ export default function ArticleScreen() {
             <MaterialIcons name="arrow-back" size={24} color="#FFF" />
           </Pressable>
           <Text style={styles.headerTitle} numberOfLines={1}>
-            {source || "Political News"}
+            {source || t("Political News")}
           </Text>
           <Pressable
             style={styles.iconBtn}
@@ -116,8 +117,7 @@ export default function ArticleScreen() {
             ))
           ) : (
             <Text style={[styles.paragraph, { color: colors.mutedForeground }]}>
-              The full text of this article isn&apos;t available here. Open the
-              original story to read more.
+              {t("The full text of this article isn't available here. Open the original story to read more.")}
             </Text>
           )}
 
@@ -131,7 +131,7 @@ export default function ArticleScreen() {
             >
               <MaterialIcons name="open-in-new" size={18} color="#FFF" />
               <Text style={styles.readMoreText}>
-                Read full story{source ? ` on ${source}` : ""}
+                {t("Read full story")}{source ? ` ${t("on")} ${source}` : ""}
               </Text>
             </Pressable>
           ) : null}

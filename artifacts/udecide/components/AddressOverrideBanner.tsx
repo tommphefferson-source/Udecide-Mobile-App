@@ -5,6 +5,7 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { useAddress } from "@/context/AddressContext";
 import { useColors } from "@/hooks/useColors";
+import { t } from "@/i18n";
 
 export function AddressOverrideBanner() {
   const { isOverrideActive, override, clearOverride } = useAddress();
@@ -18,7 +19,7 @@ export function AddressOverrideBanner() {
     <View style={[styles.banner, { backgroundColor: colors.gold ?? "#D4AF37" }]}>
       <MaterialIcons name="location-on" size={16} color="#1F3E63" />
       <Text style={[styles.text, { color: "#1F3E63" }]} numberOfLines={1}>
-        Viewing data for: {location || override.address}
+        {t("Viewing data for:")} {location || override.address}
       </Text>
       <Pressable
         onPress={clearOverride}

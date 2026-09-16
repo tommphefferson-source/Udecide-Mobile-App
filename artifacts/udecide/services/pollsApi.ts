@@ -1,4 +1,5 @@
 import { apiFetch } from "./apiClient";
+import { t } from "@/i18n";
 import type { Poll } from "@/types/politics";
 
 // Polls are proxied through the API Server to the legacy poll endpoints
@@ -55,7 +56,7 @@ function toPoll(p: ApiPoll): Poll {
 export async function getPolls(): Promise<Poll[]> {
   const res = await apiFetch("/polls");
   if (!res.ok) {
-    throw new Error(`Failed to load polls (${res.status})`);
+    throw new Error(`${t("Failed to load polls")} (${res.status})`);
   }
   const data = (await res.json()) as ApiPollList;
   return data.polls.map(toPoll);
@@ -86,7 +87,7 @@ interface ApiPollResultsList {
 export async function getAllPollResults(): Promise<PollResultDetail[]> {
   const res = await apiFetch("/polls/results");
   if (!res.ok) {
-    throw new Error(`Failed to load poll results (${res.status})`);
+    throw new Error(`${t("Failed to load poll results")} (${res.status})`);
   }
   const data = (await res.json()) as ApiPollResultsList;
   return data.results.map((r) => ({
@@ -112,7 +113,7 @@ export async function votePoll(
     body: JSON.stringify({ optionId }),
   });
   if (!res.ok) {
-    throw new Error(`Failed to record vote (${res.status})`);
+    throw new Error(`${t("Failed to record vote")} (${res.status})`);
   }
   const r = (await res.json()) as ApiPollResults;
   return {

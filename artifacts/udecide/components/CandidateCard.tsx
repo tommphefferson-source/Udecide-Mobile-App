@@ -4,6 +4,7 @@ import React from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { useColors } from "@/hooks/useColors";
+import { t } from "@/i18n";
 import type { Candidate } from "@/types/politics";
 import { PARTY_COLORS } from "@/utils/constants";
 
@@ -27,7 +28,7 @@ export function CandidateCard({ candidate, office }: CandidateCardProps) {
             <Text style={[styles.name, { color: colors.foreground }]}>{candidate.name}</Text>
             {candidate.incumbentFlag && (
               <View style={[styles.incumbentBadge, { backgroundColor: colors.navy + "15" }]}>
-                <Text style={[styles.incumbentText, { color: colors.navy }]}>Incumbent</Text>
+                <Text style={[styles.incumbentText, { color: colors.navy }]}>{t("Incumbent")}</Text>
               </View>
             )}
           </View>
@@ -47,12 +48,12 @@ export function CandidateCard({ candidate, office }: CandidateCardProps) {
             onPress={() => candidate.website && Linking.openURL(candidate.website)}
           >
             <MaterialIcons name="language" size={14} color={colors.mutedForeground} />
-            <Text style={[styles.actionText, { color: colors.mutedForeground }]}>Website</Text>
+            <Text style={[styles.actionText, { color: colors.mutedForeground }]}>{t("Website")}</Text>
           </Pressable>
         ) : null}
       </View>
       <Text style={[styles.disclaimer, { color: colors.mutedForeground }]}>
-        UDecide does not endorse any candidate.
+        {t("UDecide does not endorse any candidate.")}
       </Text>
     </View>
   );

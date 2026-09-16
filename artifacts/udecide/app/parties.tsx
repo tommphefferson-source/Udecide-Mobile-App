@@ -6,6 +6,7 @@ import { Image, Platform, Pressable, ScrollView, StyleSheet, Text, View } from "
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useColors } from "@/hooks/useColors";
+import { t } from "@/i18n";
 import { MOCK_PARTIES } from "@/services/mockData";
 import type { PoliticalParty } from "@/types/politics";
 
@@ -52,24 +53,24 @@ export default function PartiesScreen() {
             )}
             <View>
               <Text style={styles.screenTitle}>{selectedParty.name}</Text>
-              <Text style={styles.screenSubtitle}>Founded {selectedParty.founded}</Text>
+              <Text style={styles.screenSubtitle}>{t("Founded")} {selectedParty.founded}</Text>
             </View>
           </View>
         </LinearGradient>
         <ScrollView contentContainerStyle={{ padding: 16, gap: 14, paddingBottom: bottomPad }}>
           <View style={[styles.detailCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-            <Text style={[styles.detailLabel, { color: colors.mutedForeground }]}>About</Text>
+            <Text style={[styles.detailLabel, { color: colors.mutedForeground }]}>{t("About")}</Text>
             <Text style={[styles.detailText, { color: colors.foreground }]}>{selectedParty.description}</Text>
           </View>
           {selectedParty.currentLeader !== "N/A" && (
             <View style={[styles.detailCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-              <Text style={[styles.detailLabel, { color: colors.mutedForeground }]}>Current Leadership</Text>
+              <Text style={[styles.detailLabel, { color: colors.mutedForeground }]}>{t("Current Leadership")}</Text>
               <Text style={[styles.detailText, { color: colors.foreground }]}>{selectedParty.currentLeader}</Text>
             </View>
           )}
           {selectedParty.corePositions.length > 0 && (
             <View style={[styles.detailCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-              <Text style={[styles.detailLabel, { color: colors.mutedForeground }]}>Key Platform Areas</Text>
+              <Text style={[styles.detailLabel, { color: colors.mutedForeground }]}>{t("Key Platform Areas")}</Text>
               {selectedParty.corePositions.map((pos, i) => (
                 <View key={i} style={styles.positionRow}>
                   <View style={[styles.positionDot, { backgroundColor: selectedParty.color }]} />
@@ -89,13 +90,13 @@ export default function PartiesScreen() {
               }
             >
               <MaterialIcons name="language" size={18} color="#FFF" />
-              <Text style={styles.websiteBtnText}>Official Website</Text>
+              <Text style={styles.websiteBtnText}>{t("Official Website")}</Text>
             </Pressable>
           )}
           <View style={[styles.neutralityCard, { backgroundColor: colors.muted, borderColor: colors.border }]}>
             <MaterialIcons name="info-outline" size={16} color={colors.mutedForeground} />
             <Text style={[styles.neutralityText, { color: colors.mutedForeground }]}>
-              This information is sourced from publicly available records and official party materials. UDecide does not endorse or rank any political party.
+              {t("This information is sourced from publicly available records and official party materials. UDecide does not endorse or rank any political party.")}
             </Text>
           </View>
         </ScrollView>
@@ -109,8 +110,8 @@ export default function PartiesScreen() {
         <Pressable style={styles.backBtn} onPress={() => router.back()}>
           <MaterialIcons name="arrow-back" size={24} color="#FFF" />
         </Pressable>
-        <Text style={styles.screenTitle}>Political Parties</Text>
-        <Text style={styles.screenSubtitle}>Major U.S. political parties — presented without bias</Text>
+        <Text style={styles.screenTitle}>{t("Political Parties")}</Text>
+        <Text style={styles.screenSubtitle}>{t("Major U.S. political parties — presented without bias")}</Text>
       </LinearGradient>
 
       <ScrollView contentContainerStyle={{ padding: 16, gap: 12, paddingBottom: bottomPad }}>
@@ -129,7 +130,7 @@ export default function PartiesScreen() {
               <View style={styles.partyInfo}>
                 <Text style={[styles.partyName, { color: colors.foreground }]}>{party.name}</Text>
                 <Text style={[styles.partyFounded, { color: colors.mutedForeground }]}>
-                  Founded {party.founded}
+                  {t("Founded")} {party.founded}
                 </Text>
               </View>
             </View>
@@ -147,14 +148,14 @@ export default function PartiesScreen() {
                 onPress={() => setSelectedParty(party)}
               >
                 <MaterialIcons name="description" size={14} color={party.color} />
-                <Text style={[styles.partyBtnText, { color: party.color }]}>Platform</Text>
+                <Text style={[styles.partyBtnText, { color: party.color }]}>{t("Platform")}</Text>
               </Pressable>
               <Pressable
                 style={({ pressed }) => [styles.partyBtn, { backgroundColor: colors.muted, opacity: pressed ? 0.7 : 1 }]}
                 onPress={() => setSelectedParty(party)}
               >
                 <MaterialIcons name="person" size={14} color={colors.mutedForeground} />
-                <Text style={[styles.partyBtnText, { color: colors.mutedForeground }]}>Leadership</Text>
+                <Text style={[styles.partyBtnText, { color: colors.mutedForeground }]}>{t("Leadership")}</Text>
               </Pressable>
               {party.website !== "N/A" && (
                 <Pressable
@@ -167,7 +168,7 @@ export default function PartiesScreen() {
                   }
                 >
                   <MaterialIcons name="language" size={14} color={colors.mutedForeground} />
-                  <Text style={[styles.partyBtnText, { color: colors.mutedForeground }]}>Website</Text>
+                  <Text style={[styles.partyBtnText, { color: colors.mutedForeground }]}>{t("Website")}</Text>
                 </Pressable>
               )}
             </View>
@@ -177,7 +178,7 @@ export default function PartiesScreen() {
         <View style={[styles.neutralityCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
           <MaterialIcons name="balance" size={16} color={colors.mutedForeground} />
           <Text style={[styles.neutralityText, { color: colors.mutedForeground }]}>
-            UDecide presents all political parties without bias, ranking, or endorsement. Information is sourced from official party materials and nonpartisan reference sources.
+            {t("UDecide presents all political parties without bias, ranking, or endorsement. Information is sourced from official party materials and nonpartisan reference sources.")}
           </Text>
         </View>
       </ScrollView>

@@ -17,6 +17,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useAuth } from "@/context/AuthContext";
+import { t } from "@/i18n";
 import {
   validateConfirmPassword,
   validateEmail,
@@ -122,7 +123,7 @@ export default function RegisterScreen() {
     const result = await register(firstName.trim(), lastName.trim(), email.trim(), password, city.trim(), zipCode.trim());
     setLoading(false);
     if (!result.success) {
-      setErrors({ general: result.error ?? "Registration failed" });
+      setErrors({ general: result.error ?? t("Registration failed") });
     } else {
       router.replace("/(auth)/profile-setup");
     }
@@ -149,8 +150,8 @@ export default function RegisterScreen() {
               style={styles.logoImage}
               resizeMode="contain"
             />
-            <Text style={styles.title}>Create Account</Text>
-            <Text style={styles.subtitle}>Join UDecide to access voter tools and political information</Text>
+            <Text style={styles.title}>{t("Create Account")}</Text>
+            <Text style={styles.subtitle}>{t("Join UDecide to access voter tools and political information")}</Text>
           </View>
 
           <View style={styles.card}>
@@ -162,23 +163,23 @@ export default function RegisterScreen() {
             ) : null}
 
             <Field
-              label="First Name"
+              label={t("First Name")}
               value={firstName}
               onChangeText={setFirstName}
               icon="person"
-              placeholder="Jane"
+              placeholder={t("Jane")}
               error={errors.firstName}
             />
             <Field
-              label="Last Name"
+              label={t("Last Name")}
               value={lastName}
               onChangeText={setLastName}
               icon="person-outline"
-              placeholder="Smith"
+              placeholder={t("Smith")}
               error={errors.lastName}
             />
             <Field
-              label="Email"
+              label={t("Email")}
               value={email}
               onChangeText={setEmail}
               icon="email"
@@ -187,11 +188,11 @@ export default function RegisterScreen() {
               error={errors.email}
             />
             <Field
-              label="Password"
+              label={t("Password")}
               value={password}
               onChangeText={setPassword}
               icon="lock"
-              placeholder="Min. 8 characters"
+              placeholder={t("Min. 8 characters")}
               secureTextEntry={!showPassword}
               error={errors.password}
               rightAction={
@@ -201,24 +202,24 @@ export default function RegisterScreen() {
               }
             />
             <Field
-              label="Confirm Password"
+              label={t("Confirm Password")}
               value={confirmPassword}
               onChangeText={setConfirmPassword}
               icon="lock-outline"
-              placeholder="Re-enter password"
+              placeholder={t("Re-enter password")}
               secureTextEntry={!showPassword}
               error={errors.confirmPassword}
             />
             <Field
-              label="City"
+              label={t("City")}
               value={city}
               onChangeText={setCity}
               icon="location-city"
-              placeholder="Your city"
+              placeholder={t("Your city")}
               error={errors.city}
             />
             <Field
-              label="ZIP Code"
+              label={t("ZIP Code")}
               value={zipCode}
               onChangeText={setZipCode}
               icon="markunread-mailbox"
@@ -236,14 +237,14 @@ export default function RegisterScreen() {
               {loading ? (
                 <ActivityIndicator color="#FFF" />
               ) : (
-                <Text style={styles.registerBtnText}>Create Account</Text>
+                <Text style={styles.registerBtnText}>{t("Create Account")}</Text>
               )}
             </Pressable>
 
             <View style={styles.loginRow}>
-              <Text style={styles.loginPrompt}>Already have an account?</Text>
+              <Text style={styles.loginPrompt}>{t("Already have an account?")}</Text>
               <Pressable onPress={() => router.replace("/(auth)/login")}>
-                <Text style={styles.loginLink}>Sign In</Text>
+                <Text style={styles.loginLink}>{t("Sign In")}</Text>
               </Pressable>
             </View>
           </View>

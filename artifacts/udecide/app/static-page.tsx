@@ -15,6 +15,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useColors } from "@/hooks/useColors";
+import { t } from "@/i18n";
 import { getStaticPage } from "@/services/pagesApi";
 
 /**
@@ -111,7 +112,7 @@ export default function StaticPageScreen() {
     () => htmlToBlocks(data?.contentHtml ?? ""),
     [data?.contentHtml]
   );
-  const headerTitle = data?.title || fallbackTitle || "Information";
+  const headerTitle = data?.title || fallbackTitle || t("Information");
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
@@ -138,17 +139,17 @@ export default function StaticPageScreen() {
         <View style={styles.stateWrap}>
           <MaterialIcons name="error-outline" size={48} color={colors.mutedForeground} />
           <Text style={[styles.stateTitle, { color: colors.foreground }]}>
-            Couldn&apos;t load this page
+            {t("Couldn't load this page")}
           </Text>
           <Text style={[styles.stateText, { color: colors.mutedForeground }]}>
-            Please check your connection and try again.
+            {t("Please check your connection and try again.")}
           </Text>
           {code ? (
             <Pressable
               style={[styles.stateBtn, { backgroundColor: colors.navy }]}
               onPress={() => refetch()}
             >
-              <Text style={styles.stateBtnText}>Retry</Text>
+              <Text style={styles.stateBtnText}>{t("Retry")}</Text>
             </Pressable>
           ) : null}
         </View>

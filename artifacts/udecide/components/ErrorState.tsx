@@ -3,13 +3,14 @@ import React from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { useColors } from "@/hooks/useColors";
+import { t } from "@/i18n";
 
 interface ErrorStateProps {
   message?: string;
   onRetry?: () => void;
 }
 
-export function ErrorState({ message = "Something went wrong", onRetry }: ErrorStateProps) {
+export function ErrorState({ message = t("Something went wrong"), onRetry }: ErrorStateProps) {
   const colors = useColors();
 
   return (
@@ -17,7 +18,7 @@ export function ErrorState({ message = "Something went wrong", onRetry }: ErrorS
       <View style={[styles.iconContainer, { backgroundColor: colors.destructive + "15" }]}>
         <MaterialIcons name="error-outline" size={40} color={colors.destructive} />
       </View>
-      <Text style={[styles.title, { color: colors.foreground }]}>Unable to Load Data</Text>
+      <Text style={[styles.title, { color: colors.foreground }]}>{t("Unable to Load Data")}</Text>
       <Text style={[styles.message, { color: colors.mutedForeground }]}>{message}</Text>
       {onRetry && (
         <Pressable
@@ -28,7 +29,7 @@ export function ErrorState({ message = "Something went wrong", onRetry }: ErrorS
           onPress={onRetry}
         >
           <MaterialIcons name="refresh" size={18} color="#FFF" />
-          <Text style={styles.retryText}>Try Again</Text>
+          <Text style={styles.retryText}>{t("Try Again")}</Text>
         </Pressable>
       )}
     </View>

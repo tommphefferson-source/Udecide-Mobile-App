@@ -16,6 +16,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useAuth } from "@/context/AuthContext";
+import { t } from "@/i18n";
 import { validateRequired, validateState, validateZipCode } from "@/utils/validation";
 
 export default function ProfileSetupScreen() {
@@ -44,7 +45,7 @@ export default function ProfileSetupScreen() {
     const result = await setupProfile({ address, city, state: state.toUpperCase(), zipCode });
     setLoading(false);
     if (!result.success) {
-      setErrors({ general: result.error ?? "Unable to save your profile. Please try again." });
+      setErrors({ general: result.error ?? t("Unable to save your profile. Please try again.") });
       return;
     }
     router.replace("/(tabs)");
@@ -55,7 +56,7 @@ export default function ProfileSetupScreen() {
     const result = await setupProfile({ address: "", city: "", state: "CA", zipCode: "" });
     setLoading(false);
     if (!result.success) {
-      setErrors({ general: result.error ?? "Unable to save your profile. Please try again." });
+      setErrors({ general: result.error ?? t("Unable to save your profile. Please try again.") });
       return;
     }
     router.replace("/(tabs)");
@@ -76,9 +77,9 @@ export default function ProfileSetupScreen() {
             <View style={styles.stepIcon}>
               <MaterialIcons name="location-on" size={28} color="#C41E3A" />
             </View>
-            <Text style={styles.title}>Your Location</Text>
+            <Text style={styles.title}>{t("Your Location")}</Text>
             <Text style={styles.subtitle}>
-              Set your address to see local representatives, elections, and voting information. You can change this anytime.
+              {t("Set your address to see local representatives, elections, and voting information. You can change this anytime.")}
             </Text>
           </View>
 
@@ -90,10 +91,10 @@ export default function ProfileSetupScreen() {
               </View>
             ) : null}
             {[
-              { label: "Street Address", key: "address", value: address, onChangeText: setAddress, placeholder: "123 Main Street", icon: "home" },
-              { label: "City", key: "city", value: city, onChangeText: setCity, placeholder: "Your city", icon: "location-city" },
-              { label: "State (2-letter code)", key: "state", value: state, onChangeText: (v: string) => setState(v.toUpperCase()), placeholder: "CA", icon: "flag" },
-              { label: "ZIP Code", key: "zipCode", value: zipCode, onChangeText: setZipCode, placeholder: "90210", icon: "markunread-mailbox", keyboardType: "numeric" as const },
+              { label: t("Street Address"), key: "address", value: address, onChangeText: setAddress, placeholder: t("123 Main Street"), icon: "home" },
+              { label: t("City"), key: "city", value: city, onChangeText: setCity, placeholder: t("Your city"), icon: "location-city" },
+              { label: t("State (2-letter code)"), key: "state", value: state, onChangeText: (v: string) => setState(v.toUpperCase()), placeholder: "CA", icon: "flag" },
+              { label: t("ZIP Code"), key: "zipCode", value: zipCode, onChangeText: setZipCode, placeholder: "90210", icon: "markunread-mailbox", keyboardType: "numeric" as const },
             ].map((f) => (
               <View key={f.key} style={styles.field}>
                 <Text style={styles.label}>{f.label}</Text>
@@ -119,16 +120,16 @@ export default function ProfileSetupScreen() {
               onPress={handleSave}
               disabled={loading}
             >
-              {loading ? <ActivityIndicator color="#FFF" /> : <Text style={styles.saveBtnText}>Save & Continue</Text>}
+              {loading ? <ActivityIndicator color="#FFF" /> : <Text style={styles.saveBtnText}>{t("Save & Continue")}</Text>}
             </Pressable>
 
             <Pressable style={({ pressed }) => [styles.skipBtn, { opacity: pressed ? 0.7 : 1 }]} onPress={handleSkip}>
-              <Text style={styles.skipText}>Skip for now</Text>
+              <Text style={styles.skipText}>{t("Skip for now")}</Text>
             </Pressable>
           </View>
 
           <Text style={styles.privacyNote}>
-            Your address is stored locally on your device and is used only to provide relevant political information.
+            {t("Your address is stored locally on your device and is used only to provide relevant political information.")}
           </Text>
         </ScrollView>
       </KeyboardAvoidingView>

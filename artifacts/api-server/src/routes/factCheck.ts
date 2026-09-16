@@ -92,6 +92,10 @@ interface ChatMessage {
  *   - mock=false → the live Gemini response
  */
 router.post("/fact-check", async (req, res) => {
+  // Optional UI-language hint from the app ("es" → answer in Spanish).
+  const language =
+    (req.body as { language?: unknown })?.language === "es" ? "es" : "en";
+
   if (!allowRequest(rateLimitKey(req))) {
     res.status(429).json({
       text: "",
@@ -126,7 +130,18 @@ router.post("/fact-check", async (req, res) => {
 
   try {
     const contents = [
-      { role: "user", parts: [{ text: SYSTEM_PROMPT }] },
+      {
+        role: "user",
+        parts: [
+          {
+            text:
+              SYSTEM_PROMPT +
+              (language === "es"
+                ? "\n\nIMPORTANT: The user's app language is Spanish (Mexico). Respond entirely in natural, neutral Spanish."
+                : ""),
+          },
+        ],
+      },
       {
         role: "model",
         parts: [

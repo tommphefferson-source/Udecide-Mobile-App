@@ -18,7 +18,10 @@
       "supportsTablet": false,
       "bundleIdentifier": "com.udecide.app",
       "infoPlist": {
-        "ITSAppUsesNonExemptEncryption": false
+        "ITSAppUsesNonExemptEncryption": false,
+        "CFBundleDevelopmentRegion": "en",
+        "CFBundleAllowMixedLocalizations": true,
+        "CFBundleLocalizations": ["en", "es", "es-MX"]
       }
     },
     "android": {
@@ -45,7 +48,8 @@
         {
           "photosPermission": "Allow UDecide to access your photos so you can set a profile picture."
         }
-      ]
+      ],
+      "expo-localization"
     ],
     "experiments": {
       "typedRoutes": true,

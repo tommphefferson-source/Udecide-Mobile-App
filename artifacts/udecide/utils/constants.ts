@@ -1,3 +1,5 @@
+import { t } from "@/i18n";
+
 export const US_STATES = [
   { code: "AL", name: "Alabama" },
   { code: "AK", name: "Alaska" },
@@ -75,14 +77,17 @@ export const POLL_TOPICS = [
 
 export const REP_LEVELS = ["All", "Federal", "State", "County", "City"] as const;
 
-export const ELECTION_DISCLAIMER =
-  "Election information should be verified with your official state or local election office.";
+export const ELECTION_DISCLAIMER = t(
+  "Election information should be verified with your official state or local election office."
+);
 
-export const POLL_DISCLAIMER =
-  "Polls are for informational engagement only and are not scientific unless explicitly stated.";
+export const POLL_DISCLAIMER = t(
+  "Polls are for informational engagement only and are not scientific unless explicitly stated."
+);
 
-export const NEUTRALITY_NOTICE =
-  "UDecide presents factual, nonpartisan information. We do not endorse any candidate, party, or policy.";
+export const NEUTRALITY_NOTICE = t(
+  "UDecide presents factual, nonpartisan information. We do not endorse any candidate, party, or policy."
+);
 
 /**
  * Support email used for the Support section's Send Feedback / Contact Us links.

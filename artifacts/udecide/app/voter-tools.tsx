@@ -6,6 +6,7 @@ import { ActivityIndicator, Linking, Platform, Pressable, ScrollView, StyleSheet
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useAddress } from "@/context/AddressContext";
+import { t } from "@/i18n";
 import { useColors } from "@/hooks/useColors";
 import { getVoterInfo, checkRegistrationStatus, findPollingPlace } from "@/services/voterApi";
 import type { VoterInfo } from "@/types/politics";
@@ -31,7 +32,7 @@ export default function VoterToolsScreen() {
     const { url } = await checkRegistrationStatus(effectiveAddress.state || "CA");
     router.push({
       pathname: "/web-view",
-      params: { url, title: "Check Registration Status" },
+      params: { url, title: t("Check Registration Status") },
     });
   }
 
@@ -43,49 +44,49 @@ export default function VoterToolsScreen() {
   const TOOLS = [
     {
       id: "registration",
-      title: "Voter Registration",
+      title: t("Voter Registration"),
       icon: "how-to-vote",
       content: voterInfo ? [
-        { label: "Registration Deadline", value: voterInfo.registrationDeadline },
-        { label: "Online Registration", value: voterInfo.onlineRegistration ? "Available" : "Not available" },
-        { label: "Same-Day Registration", value: voterInfo.sameDayRegistration ? "Available at polls" : "Not available" },
+        { label: t("Registration Deadline"), value: voterInfo.registrationDeadline },
+        { label: t("Online Registration"), value: voterInfo.onlineRegistration ? t("Available") : t("Not available") },
+        { label: t("Same-Day Registration"), value: voterInfo.sameDayRegistration ? t("Available at polls") : t("Not available") },
       ] : [],
-      action: { label: "Check Registration Status", onPress: handleCheckRegistration },
+      action: { label: t("Check Registration Status"), onPress: handleCheckRegistration },
     },
     {
       id: "polling",
-      title: "Polling Place",
+      title: t("Polling Place"),
       icon: "place",
-      content: [{ label: "How to Find", value: "Use the official government tool to locate your assigned polling place based on your registered address." }],
-      action: { label: "Find Your Polling Place", onPress: handleFindPolling },
+      content: [{ label: t("How to Find"), value: t("Use the official government tool to locate your assigned polling place based on your registered address.") }],
+      action: { label: t("Find Your Polling Place"), onPress: handleFindPolling },
     },
     {
       id: "early-voting",
-      title: "Early Voting",
+      title: t("Early Voting"),
       icon: "access-time",
       content: voterInfo ? [
-        { label: "Available", value: voterInfo.earlyVotingAllowed ? "Yes" : "No" },
+        { label: t("Available"), value: voterInfo.earlyVotingAllowed ? t("Yes") : t("No") },
         ...(voterInfo.earlyVotingAllowed ? [
-          { label: "Start Date", value: voterInfo.earlyVotingStart ?? "Contact election office" },
-          { label: "End Date", value: voterInfo.earlyVotingEnd ?? "Contact election office" },
+          { label: t("Start Date"), value: voterInfo.earlyVotingStart ?? t("Contact election office") },
+          { label: t("End Date"), value: voterInfo.earlyVotingEnd ?? t("Contact election office") },
         ] : []),
       ] : [],
     },
     {
       id: "absentee",
-      title: "Absentee / Mail Voting",
+      title: t("Absentee / Mail Voting"),
       icon: "mail",
       content: voterInfo ? [
-        { label: "No-Excuse Absentee", value: voterInfo.noExcuseAbsentee ? "Any voter can request mail ballot" : "Must provide qualifying reason" },
+        { label: t("No-Excuse Absentee"), value: voterInfo.noExcuseAbsentee ? t("Any voter can request mail ballot") : t("Must provide qualifying reason") },
       ] : [],
     },
     {
       id: "voter-id",
-      title: "Voter ID Requirements",
+      title: t("Voter ID Requirements"),
       icon: "badge",
       content: voterInfo ? [
-        { label: "Photo ID Required", value: voterInfo.voterIdRequired ? "Yes" : "No" },
-        ...(voterInfo.voterIdTypes ? [{ label: "Accepted Forms", value: voterInfo.voterIdTypes.join(", ") }] : []),
+        { label: t("Photo ID Required"), value: voterInfo.voterIdRequired ? t("Yes") : t("No") },
+        ...(voterInfo.voterIdTypes ? [{ label: t("Accepted Forms"), value: voterInfo.voterIdTypes.join(", ") }] : []),
       ] : [],
     },
   ];
@@ -96,9 +97,9 @@ export default function VoterToolsScreen() {
         <Pressable style={styles.backBtn} onPress={() => router.back()}>
           <MaterialIcons name="arrow-back" size={24} color="#FFF" />
         </Pressable>
-        <Text style={styles.screenTitle}>Voter Status Tools</Text>
+        <Text style={styles.screenTitle}>{t("Voter Status Tools")}</Text>
         <Text style={styles.screenSubtitle}>
-          {voterInfo?.state ?? effectiveAddress.state ?? "Your state"} voter information
+          {voterInfo?.state ?? effectiveAddress.state ?? t("Your state")} {t("voter information")}
         </Text>
       </LinearGradient>
 
@@ -148,7 +149,7 @@ export default function VoterToolsScreen() {
                     </Pressable>
                   )}
                   <Text style={[styles.sourceText, { color: colors.mutedForeground }]}>
-                    Source: {voterInfo?.source ?? "Official state election office"}
+                    {t("Source:")} {voterInfo?.source ?? t("Official state election office")}
                   </Text>
                 </View>
               )}

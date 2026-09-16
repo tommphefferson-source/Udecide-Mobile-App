@@ -1,4 +1,5 @@
 import { getSessionToken, notifyUnauthorized } from "./session";
+import { t } from "@/i18n";
 
 /**
  * Reusable API client wrapper for the UDecide API Server.
@@ -33,7 +34,7 @@ export class ApiError extends Error {
 
 /** Thrown on a 401 after the session has been cleared. */
 export class UnauthorizedError extends ApiError {
-  constructor(message = "Your session has expired. Please sign in again.") {
+  constructor(message = t("Your session has expired. Please sign in again.")) {
     super(401, message);
     this.name = "UnauthorizedError";
   }

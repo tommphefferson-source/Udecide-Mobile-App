@@ -18,6 +18,7 @@ import { CardButton } from "@/components/CardButton";
 import { NewsCard } from "@/components/NewsCard";
 import { useAuth } from "@/context/AuthContext";
 import { useColors } from "@/hooks/useColors";
+import { t } from "@/i18n";
 
 const DASHBOARD_CARDS = [
   { title: "Voter Status Tools", subtitle: "Registration, polling, ID", icon: "how-to-vote", route: "/voter-tools", color: "#C41E3A" },
@@ -39,10 +40,10 @@ export default function DashboardScreen() {
   const topPad = Platform.OS === "web" ? 67 : insets.top;
   const bottomPad = Platform.OS === "web" ? 110 : insets.bottom + 120;
 
-  const rawFirstName = user?.firstName || "Voter";
+  const rawFirstName = user?.firstName || t("Voter");
   const firstName = rawFirstName
     ? rawFirstName.charAt(0).toUpperCase() + rawFirstName.slice(1).toLowerCase()
-    : "Voter";
+    : t("Voter");
 
   // Live clock — updates every 30s so the header datetime stays current.
   const [now, setNow] = useState(new Date());
@@ -54,7 +55,7 @@ export default function DashboardScreen() {
   // Pick the greeting based on the device's local hour.
   const hour = now.getHours();
   const timeGreeting =
-    hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
+    hour < 12 ? t("Good morning") : hour < 18 ? t("Good afternoon") : t("Good evening");
 
   const dateTimeLabel = now.toLocaleDateString(undefined, {
     weekday: "short",
@@ -106,7 +107,7 @@ export default function DashboardScreen() {
           >
             <MaterialIcons name="location-on" size={14} color="rgba(255,255,255,0.7)" />
             <Text style={styles.overrideChipText}>
-              {user?.state ? `Viewing: ${user.city || user.state}` : "Set your location"}
+              {user?.state ? `${t("Viewing:")} ${user.city || user.state}` : t("Set your location")}
             </Text>
           </Pressable>
           <Pressable
@@ -117,7 +118,7 @@ export default function DashboardScreen() {
             onPress={() => {}}
           >
             <MaterialIcons name="balance" size={13} color="#C41E3A" />
-            <Text style={styles.neutralityChipText}>Nonpartisan</Text>
+            <Text style={styles.neutralityChipText}>{t("Nonpartisan")}</Text>
           </Pressable>
         </View>
       </LinearGradient>
@@ -129,14 +130,14 @@ export default function DashboardScreen() {
       >
         <NewsCard />
 
-        <Text style={[styles.sectionTitle, { color: colors.foreground }]}>Quick Access</Text>
+        <Text style={[styles.sectionTitle, { color: colors.foreground }]}>{t("Quick Access")}</Text>
 
         <View style={styles.grid}>
           {DASHBOARD_CARDS.map((card) => (
             <CardButton
               key={card.title}
-              title={card.title}
-              subtitle={card.subtitle}
+              title={t(card.title)}
+              subtitle={t(card.subtitle)}
               icon={card.icon}
               accentColor={card.color}
               onPress={() => router.push(card.route as never)}
@@ -147,9 +148,7 @@ export default function DashboardScreen() {
         <View style={[styles.disclaimerCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
           <MaterialIcons name="info-outline" size={18} color={colors.mutedForeground} />
           <Text style={[styles.disclaimerText, { color: colors.mutedForeground }]}>
-            UDecide presents factual, nonpartisan information sourced from official government
-            records. We do not endorse any candidate, party, or policy. Always verify election
-            information with your official state election office.
+            {t("UDecide presents factual, nonpartisan information sourced from official government records. We do not endorse any candidate, party, or policy. Always verify election information with your official state election office.")}
           </Text>
         </View>
       </ScrollView>

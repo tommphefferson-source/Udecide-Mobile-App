@@ -16,6 +16,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useAddress } from "@/context/AddressContext";
 import { useColors } from "@/hooks/useColors";
+import { t } from "@/i18n";
 import { validateRequired, validateState, validateZipCode } from "@/utils/validation";
 
 export default function AddressOverrideScreen() {
@@ -59,9 +60,9 @@ export default function AddressOverrideScreen() {
         <Pressable style={styles.backBtn} onPress={() => router.back()}>
           <MaterialIcons name="arrow-back" size={24} color="#FFF" />
         </Pressable>
-        <Text style={styles.screenTitle}>Address Override</Text>
+        <Text style={styles.screenTitle}>{t("Address Override")}</Text>
         <Text style={styles.screenSubtitle}>
-          View political data for a different location without changing your profile
+          {t("View political data for a different location without changing your profile")}
         </Text>
       </LinearGradient>
 
@@ -71,16 +72,16 @@ export default function AddressOverrideScreen() {
             <View style={[styles.activeCard, { backgroundColor: colors.gold + "20", borderColor: colors.gold + "50" }]}>
               <MaterialIcons name="location-on" size={18} color={colors.gold} />
               <View style={{ flex: 1 }}>
-                <Text style={[styles.activeTitle, { color: colors.foreground }]}>Override Active</Text>
+                <Text style={[styles.activeTitle, { color: colors.foreground }]}>{t("Override Active")}</Text>
                 <Text style={[styles.activeText, { color: colors.mutedForeground }]}>
-                  Currently viewing: {[override.city, override.state].filter(Boolean).join(", ")}
+                  {t("Currently viewing:")} {[override.city, override.state].filter(Boolean).join(", ")}
                 </Text>
               </View>
               <Pressable
                 style={({ pressed }) => [styles.clearBtn, { backgroundColor: "#C41E3A20", opacity: pressed ? 0.7 : 1 }]}
                 onPress={handleClear}
               >
-                <Text style={styles.clearBtnText}>Reset</Text>
+                <Text style={styles.clearBtnText}>{t("Reset")}</Text>
               </Pressable>
             </View>
           )}
@@ -88,18 +89,17 @@ export default function AddressOverrideScreen() {
           <View style={[styles.infoCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
             <MaterialIcons name="info-outline" size={16} color={colors.mutedForeground} />
             <Text style={[styles.infoText, { color: colors.mutedForeground }]}>
-              Use address override to explore representatives, elections, and legislation from any U.S. location.
-              A banner will display while override is active. Your profile address is unchanged.
+              {t("Use address override to explore representatives, elections, and legislation from any U.S. location. A banner will display while override is active. Your profile address is unchanged.")}
             </Text>
           </View>
 
           <View style={[styles.formCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-            <Text style={[styles.formTitle, { color: colors.foreground }]}>Set Override Location</Text>
+            <Text style={[styles.formTitle, { color: colors.foreground }]}>{t("Set Override Location")}</Text>
             {[
-              { label: "Street Address", key: "address", value: address, onChangeText: setAddress, icon: "home", placeholder: "123 Main Street" },
-              { label: "City", key: "city", value: city, onChangeText: setCity, icon: "location-city", placeholder: "Washington" },
-              { label: "State (2-letter)", key: "state", value: state, onChangeText: (v: string) => setState(v.toUpperCase()), icon: "flag", placeholder: "DC", maxLength: 2 },
-              { label: "ZIP Code", key: "zipCode", value: zipCode, onChangeText: setZipCode, icon: "markunread-mailbox", placeholder: "20001", keyboardType: "numeric" as const },
+              { label: t("Street Address"), key: "address", value: address, onChangeText: setAddress, icon: "home", placeholder: t("123 Main Street") },
+              { label: t("City"), key: "city", value: city, onChangeText: setCity, icon: "location-city", placeholder: "Washington" },
+              { label: t("State (2-letter)"), key: "state", value: state, onChangeText: (v: string) => setState(v.toUpperCase()), icon: "flag", placeholder: "DC", maxLength: 2 },
+              { label: t("ZIP Code"), key: "zipCode", value: zipCode, onChangeText: setZipCode, icon: "markunread-mailbox", placeholder: "20001", keyboardType: "numeric" as const },
             ].map((f) => (
               <View key={f.key} style={styles.field}>
                 <Text style={[styles.label, { color: colors.mutedForeground }]}>{f.label}</Text>
@@ -125,7 +125,7 @@ export default function AddressOverrideScreen() {
               onPress={handleApply}
             >
               <MaterialIcons name="location-on" size={18} color="#FFF" />
-              <Text style={styles.applyBtnText}>Apply Override</Text>
+              <Text style={styles.applyBtnText}>{t("Apply Override")}</Text>
             </Pressable>
           </View>
         </ScrollView>

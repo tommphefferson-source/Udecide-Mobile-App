@@ -15,6 +15,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { WebView } from "react-native-webview";
 
 import { useColors } from "@/hooks/useColors";
+import { t } from "@/i18n";
 
 function normalizeUrl(raw: string): string | null {
   if (!raw) return null;
@@ -36,7 +37,7 @@ export default function WebViewScreen() {
   const webRef = useRef<WebView>(null);
 
   const rawUrl = typeof params.url === "string" ? params.url : "";
-  const title = typeof params.title === "string" ? params.title : "Website";
+  const title = typeof params.title === "string" ? params.title : t("Website");
   const url = useMemo(() => normalizeUrl(rawUrl), [rawUrl]);
 
   const [loading, setLoading] = useState(true);
@@ -128,16 +129,16 @@ export default function WebViewScreen() {
               color={colors.mutedForeground}
             />
             <Text style={[styles.stateTitle, { color: colors.foreground }]}>
-              Invalid link
+              {t("Invalid link")}
             </Text>
             <Text style={[styles.stateText, { color: colors.mutedForeground }]}>
-              This website address could not be opened.
+              {t("This website address could not be opened.")}
             </Text>
             <Pressable
               style={[styles.stateBtn, { backgroundColor: colors.navy }]}
               onPress={() => router.back()}
             >
-              <Text style={styles.stateBtnText}>Go Back</Text>
+              <Text style={styles.stateBtnText}>{t("Go Back")}</Text>
             </Pressable>
           </View>
         ) : failed ? (
@@ -148,11 +149,10 @@ export default function WebViewScreen() {
               color={colors.mutedForeground}
             />
             <Text style={[styles.stateTitle, { color: colors.foreground }]}>
-              Couldn&apos;t load page
+              {t("Couldn't load page")}
             </Text>
             <Text style={[styles.stateText, { color: colors.mutedForeground }]}>
-              This site may not allow being viewed inside the app. You can retry
-              or open it in your browser.
+              {t("This site may not allow being viewed inside the app. You can retry or open it in your browser.")}
             </Text>
             <View style={styles.stateBtnRow}>
               <Pressable
@@ -162,14 +162,14 @@ export default function WebViewScreen() {
                 <Text
                   style={[styles.stateBtnText, { color: colors.foreground }]}
                 >
-                  Retry
+                  {t("Retry")}
                 </Text>
               </Pressable>
               <Pressable
                 style={[styles.stateBtn, { backgroundColor: colors.navy }]}
                 onPress={openExternally}
               >
-                <Text style={styles.stateBtnText}>Open in Browser</Text>
+                <Text style={styles.stateBtnText}>{t("Open in Browser")}</Text>
               </Pressable>
             </View>
           </View>
@@ -177,12 +177,10 @@ export default function WebViewScreen() {
           <View style={styles.stateWrap}>
             <MaterialIcons name="open-in-new" size={48} color={colors.navy} />
             <Text style={[styles.stateTitle, { color: colors.foreground }]}>
-              Opening in a new tab
+              {t("Opening in a new tab")}
             </Text>
             <Text style={[styles.stateText, { color: colors.mutedForeground }]}>
-              {host} doesn&apos;t allow being shown inside the app on the web,
-              so it opens in a new browser tab. On the mobile app it opens right
-              here in-app.
+              {host} {t("doesn't allow being shown inside the app on the web, so it opens in a new browser tab. On the mobile app it opens right here in-app.")}
             </Text>
             <View style={styles.stateBtnRow}>
               <Pressable
@@ -192,14 +190,14 @@ export default function WebViewScreen() {
                 <Text
                   style={[styles.stateBtnText, { color: colors.foreground }]}
                 >
-                  Go Back
+                  {t("Go Back")}
                 </Text>
               </Pressable>
               <Pressable
                 style={[styles.stateBtn, { backgroundColor: colors.navy }]}
                 onPress={openExternally}
               >
-                <Text style={styles.stateBtnText}>Open Website</Text>
+                <Text style={styles.stateBtnText}>{t("Open Website")}</Text>
               </Pressable>
             </View>
           </View>

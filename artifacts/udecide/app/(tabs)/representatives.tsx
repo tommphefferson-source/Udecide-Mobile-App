@@ -19,6 +19,7 @@ import { LoadingState } from "@/components/LoadingState";
 import { RepresentativeCard } from "@/components/RepresentativeCard";
 import { useAddress } from "@/context/AddressContext";
 import { useColors } from "@/hooks/useColors";
+import { t } from "@/i18n";
 import { getRepresentatives } from "@/services/civicApi";
 import type { Representative } from "@/types/politics";
 import { REP_LEVELS } from "@/utils/constants";
@@ -78,11 +79,11 @@ export default function RepresentativesScreen() {
             <MaterialIcons name="arrow-back" size={24} color="#FFF" />
           </Pressable>
         )}
-        <Text style={styles.screenTitle}>Your Representatives</Text>
+        <Text style={styles.screenTitle}>{t("Your Representatives")}</Text>
         <Text style={styles.screenSubtitle}>
           {effectiveAddress.city
             ? `${effectiveAddress.city}, ${effectiveAddress.state}`
-            : effectiveAddress.state || "All locations"}
+            : effectiveAddress.state || t("All locations")}
         </Text>
         <AddressOverrideBanner />
       </LinearGradient>
@@ -113,7 +114,7 @@ export default function RepresentativesScreen() {
                   },
                 ]}
               >
-                {level}
+                {t(level)}
               </Text>
             </Pressable>
           ))}
@@ -124,7 +125,7 @@ export default function RepresentativesScreen() {
         <LoadingState rows={4} />
       ) : error ? (
         <ErrorState
-          message="Unable to load representatives"
+          message={t("Unable to load representatives")}
           onRetry={loadReps}
         />
       ) : filtered.length === 0 ? (
@@ -135,7 +136,7 @@ export default function RepresentativesScreen() {
             color={colors.mutedForeground}
           />
           <Text style={[styles.emptyTitle, { color: colors.foreground }]}>
-            No Representatives Found
+            {t("No Representatives Found")}
           </Text>
           <Text style={[styles.emptyText, { color: colors.mutedForeground }]}>
             {getEmptyMessage(
@@ -161,8 +162,10 @@ export default function RepresentativesScreen() {
               <Text
                 style={[styles.resultCount, { color: colors.mutedForeground }]}
               >
-                {filtered.length} representative
-                {filtered.length !== 1 ? "s" : ""} found
+                {filtered.length}{" "}
+                {filtered.length !== 1
+                  ? t("representatives found")
+                  : t("representative found")}
               </Text>
               <DataSourceBadge usingLiveData={usingLiveData} colors={colors} />
             </View>
@@ -182,15 +185,15 @@ function getEmptyMessage(
   street: string,
 ): string {
   if (!usingLiveData) {
-    return "No representatives found for the selected level in your area.";
+    return t("No representatives found for the selected level in your area.");
   }
   if (!street) {
-    return "Enter a full street address (with house number) in Address Settings to load your local representatives.";
+    return t("Enter a full street address (with house number) in Address Settings to load your local representatives.");
   }
   if (level === "County" || level === "City") {
-    return `Our data provider doesn't have ${level.toLowerCase()}-level officials mapped for this address. Coverage of local offices varies by town — federal and state officials are still available under those tabs.`;
+    return `${t("Our data provider doesn't have")} ${t(level).toLowerCase()}${t("-level officials mapped for this address. Coverage of local offices varies by town — federal and state officials are still available under those tabs.")}`;
   }
-  return "No representatives found for the selected level at this address.";
+  return t("No representatives found for the selected level at this address.");
 }
 
 function DataSourceBadge({
@@ -225,7 +228,7 @@ function DataSourceBadge({
           { color: usingLiveData ? "#16a34a" : "#d97706" },
         ]}
       >
-        {usingLiveData ? "Live data · Cicero API" : "Sample data"}
+        {usingLiveData ? t("Live data · Cicero API") : t("Sample data")}
       </Text>
     </View>
   );
@@ -245,8 +248,7 @@ function DataSourceNote({ colors }: { colors: ReturnType<typeof useColors> }) {
         color={colors.mutedForeground}
       />
       <Text style={[styles.footerNoteText, { color: colors.mutedForeground }]}>
-        Showing sample representatives. Add a Cicero API key and set your full
-        address to see live federal, state, county, and city officials.
+        {t("Showing sample representatives. Add a Cicero API key and set your full address to see live federal, state, county, and city officials.")}
       </Text>
     </View>
   );

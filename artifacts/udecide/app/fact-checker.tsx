@@ -17,6 +17,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { HorizontalScroller } from "@/components/HorizontalScroller";
 import { useColors } from "@/hooks/useColors";
+import { t } from "@/i18n";
 import { sendGeminiMessage } from "@/services/geminiApi";
 import type { GeminiMessage } from "@/services/geminiApi";
 
@@ -25,11 +26,11 @@ import type { GeminiMessage } from "@/services/geminiApi";
 const AI_REQUEST_LIMIT = 10;
 
 const SUGGESTED_PROMPTS = [
-  "Summarize a bill in plain English",
-  "What does the Electoral College do?",
-  "Explain how a bill becomes law",
-  "What are the three branches of government?",
-  "How do I check my voting record?",
+  t("Summarize a bill in plain English"),
+  t("What does the Electoral College do?"),
+  t("Explain how a bill becomes law"),
+  t("What are the three branches of government?"),
+  t("How do I check my voting record?"),
 ];
 
 interface ChatMessage {
@@ -47,7 +48,7 @@ export default function FactCheckerScreen() {
       id: "welcome",
       role: "assistant",
       content:
-        "Welcome to UDecide's nonpartisan Fact Checker, powered by Gemini AI.\n\nI can help you:\n• Understand government processes and legislation\n• Fact-check political claims against public records\n• Summarize bills in plain language\n• Explain voting records neutrally\n\nI remain strictly neutral and do not endorse any candidate, party, or policy. What would you like to know?",
+        t("Welcome to UDecide's nonpartisan Fact Checker, powered by Gemini AI.\n\nI can help you:\n• Understand government processes and legislation\n• Fact-check political claims against public records\n• Summarize bills in plain language\n• Explain voting records neutrally\n\nI remain strictly neutral and do not endorse any candidate, party, or policy. What would you like to know?"),
       timestamp: new Date(),
     },
   ]);
@@ -142,8 +143,8 @@ export default function FactCheckerScreen() {
             <MaterialIcons name="fact-check" size={20} color="#FFF" />
           </View>
           <View>
-            <Text style={styles.screenTitle}>Fact Checker</Text>
-            <Text style={styles.screenSubtitle}>Nonpartisan · Powered by Gemini AI</Text>
+            <Text style={styles.screenTitle}>{t("Fact Checker")}</Text>
+            <Text style={styles.screenSubtitle}>{t("Nonpartisan · Powered by Gemini AI")}</Text>
           </View>
         </View>
       </LinearGradient>
@@ -152,7 +153,7 @@ export default function FactCheckerScreen() {
         <View style={[styles.devWarning, { backgroundColor: "#D4AF3720", borderColor: "#D4AF3740" }]}>
           <MaterialIcons name="warning" size={16} color="#D4AF37" />
           <Text style={[styles.devWarningText, { color: colors.foreground }]}>
-            Demo mode — no AI key is configured on the server, so responses are samples. Set GEMINI_API_KEY on the API Server for live AI responses.
+            {t("Demo mode — no AI key is configured on the server, so responses are samples. Set GEMINI_API_KEY on the API Server for live AI responses.")}
           </Text>
         </View>
       )}
@@ -174,7 +175,7 @@ export default function FactCheckerScreen() {
             loading ? (
               <View style={[styles.typingIndicator, { backgroundColor: colors.card, borderColor: colors.border }]}>
                 <ActivityIndicator size="small" color={colors.mutedForeground} />
-                <Text style={[styles.typingText, { color: colors.mutedForeground }]}>Analyzing...</Text>
+                <Text style={[styles.typingText, { color: colors.mutedForeground }]}>{t("Analyzing...")}</Text>
               </View>
             ) : null
           }
@@ -182,7 +183,7 @@ export default function FactCheckerScreen() {
 
         {messages.length === 1 && (
           <View style={styles.suggestedRow}>
-            <Text style={[styles.suggestedLabel, { color: colors.mutedForeground }]}>Suggested:</Text>
+            <Text style={[styles.suggestedLabel, { color: colors.mutedForeground }]}>{t("Suggested:")}</Text>
             <HorizontalScroller contentContainerStyle={{ gap: 8, paddingHorizontal: 16 }}>
               {SUGGESTED_PROMPTS.map((item) => (
                 <Pressable
@@ -204,7 +205,7 @@ export default function FactCheckerScreen() {
           <View style={[styles.limitBanner, { backgroundColor: colors.card, borderTopColor: colors.border }]}>
             <MaterialIcons name="hourglass-empty" size={16} color={colors.mutedForeground} />
             <Text style={[styles.limitBannerText, { color: colors.mutedForeground }]}>
-              You've reached the limit of {AI_REQUEST_LIMIT} questions for this session. Leave and reopen the Fact Checker to start a new session.
+              {t("You've reached the limit of")} {AI_REQUEST_LIMIT} {t("questions for this session. Leave and reopen the Fact Checker to start a new session.")}
             </Text>
           </View>
         )}
@@ -213,8 +214,8 @@ export default function FactCheckerScreen() {
             style={[styles.input, { backgroundColor: colors.background, borderColor: colors.border, color: colors.foreground }]}
             placeholder={
               limitReached
-                ? "Session limit reached"
-                : "Ask about a political claim, bill, or government process..."
+                ? t("Session limit reached")
+                : t("Ask about a political claim, bill, or government process...")
             }
             placeholderTextColor={colors.mutedForeground}
             value={input}

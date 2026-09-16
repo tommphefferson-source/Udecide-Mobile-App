@@ -1,4 +1,5 @@
 import { apiFetch } from "./apiClient";
+import { t } from "@/i18n";
 
 // Legacy backend-managed static/legal pages.
 //
@@ -67,7 +68,7 @@ export async function getStaticPage(pageCode: string): Promise<StaticPage> {
   const code = resolvePageCode(pageCode) ?? pageCode;
   const res = await apiFetch(`/pages/${encodeURIComponent(code)}`);
   if (!res.ok) {
-    throw new Error(`Failed to load page (${res.status})`);
+    throw new Error(`${t("Failed to load page")} (${res.status})`);
   }
   return (await res.json()) as StaticPage;
 }

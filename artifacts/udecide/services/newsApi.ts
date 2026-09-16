@@ -1,4 +1,5 @@
 import { apiFetch } from "./apiClient";
+import { t } from "@/i18n";
 
 // Political news is proxied through the API Server (mock-backed today, live-ready
 // behind the same route). Requests go through the shared apiFetch wrapper, which
@@ -28,7 +29,7 @@ export interface NewsFeed {
 export async function getNews(): Promise<NewsFeed> {
   const res = await apiFetch("/news");
   if (!res.ok) {
-    throw new Error(`Failed to load news (${res.status})`);
+    throw new Error(`${t("Failed to load news")} (${res.status})`);
   }
   return (await res.json()) as NewsFeed;
 }

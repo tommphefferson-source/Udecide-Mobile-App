@@ -1,4 +1,5 @@
 import { apiFetch } from "./apiClient";
+import { isSpanish, t } from "@/i18n";
 
 export interface GeminiMessage {
   role: "user" | "model";
@@ -33,7 +34,9 @@ export async function sendGeminiMessage(
     const res = await apiFetch("/fact-check", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ messages }),
+      // language: the server appends a "respond in Spanish" instruction to the
+      // system prompt when the app is running in Spanish.
+      body: JSON.stringify({ messages, language: isSpanish ? "es" : "en" }),
     });
 
     const data = (await res.json().catch(() => ({}))) as Partial<GeminiResponse>;
@@ -42,7 +45,7 @@ export async function sendGeminiMessage(
       return {
         text: "",
         error:
-          data.error ?? `AI service error (${res.status}). Please try again.`,
+          data.error ?? `${t("AI service error")} (${res.status}). ${t("Please try again.")}`,
       };
     }
 
@@ -52,6 +55,6 @@ export async function sendGeminiMessage(
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
     console.error("[FactCheck]", msg);
-    return { text: "", error: "The AI service is unavailable. Please try again." };
+    return { text: "", error: t("The AI service is unavailable. Please try again.") };
   }
 }

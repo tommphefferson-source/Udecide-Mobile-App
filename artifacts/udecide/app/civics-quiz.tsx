@@ -9,6 +9,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { ErrorState } from "@/components/ErrorState";
 import { LoadingState } from "@/components/LoadingState";
 import { useColors } from "@/hooks/useColors";
+import { t } from "@/i18n";
 import { getQuiz, type QuizQuestion } from "@/services/quizApi";
 
 export default function CivicsQuizScreen() {
@@ -56,10 +57,10 @@ export default function CivicsQuizScreen() {
 
   const scoreLabel = useMemo(() => {
     const pct = total > 0 ? Math.round((score / total) * 100) : 0;
-    if (pct === 100) return "Perfect score!";
-    if (pct >= 75) return "Great job!";
-    if (pct >= 50) return "Nice effort!";
-    return "Keep learning!";
+    if (pct === 100) return t("Perfect score!");
+    if (pct >= 75) return t("Great job!");
+    if (pct >= 50) return t("Nice effort!");
+    return t("Keep learning!");
   }, [score, total]);
 
   function handleSelect(optionIndex: number) {
@@ -93,15 +94,15 @@ export default function CivicsQuizScreen() {
         <Pressable style={styles.backBtn} onPress={() => router.back()}>
           <MaterialIcons name="arrow-back" size={24} color="#FFF" />
         </Pressable>
-        <Text style={styles.screenTitle}>Civics 101 Quiz</Text>
+        <Text style={styles.screenTitle}>{t("Civics 101 Quiz")}</Text>
         <Text style={styles.screenSubtitle}>
           {loading
-            ? "Loading questions…"
+            ? t("Loading questions…")
             : error
-              ? "Couldn't load quiz"
+              ? t("Couldn't load quiz")
               : finished
-                ? "Your results"
-                : `Question ${index + 1} of ${total}`}
+                ? t("Your results")
+                : `${t("Question")} ${index + 1} ${t("of")} ${total}`}
         </Text>
         {!finished && !loading && !error && total > 0 && (
           <View style={styles.progressTrack}>
@@ -119,7 +120,7 @@ export default function CivicsQuizScreen() {
         {loading ? (
           <LoadingState rows={3} />
         ) : error || !current ? (
-          <ErrorState message="No quiz questions available." onRetry={() => void loadQuiz()} />
+          <ErrorState message={t("No quiz questions available.")} onRetry={() => void loadQuiz()} />
         ) : finished ? (
           <View style={[styles.resultCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
             <View style={[styles.resultBadge, { backgroundColor: colors.gold + "20" }]}>
@@ -134,13 +135,13 @@ export default function CivicsQuizScreen() {
               onPress={handleRestart}
             >
               <MaterialIcons name="refresh" size={18} color="#FFF" />
-              <Text style={styles.primaryBtnText}>Retake Quiz</Text>
+              <Text style={styles.primaryBtnText}>{t("Retake Quiz")}</Text>
             </Pressable>
             <Pressable
               style={({ pressed }) => [styles.secondaryBtn, { borderColor: colors.border, opacity: pressed ? 0.7 : 1 }]}
               onPress={() => router.replace("/(tabs)")}
             >
-              <Text style={[styles.secondaryBtnText, { color: colors.foreground }]}>Back to Home</Text>
+              <Text style={[styles.secondaryBtnText, { color: colors.foreground }]}>{t("Back to Home")}</Text>
             </Pressable>
           </View>
         ) : (
@@ -205,7 +206,7 @@ export default function CivicsQuizScreen() {
                 style={({ pressed }) => [styles.primaryBtn, { backgroundColor: colors.accent, opacity: pressed ? 0.85 : 1 }]}
                 onPress={handleNext}
               >
-                <Text style={styles.primaryBtnText}>{index + 1 >= total ? "See Results" : "Next Question"}</Text>
+                <Text style={styles.primaryBtnText}>{index + 1 >= total ? t("See Results") : t("Next Question")}</Text>
                 <MaterialIcons name="arrow-forward" size={18} color="#FFF" />
               </Pressable>
             )}
@@ -213,7 +214,7 @@ export default function CivicsQuizScreen() {
         )}
 
         <Text style={[styles.disclaimer, { color: colors.mutedForeground }]}>
-          Nonpartisan civic education based on official U.S. government sources.
+          {t("Nonpartisan civic education based on official U.S. government sources.")}
         </Text>
       </ScrollView>
     </View>
