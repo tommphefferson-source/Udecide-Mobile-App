@@ -5,23 +5,64 @@ import React, { useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { useColors } from "@/hooks/useColors";
-import { t } from "@/i18n";
+import { t, uiLocale } from "@/i18n";
+import {
+  getOfficialVoterHistory,
+  type VoterHistoryResult,
+} from "@/services/voterHistoryApi";
 import type { Representative } from "@/types/politics";
 import { PARTY_COLORS } from "@/utils/constants";
 import { formatPhoneNumber } from "@/utils/formatters";
 
 interface RepresentativeCardProps {
   rep: Representative;
+  /** 2-letter state code of the address being viewed (for participation lookups). */
+  state?: string;
 }
 
-export function RepresentativeCard({ rep }: RepresentativeCardProps) {
+const VOTING_METHOD_LABELS: Record<string, string> = {
+  IN_PERSON: "In person",
+  EARLY: "Early voting",
+  ABSENTEE_BY_MAIL: "Absentee by mail",
+  ABSENTEE_OR_EARLY: "Absentee/Early",
+  PROVISIONAL: "Provisional",
+};
+
+function formatElectionDate(iso: string): string {
+  const d = new Date(`${iso}T00:00:00`);
+  return Number.isNaN(d.getTime())
+    ? iso
+    : d.toLocaleDateString(uiLocale, { year: "numeric", month: "short", day: "numeric" });
+}
+
+export function RepresentativeCard({ rep, state }: RepresentativeCardProps) {
   const colors = useColors();
   const [expanded, setExpanded] = useState(false);
+  // undefined = not fetched yet; null = fetched, nothing to show
+  const [voterHistory, setVoterHistory] = useState<VoterHistoryResult | null | undefined>(
+    undefined,
+  );
   const partyColor = PARTY_COLORS[rep.party] ?? colors.mutedForeground;
 
   function handleToggle() {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    setExpanded((v) => !v);
+    setExpanded((v) => {
+      const next = !v;
+      if (next && voterHistory === undefined && state) {
+        setVoterHistory(null); // mark in-flight so we fetch only once
+        getOfficialVoterHistory({ name: rep.name, state, office: rep.office }).then(
+          (result) => {
+            // Participation only, and only when the server affirmatively
+            // published records. Every other status renders nothing: absence
+            // of data must never read as "did not vote".
+            setVoterHistory(
+              result && result.status === "OK" && result.history.length > 0 ? result : null,
+            );
+          },
+        );
+      }
+      return next;
+    });
   }
 
   function handlePhone() {
@@ -141,6 +182,44 @@ export function RepresentativeCard({ rep }: RepresentativeCardProps) {
                   </Text>
                 </View>
               ))}
+            </View>
+          ) : null}
+
+          {voterHistory ? (
+            <View style={[styles.votesSection, { borderTopColor: colors.border }]}>
+              <Text style={[styles.votesTitle, { color: colors.foreground }]}>
+                {t("Election Participation")}
+                {voterHistory.fixture ? ` (${t("Sample data")})` : ""}
+              </Text>
+              {voterHistory.history.slice(0, 5).map((entry, i) => (
+                <View key={i} style={styles.voteRow}>
+                  <View style={[styles.voteBadge, { backgroundColor: "#2E7D3220" }]}>
+                    <Text style={[styles.voteBadgeText, { color: "#2E7D32" }]}>
+                      {t("Participation recorded")}
+                    </Text>
+                  </View>
+                  <Text
+                    style={[styles.voteBill, { color: colors.foreground }]}
+                    numberOfLines={2}
+                  >
+                    {entry.electionName} · {formatElectionDate(entry.electionDate)}
+                    {entry.votingMethod && VOTING_METHOD_LABELS[entry.votingMethod]
+                      ? ` · ${t(VOTING_METHOD_LABELS[entry.votingMethod])}`
+                      : ""}
+                  </Text>
+                </View>
+              ))}
+              <Text style={[styles.source, { color: colors.mutedForeground }]}>
+                {t("Source:")}{" "}
+                {voterHistory.fixture
+                  ? t("Sample data")
+                  : voterHistory.attribution || voterHistory.history[0].source}
+                {" · "}
+                {t("Data as of")} {formatElectionDate(voterHistory.history[0].recordedAt.slice(0, 10))}
+              </Text>
+              <Text style={[styles.source, { color: colors.mutedForeground }]}>
+                {t("Participation records show whether a ballot was cast — never how anyone voted.")}
+              </Text>
             </View>
           ) : null}
 

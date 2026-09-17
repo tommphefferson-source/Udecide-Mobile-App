@@ -1,0 +1,26 @@
+[
+  {
+    "key": "ga:jordan-sample:state-senator",
+    "displayName": "Jordan Sample",
+    "state": "GA",
+    "office": "State Senator",
+    "level": "state",
+    "match": { "birthYear": 1970, "registrationCounty": "Fulton" }
+  },
+  {
+    "key": "ga:taylor-example:mayor",
+    "displayName": "Taylor Example",
+    "state": "GA",
+    "office": "Mayor",
+    "level": "city",
+    "match": {}
+  },
+  {
+    "key": "ga:riley-nomatch:commissioner",
+    "displayName": "Riley Nomatch",
+    "state": "GA",
+    "office": "County Commissioner",
+    "level": "county",
+    "match": {}
+  }
+]
