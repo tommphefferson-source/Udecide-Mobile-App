@@ -1,21 +1,26 @@
 import { MaterialIcons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import { Linking } from "react-native";
+import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { useColors } from "@/hooks/useColors";
 import { t } from "@/i18n";
+import { officeHasVotingRecord } from "@/services/votingRecordsApi";
 import type { Representative } from "@/types/politics";
 import { PARTY_COLORS } from "@/utils/constants";
 import { formatPhoneNumber } from "@/utils/formatters";
 
 interface RepresentativeCardProps {
   rep: Representative;
+  /** 2-letter state code of the address being viewed (enables Voting Record lookups). */
+  state?: string;
 }
 
-export function RepresentativeCard({ rep }: RepresentativeCardProps) {
+export function RepresentativeCard({ rep, state }: RepresentativeCardProps) {
   const colors = useColors();
+  const router = useRouter();
   const [expanded, setExpanded] = useState(false);
   const partyColor = PARTY_COLORS[rep.party] ?? colors.mutedForeground;
 
@@ -100,6 +105,30 @@ export function RepresentativeCard({ rep }: RepresentativeCardProps) {
               <MaterialIcons name="alternate-email" size={16} color={colors.mutedForeground} />
               <Text style={[styles.detailText, { color: colors.mutedForeground }]}>{rep.twitter}</Text>
             </View>
+          ) : null}
+
+          {state && officeHasVotingRecord(rep.office, rep.level) ? (
+            <Pressable
+              style={styles.detailRow}
+              onPress={() =>
+                router.push({
+                  pathname: "/voting-record",
+                  params: {
+                    name: rep.name,
+                    state,
+                    level: rep.level,
+                    office: rep.office,
+                    district: rep.district,
+                  },
+                })
+              }
+            >
+              <MaterialIcons name="how-to-vote" size={16} color={colors.accent} />
+              <Text style={[styles.detailText, { color: colors.accent }]}>
+                {t("Voting Record")}
+              </Text>
+              <MaterialIcons name="chevron-right" size={16} color={colors.accent} />
+            </Pressable>
           ) : null}
 
           {rep.recentVotes && rep.recentVotes.length > 0 ? (

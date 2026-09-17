@@ -10,6 +10,7 @@ import authRouter from "./auth";
 import googleOauthRouter from "./googleOauth";
 import pagesRouter from "./pages";
 import factCheckRouter from "./factCheck";
+import votingRecordsRouter from "./votingRecords";
 
 const router: IRouter = Router();
 
@@ -24,5 +25,6 @@ router.use(newsRouter);
 router.use(civicsRouter);
 router.use(pagesRouter);
 router.use(factCheckRouter);
+router.use(votingRecordsRouter);
 
 export default router;
