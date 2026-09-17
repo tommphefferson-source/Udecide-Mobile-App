@@ -36,20 +36,22 @@ Three tiers. The mobile app never talks to the database or paid APIs directly fo
 ┌─────────────────────────┐     HTTPS      ┌──────────────────────────┐
 │   UDecide mobile app     │  AUTHTOKEN     │      api-server           │
 │  (Expo / React Native)   │ ─────────────▶ │  (Node + Express proxy)   │
-│                          │  /api/*        │                          │
-│  services/ split:        │                │  routes/ → providers/     │
+│                          │  /api/*        │  Hosted on Render.com     │
+│  services/ split:        │                │  routes/ -> providers/    │
 │   • api-server-proxied   │                │                          │
 │   • direct-to-external   │                └───────────┬──────────────┘
 └───────────┬──────────────┘                            │
-            │ direct (EXPO_PUBLIC_* keys)                │ server-side keys
+            │ direct (EXPO_PUBLIC_* keys)                │ server-side keys (HTTPS)
             ▼                                            ▼
-  Congress.gov · LegiScan            Legacy UDecide WS (CodeIgniter, http://52.45.60.139/WS)
+  Congress.gov · LegiScan            Legacy UDecide WS (CodeIgniter, https://52.45.60.139/WS)
   Google Civic                       Cicero · Google Civic · Gemini · Google OAuth · RSS news feeds
 ```
 
+> **Infrastructure note:** The legacy WS server (`52.45.60.139`) is an AWS EC2 instance in `us-east-1` running Apache HTTPD. It has HTTPS enabled on port 443 with a self-signed certificate. The api-server connects to it over HTTPS with certificate validation disabled (`NODE_TLS_REJECT_UNAUTHORIZED=0`) — the transport is encrypted but not CA-authenticated. The `udecide.app` domain is managed by Cloudflare (nameservers: `algin.ns.cloudflare.com`, `nina.ns.cloudflare.com`).
+
 **Two request families in the app's `services/`:**
 - **API-server-proxied** (`auth`, `civic`/representatives, `quiz`, `news`, `polls`, `questionnaires`, `pages`) — go to `${EXPO_PUBLIC_DOMAIN}/api` with the custom `AUTHTOKEN` header. Real upstream keys live on the server.
-- **Direct-to-external** (`congressApi`, `legiscanApi`, `electionsApi`) — call third-party APIs straight from the client with an `EXPO_PUBLIC_*` key, and **fall back to bundled mock data whenever the key is missing.** (The Fact Checker's Gemini calls used to be here but were moved server-side — see `/fact-check` in §6.2.)
+- **Direct-to-external** (`congressApi`, `legiscanApi`, `electionsApi`) — call third-party APIs straight from the client with an `EXPO_PUBLIC_*` key, and **fall back to bundled mock data whenever the key is missing.** (The Fact Checker's Gemini calls used to be here but were moved server-side — see `/fact-check` in section 6.2.)
 
 **Auth model:** the legacy backend authenticates with a custom `AUTHTOKEN` header (NOT `Authorization: Bearer`). Login/signup return an `auth_token`; the app stores it and the api-server forwards it upstream. A `401` anywhere clears the session and bounces to login.
 
@@ -213,7 +215,7 @@ SafeAreaProvider → ErrorBoundary → QueryClientProvider → GestureHandlerRoo
 
 > `EXPO_PUBLIC_GEMINI_API_KEY` was **removed** (2026): the Fact Checker now calls the api-server `/fact-check` proxy and the Gemini key lives server-side as `GEMINI_API_KEY`, so it is never bundled into the app.
 
-In dev, `package.json`'s `dev` script maps host secrets into these (incl. `EXPO_PUBLIC_DOMAIN=$REPLIT_DEV_DOMAIN`). **See §8 for how production builds differ — this is the source of the current login failures.**
+In dev, `package.json`'s `dev` script maps host secrets into these (incl. `EXPO_PUBLIC_DOMAIN=$REPLIT_DEV_DOMAIN`). **See section 8 for how production builds differ — this is the source of the current login failures.**
 
 ---
 
@@ -237,10 +239,12 @@ Node + Express 5 + TypeScript (ESM, esbuild-bundled). Exists to (1) hide paid ke
 | `SESSION_SECRET` | HMAC-signs the OAuth `state` |
 | `LEGACY_WS_BASE_URL` | legacy backend; default `http://52.45.60.139/WS` |
 | `LEGACY_WS_AUTHTOKEN` | shared app-level token; absent → polls/news/questionnaires serve mock |
-| `REPLIT_DOMAINS` / `REPLIT_DEV_DOMAIN` | → `publicOrigin` (OAuth redirect + return_uri allowlist) |
-| `REPLIT_EXPO_DEV_DOMAIN` | → `expoWebOrigin` (web build's OAuth return) |
+| `NODE_TLS_REJECT_UNAUTHORIZED` | Set to `0` to accept the self-signed TLS certificate on the legacy WS server (`https://52.45.60.139`). Transport is encrypted but not CA-authenticated. |
+| `REPLIT_DOMAINS` / `REPLIT_DEV_DOMAIN` | → `publicOrigin` (OAuth redirect + return_uri allowlist) — dev only |
+| `REPLIT_EXPO_DEV_DOMAIN` | → `expoWebOrigin` (web build's OAuth return) — dev only |
+| `RENDER_EXTERNAL_URL` | Auto-set by Render.com in production — used as `publicOrigin` for OAuth redirects |
 
-> Google sign-in needs `GOOGLE_CLIENT_ID` + `GOOGLE_CLIENT_SECRET` + `SESSION_SECRET` + a Replit domain, else `/api/auth/google/*` returns `503`.
+> Google sign-in needs `GOOGLE_CLIENT_ID` + `GOOGLE_CLIENT_SECRET` + `SESSION_SECRET` + a valid public origin (`RENDER_EXTERNAL_URL` in production), else `/api/auth/google/*` returns `503`.
 
 ### 6.2 Routes (all under `/api`)
 
@@ -269,8 +273,9 @@ Node + Express 5 + TypeScript (ESM, esbuild-bundled). Exists to (1) hide paid ke
 ### 6.5 Deployment/runtime
 
 - **Build:** `pnpm --filter @workspace/api-server run build` → esbuild bundle to `dist/index.mjs`. **Start:** `node --enable-source-maps ./dist/index.mjs`.
-- **Replit artifact** (`.replit-artifact/artifact.toml`): `kind="api"`, `localPort=8080`, `paths=["/api"]`, health `/api/healthz`. Served over HTTPS on `$REPLIT_DOMAINS`.
-- **Mandatory:** `PORT`. Feature-gating vars listed in §6.1.
+- **Production:** Hosted on **Render.com** — see section 8.5 for full deployment guide.
+- **Development:** Replit artifact (`.replit-artifact/artifact.toml`): `kind="api"`, `localPort=8080`, `paths=["/api"]`, health `/api/healthz`. Served over HTTPS on `$REPLIT_DOMAINS`. ⚠️ Replit dev domains 403 native iOS/Android clients — use Render for any production or TestFlight builds.
+- **Mandatory env vars:** `PORT`, `NODE_TLS_REJECT_UNAUTHORIZED=0`. Feature-gating vars listed in section 6.1.
 
 ---
 
@@ -278,7 +283,7 @@ Node + Express 5 + TypeScript (ESM, esbuild-bundled). Exists to (1) hide paid ke
 
 | API | Provides | Called from | Key location |
 |---|---|---|---|
-| **Legacy UDecide WS** (`http://52.45.60.139/WS`) | Auth, profile, polls, questionnaires, quiz, static pages, home/news data | client → api-server → legacy | server (`LEGACY_WS_AUTHTOKEN` + per-user token) |
+| **Legacy UDecide WS** (`https://52.45.60.139/WS`) | Auth, profile, polls, questionnaires, quiz, static pages, home/news data | client → api-server → legacy | server (`LEGACY_WS_AUTHTOKEN` + per-user token). Self-signed cert; requires `NODE_TLS_REJECT_UNAUTHORIZED=0` on api-server. |
 | **Cicero** (`app.cicerodata.com/v3.1/official`) | All-levels officials by address | client `civicApi` → api-server | server `CICERO_API_KEY` |
 | **Google Civic v2** (`googleapis.com/civicinfo/v2`) | Elections + voter info | (a) client `electionsApi`; (b) api-server `/elections` | (a) client `EXPO_PUBLIC_CIVIC_API_KEY`; (b) server `GOOGLE_CIVIC_API_KEY` |
 | **Congress.gov v3** (`api.congress.gov/v3`) | Federal members + bills | client `congressApi` | client `EXPO_PUBLIC_CONGRESS_GOV_API_KEY` |
@@ -311,7 +316,7 @@ Node + Express 5 + TypeScript (ESM, esbuild-bundled). Exists to (1) hide paid ke
 
 ### 8.3 App config (`artifacts/udecide/app.json`)
 
-`name "UDecide App"`, `slug udecide`, `version 1.0.0`, `newArchEnabled true`, iOS `ITSAppUsesNonExemptEncryption:false`, plugins: expo-router (origin `https://replit.com/`), expo-font, expo-web-browser, expo-image-picker (photos permission). `reactCompiler` is **disabled** (see §9).
+`name "UDecide App"`, `slug udecide`, `version 1.0.0`, `newArchEnabled true`, iOS `ITSAppUsesNonExemptEncryption:false`, plugins: expo-router (origin `https://replit.com/`), expo-font, expo-web-browser, expo-image-picker (photos permission). `reactCompiler` is **disabled** (see section 9).
 
 ### 8.4 Commands (run from `artifacts/udecide/`)
 
@@ -328,17 +333,69 @@ eas build --platform android --profile production
 eas submit --platform ios --profile production --latest
 ```
 
+### 8.5 Render.com — Production API Server
+
+**What Render is:** Render (render.com) is a cloud platform for hosting web services, APIs, and static sites. It is the production host for the UDecide api-server. Unlike Replit's dev domain (`*.replit.dev`), Render provides a stable public HTTPS URL with a valid CA-signed certificate that works with native iOS and Android clients.
+
+**Why Render instead of Replit:**
+
+| | Replit | Render |
+|---|---|---|
+| URL stability | Dev domain changes; 403s native apps | Stable `*.onrender.com` URL |
+| SSL | Valid cert on Replit domain | Valid CA-signed cert |
+| Native client support | ❌ 403s iOS/Android | ✅ Works |
+| Always-on | Dev only | Starter plan ($7/mo) |
+| Free tier | Dev workflows | Yes (sleeps after 15 min inactivity) |
+| Auto-deploy from GitHub | No | Yes |
+
+**Deploying to Render:**
+
+1. Go to [render.com](https://render.com) and sign in.
+2. Click **New → Web Service** → connect your GitHub repo.
+3. Configure the service:
+   - **Name:** `udecide-api`
+   - **Root directory:** `artifacts/api-server`
+   - **Build command:** `pnpm install && pnpm run build`
+   - **Start command:** `node --enable-source-maps ./dist/index.mjs`
+   - **Instance type:** Free (dev/staging) or Starter (production)
+4. Add environment variables in the Render dashboard (Environment tab):
+
+```
+PORT=8080
+NODE_ENV=production
+NODE_TLS_REJECT_UNAUTHORIZED=0
+LEGACY_WS_BASE_URL=https://52.45.60.139/WS
+LEGACY_WS_AUTHTOKEN=<token>
+CICERO_API_KEY=<key>
+GEMINI_API_KEY=<key>
+GEMINI_MODEL=gemini-2.5-flash
+GOOGLE_CLIENT_ID=<id>
+GOOGLE_CLIENT_SECRET=<secret>
+SESSION_SECRET=<secret>
+GOOGLE_CIVIC_API_KEY=<key>
+```
+
+5. Render automatically sets `RENDER_EXTERNAL_URL` to your service's public URL (e.g. `https://udecide-api.onrender.com`). The api-server uses this as `publicOrigin` for Google OAuth redirects.
+6. After deploy, set `EXPO_PUBLIC_DOMAIN` in your EAS environment to the Render URL:
+
+```bash
+eas env:create --scope project --name EXPO_PUBLIC_DOMAIN \
+  --value https://udecide-api.onrender.com --environment production
+```
+
+**Free tier note:** On the free tier Render spins the service down after 15 minutes of inactivity. The first request after sleep takes ~30 seconds (cold start). Upgrade to Starter ($7/mo) for always-on behaviour in production.
+
 ---
 
 ## 9. Known issues & gotchas (read this first)
 
-1. **No production backend / login broken in the shipped app.** See §8.1. The single most important fix: deploy `api-server` to a stable production URL (Replit Reserved-VM/Autoscale or custom domain like `api.udecide.app` — NOT the `*.replit.dev` dev domain, which 403s native traffic) and set `EXPO_PUBLIC_DOMAIN` in EAS. Then rebuild.
+1. **Deploy api-server to Render.com for production.** The Replit `*.replit.dev` domain 403s native iOS/Android clients — login fails in any TestFlight or App Store build pointing at Replit. **Fix:** deploy the api-server to Render.com (see section 8.5), set `EXPO_PUBLIC_DOMAIN` to the Render URL via `eas env:create`, then rebuild. Render provides a stable HTTPS URL with a valid CA-signed certificate that works with native clients.
 2. **External data keys absent in production builds.** The three remaining client-side services (Congress.gov, LegiScan, Google Civic elections) silently serve **mock data** in prod (keys aren't injected). Add those `EXPO_PUBLIC_*` keys as EAS env vars if live data is wanted. (Gemini is no longer in this list — it's server-side now; see #3.)
-3. **Fact Checker is now server-side.** As of 2026 the Fact Checker calls the api-server `/fact-check` proxy, and the Gemini key lives only on the server (`GEMINI_API_KEY`) — it is no longer bundled in the app. The model is set by `GEMINI_MODEL` (default `gemini-3.5-flash`); **verify that model id is valid for your Google account** and, if not, change it via the `GEMINI_MODEL` env var — no code change or app rebuild needed.
-4. **App Store launch-crash history.** v1.0 build 4 was rejected for crashing on launch. Two mitigations applied: `reactCompiler` disabled (experimental, production-only transform), and the Google login path hardened to reject scheme-less URLs before calling `WebBrowser.openAuthSessionAsync` (a relative URL hard-crashes `ASWebAuthenticationSession`, which a JS `try/catch` can't catch). Always verify a production binary in **TestFlight** before submitting for review.
-5. **Concurrent file churn.** A background Replit/agent process periodically re-adds an unused Android `RECORD_AUDIO` permission and other edits to `app.json`. Re-check `git diff` before each build.
-6. **Monorepo / pnpm.** Install from the root; `pnpm-workspace.yaml` enforces a `minimumReleaseAge` supply-chain delay (don't disable). Decoys: `mobile/` and the root `eas.json` are not the product.
-7. **Legacy backend is HTTP.** `http://52.45.60.139/WS` is plain HTTP — fine because only the (HTTPS) api-server calls it server-side; the app must never call it directly.
+3. **Fact Checker is now server-side.** As of 2026 the Fact Checker calls the api-server `/fact-check` proxy, and the Gemini key lives only on the server (`GEMINI_API_KEY`) — it is no longer bundled in the app. The model is set by `GEMINI_MODEL` (default `gemini-2.5-flash`); verify the model ID is valid for your Google account and change it via the `GEMINI_MODEL` env var if needed — no code change or app rebuild required.
+4. **Legacy WS uses a self-signed TLS certificate.** As of 2026 the legacy backend (`https://52.45.60.139/WS`) serves HTTPS with a self-signed cert. The api-server is configured with `NODE_TLS_REJECT_UNAUTHORIZED=0` so it accepts the cert. The transport is encrypted but not CA-authenticated. A proper fix is to add the `api-legacy.udecide.app` subdomain in Cloudflare (DNS managed at `algin.ns.cloudflare.com` / `nina.ns.cloudflare.com` — account TBD) which would allow a valid certificate via Cloudflare proxy.
+5. **App Store launch-crash history.** v1.0 build 4 was rejected for crashing on launch. Two mitigations applied: `reactCompiler` disabled (experimental, production-only transform), and the Google login path hardened to reject scheme-less URLs before calling `WebBrowser.openAuthSessionAsync` (a relative URL hard-crashes `ASWebAuthenticationSession`, which a JS `try/catch` can't catch). Always verify a production binary in **TestFlight** before submitting for review.
+6. **Concurrent file churn.** A background Replit/agent process periodically re-adds an unused Android `RECORD_AUDIO` permission and other edits to `app.json`. Re-check `git diff` before each build.
+7. **Monorepo / pnpm.** Install from the root; `pnpm-workspace.yaml` enforces a `minimumReleaseAge` supply-chain delay (don't disable). Decoys: `mobile/` and the root `eas.json` are not the product.
 
 ---
 
@@ -346,10 +403,10 @@ eas submit --platform ios --profile production --latest
 
 1. **Clone & install:** `pnpm install` from the repo root.
 2. **Run the app:** from `artifacts/udecide/`, `pnpm run dev` (or restart the Replit "udecide: expo" workflow) and open in a dev build / Expo Go via the QR code. Set `EXPO_PUBLIC_*` keys/`.env` for live data (see `.env.example`).
-3. **Run the backend:** from `artifacts/api-server/`, `pnpm run dev` (needs `PORT`, plus the secrets in §6.1 for live features).
+3. **Run the backend:** from `artifacts/api-server/`, `pnpm run dev` (needs `PORT`, plus the secrets in section 6.1 for live features).
 4. **Typecheck:** `pnpm run typecheck` (root, all packages).
 5. **Where things live:** UI/screens → `artifacts/udecide/app/`; data → `artifacts/udecide/services/`; theming → `constants/colors.ts` + `hooks/useColors.ts`; backend routes → `artifacts/api-server/src/routes/`; the API contract → `lib/api-spec/openapi.yaml` (regenerate `@workspace/api-zod` after edits).
-6. **Before shipping:** fix the production backend URL (§9.1), decide on live vs mock data keys (§9.2), verify in TestFlight, then submit.
+6. **Before shipping:** deploy the api-server to Render (see section 8.5), decide on live vs mock data keys (see section 9.2), verify in TestFlight, then submit.
 
 ### Release status snapshot
 - **iOS:** App Store Connect app created (Apple ID `6783990826`); builds uploaded to TestFlight; v1.0 build 4 rejected for launch crash; build 5 (+ crash guard) is the current fix candidate. Store listing assets generated in `~/Udecide_Assets/`.
