@@ -49,10 +49,19 @@ router.get("/representatives", async (req, res) => {
   try {
     const upstream = await fetch(`${CICERO_URL}?${params.toString()}`);
     if (!upstream.ok) {
-      req.log.error({ status: upstream.status }, "Cicero upstream error");
-      res
-        .status(502)
-        .json({ live: true, officials: [], error: "upstream_error" });
+      // Surface Cicero's status + a bounded body snippet so failures are
+      // diagnosable (credits vs auth vs rate-limit) without server-log access.
+      // The body never contains the API key (it is only in the request URL,
+      // which is not echoed).
+      const detail = (await upstream.text().catch(() => "")).slice(0, 300);
+      req.log.error({ status: upstream.status, detail }, "Cicero upstream error");
+      res.status(502).json({
+        live: true,
+        officials: [],
+        error: "upstream_error",
+        upstreamStatus: upstream.status,
+        upstreamDetail: detail,
+      });
       return;
     }
     const data = (await upstream.json()) as CiceroUpstream;
