@@ -1,0 +1,5 @@
+[
+  {
+    "_README": "Operator-maintained seed of officials to look up in the Georgia voter files. Every person in this file must be an elected official shown in the app. Fill `match.birthYear` (and ideally `match.registrationCounty`) from public biographical sources BEFORE running ingestion — without a corroborating attribute a unique-name hit is only PROBABLE_MATCH and will not be published. The fixtures directory has a filled-in example with fictitious people. This file intentionally ships empty: real entries are added when the legal gate for Georgia (see docs/VOTER_HISTORY.md) has been signed off."
+  }
+]

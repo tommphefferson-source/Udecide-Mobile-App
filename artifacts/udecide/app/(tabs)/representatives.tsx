@@ -150,7 +150,9 @@ export default function RepresentativesScreen() {
         <FlatList
           data={filtered}
           keyExtractor={(item) => item.id}
-          renderItem={({ item }) => <RepresentativeCard rep={item} />}
+          renderItem={({ item }) => (
+            <RepresentativeCard rep={item} state={effectiveAddress.state} />
+          )}
           contentContainerStyle={{
             padding: 16,
             gap: 12,
