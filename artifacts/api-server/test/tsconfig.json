@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "target": "es2022",
+    "lib": ["es2022"],
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "strict": true,
+    "skipLibCheck": true,
+    "types": ["node"],
+    "outDir": "../dist-test",
+    "rootDir": "..",
+    "sourceMap": true
+  },
+  "include": ["../src/votingRecords/**/*", "./**/*.ts"]
+}
