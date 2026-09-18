@@ -12,11 +12,14 @@ interface CardButtonProps {
   icon: string;
   accentColor?: string;
   onPress: () => void;
+  /** Full-width, horizontally-laid-out prominent tile (e.g. the featured
+   * Fact Checker tile at the bottom of the dashboard). */
+  large?: boolean;
 }
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
-export function CardButton({ title, subtitle, icon, accentColor, onPress }: CardButtonProps) {
+export function CardButton({ title, subtitle, icon, accentColor, onPress, large = false }: CardButtonProps) {
   const colors = useColors();
   const scale = useSharedValue(1);
 
@@ -38,6 +41,41 @@ export function CardButton({ title, subtitle, icon, accentColor, onPress }: Card
   }
 
   const accent = accentColor ?? colors.accent;
+
+  if (large) {
+    return (
+      <AnimatedPressable
+        style={[
+          styles.card,
+          styles.largeCard,
+          { backgroundColor: colors.card, borderColor: colors.border },
+          animStyle,
+        ]}
+        onPress={handlePress}
+        onPressIn={handlePressIn}
+        onPressOut={handlePressOut}
+      >
+        <View
+          style={[styles.iconContainer, styles.largeIcon, { backgroundColor: accent + "1A" }]}
+        >
+          <MaterialIcons name={icon as never} size={32} color={accent} />
+        </View>
+        <View style={styles.largeTextWrap}>
+          <Text style={[styles.largeTitle, { color: colors.foreground }]} numberOfLines={1}>
+            {title}
+          </Text>
+          {subtitle ? (
+            <Text style={[styles.subtitle, { color: colors.mutedForeground }]} numberOfLines={1}>
+              {subtitle}
+            </Text>
+          ) : null}
+        </View>
+        <View style={[styles.arrow, styles.largeArrow, { backgroundColor: accent + "20" }]}>
+          <MaterialIcons name="chevron-right" size={20} color={accent} />
+        </View>
+      </AnimatedPressable>
+    );
+  }
 
   return (
     <AnimatedPressable
@@ -78,12 +116,39 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 2,
   },
+  largeCard: {
+    // Full width within the wrapping grid, laid out horizontally.
+    width: "100%",
+    flexBasis: "100%",
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 14,
+    padding: 18,
+  },
   iconContainer: {
     width: 48,
     height: 48,
     borderRadius: 12,
     alignItems: "center",
     justifyContent: "center",
+  },
+  largeIcon: {
+    width: 56,
+    height: 56,
+    borderRadius: 14,
+  },
+  largeTextWrap: {
+    flex: 1,
+    gap: 2,
+  },
+  largeTitle: {
+    fontSize: 17,
+    fontFamily: "Inter_700Bold",
+    lineHeight: 22,
+  },
+  largeArrow: {
+    alignSelf: "center",
+    marginTop: 0,
   },
   title: {
     fontSize: 14,

@@ -20,6 +20,9 @@ import { useAuth } from "@/context/AuthContext";
 import { useColors } from "@/hooks/useColors";
 import { t } from "@/i18n";
 
+// Standard tiles shown in the 2-column grid. Eight of them → four even rows,
+// so Legislation Tracker and Political Parties share the last grid row at the
+// same size. Fact Checker is featured separately as a full-width tile below.
 const DASHBOARD_CARDS = [
   { title: "Voter Status Tools", subtitle: "Registration, polling, ID", icon: "how-to-vote", route: "/voter-tools", color: "#C41E3A" },
   { title: "Representatives", subtitle: "Your elected officials", icon: "people", route: "/(tabs)/representatives", color: "#1A4A8A" },
@@ -28,9 +31,17 @@ const DASHBOARD_CARDS = [
   { title: "Civics 101 Quiz", subtitle: "Test your knowledge", icon: "quiz", route: "/civics-quiz", color: "#3949AB" },
   { title: "Political Polls", subtitle: "Community insights", icon: "poll", route: "/polls", color: "#7B1FA2" },
   { title: "Legislation Tracker", subtitle: "Bills and laws", icon: "gavel", route: "/(tabs)/legislation", color: "#E65100" },
-  { title: "Fact Checker", subtitle: "AI-powered analysis", icon: "fact-check", route: "/fact-checker", color: "#00695C" },
   { title: "Political Parties", subtitle: "Party information", icon: "flag", route: "/parties", color: "#C41E3A" },
 ] as const;
+
+// Featured full-width tile pinned to the bottom of the dashboard.
+const FEATURED_CARD = {
+  title: "Fact Checker",
+  subtitle: "AI-powered analysis",
+  icon: "fact-check",
+  route: "/fact-checker",
+  color: "#00695C",
+} as const;
 
 export default function DashboardScreen() {
   const insets = useSafeAreaInsets();
@@ -143,6 +154,14 @@ export default function DashboardScreen() {
               onPress={() => router.push(card.route as never)}
             />
           ))}
+          <CardButton
+            large
+            title={t(FEATURED_CARD.title)}
+            subtitle={t(FEATURED_CARD.subtitle)}
+            icon={FEATURED_CARD.icon}
+            accentColor={FEATURED_CARD.color}
+            onPress={() => router.push(FEATURED_CARD.route as never)}
+          />
         </View>
 
         <View style={[styles.disclaimerCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
