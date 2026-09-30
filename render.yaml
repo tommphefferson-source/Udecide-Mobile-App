@@ -48,3 +48,12 @@ services:
       - key: LEGACY_WS_AUTHTOKEN # live polls/news/questionnaires
         sync: false
       # LEGACY_WS_BASE_URL defaults to http://52.45.60.139/WS — override only if it moves.
+
+      # Subscriptions / paywall. Keep SUBSCRIPTIONS_ENABLED=false until the
+      # RevenueCat + store setup is complete (see docs/SUBSCRIPTIONS.md); when
+      # "true", the Fact Checker requires the ai_access entitlement, verified
+      # with the RevenueCat SECRET key below.
+      - key: SUBSCRIPTIONS_ENABLED
+        value: "false"
+      - key: REVENUECAT_SECRET_KEY # server-side entitlement verification
+        sync: false

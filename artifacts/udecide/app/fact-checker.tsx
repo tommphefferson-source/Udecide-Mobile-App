@@ -16,6 +16,9 @@ import { KeyboardAvoidingView } from "react-native-keyboard-controller";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { HorizontalScroller } from "@/components/HorizontalScroller";
+import { AiPaywallNotice } from "@/components/AiPaywallNotice";
+import { SUBSCRIPTIONS_ENABLED } from "@/config/subscriptions";
+import { useSubscription } from "@/context/SubscriptionContext";
 import { useColors } from "@/hooks/useColors";
 import { t } from "@/i18n";
 import { sendGeminiMessage } from "@/services/geminiApi";
@@ -41,6 +44,18 @@ interface ChatMessage {
 }
 
 export default function FactCheckerScreen() {
+  const { hasAiAccess } = useSubscription();
+
+  // The AI Fact Checker is the Plus-tier feature. When the paywall is live and
+  // the user lacks `ai_access`, show the upgrade notice instead of the chat.
+  if (SUBSCRIPTIONS_ENABLED && !hasAiAccess) {
+    return <AiPaywallNotice />;
+  }
+
+  return <FactCheckerChat />;
+}
+
+function FactCheckerChat() {
   const insets = useSafeAreaInsets();
   const colors = useColors();
   const [messages, setMessages] = useState<ChatMessage[]>([
