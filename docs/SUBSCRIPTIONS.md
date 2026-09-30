@@ -41,7 +41,7 @@ These cannot be automated and must be done before enabling the flag:
 Create **one subscription group** ("UDecide") with two auto-renewable products,
 in BOTH stores, using these exact product IDs:
 
-- `standard_monthly` — $1.99/mo
+- `standard_monthly_2` — $1.99/mo  *(was `standard_monthly`; Apple reserves a product ID permanently once created, so the ID had to be bumped)*
 - `plus_monthly` — $3.99/mo
 
 App Store Connect also needs, per subscription: a localized display name &
@@ -56,10 +56,10 @@ differ from `udecide.app/terms` and `/privacy`).
 identifiers — set the dashboard to match it:
 
 - **Entitlements:** `app_access`, `ai_access`
-- **Products → entitlements:** `standard_monthly` → `app_access`;
+- **Products → entitlements:** `standard_monthly_2` → `app_access`;
   `plus_monthly` → `app_access` + `ai_access`
 - **Offering** `default` with two packages whose identifiers are
-  `standard_monthly` and `plus_monthly`
+  `standard_monthly_2` and `plus_monthly`
 - Copy the **public SDK keys** (one per platform) and the **secret key**.
 
 ## Keys / env to set

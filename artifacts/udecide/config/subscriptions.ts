@@ -43,7 +43,10 @@ export const ENTITLEMENT_AI = "ai_access"; // granted by Plus only
 // RevenueCat offering + package identifiers (dashboard → Offerings). The
 // packages map to the store products created in App Store Connect / Play.
 export const OFFERING_ID = "default";
-export const PACKAGE_STANDARD = "standard_monthly";
+// Product ID was changed to standard_monthly_2 in App Store Connect because
+// Apple permanently reserves a product ID once created — "standard_monthly"
+// could not be reused. The RevenueCat package identifier must match this.
+export const PACKAGE_STANDARD = "standard_monthly_2";
 export const PACKAGE_PLUS = "plus_monthly";
 
 // Shown on the paywall. Apple requires functional Terms (EULA) + Privacy links
