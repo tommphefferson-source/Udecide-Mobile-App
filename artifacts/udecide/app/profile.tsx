@@ -18,17 +18,42 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { SUBSCRIPTIONS_ENABLED } from "@/config/subscriptions";
 import { useAuth } from "@/context/AuthContext";
+import { useSubscription } from "@/context/SubscriptionContext";
 import { useColors } from "@/hooks/useColors";
 import { t } from "@/i18n";
 import { STATIC_PAGE_CODES } from "@/services/pagesApi";
 import { SUPPORT_EMAIL, US_STATES } from "@/utils/constants";
 import { validateName, validateRequired, validateState, validateZipCode } from "@/utils/validation";
 
+const MANAGE_SUBSCRIPTION_URL =
+  Platform.OS === "ios"
+    ? "https://apps.apple.com/account/subscriptions"
+    : "https://play.google.com/store/account/subscriptions";
+
 export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
   const colors = useColors();
   const { user, updateProfile, uploadProfilePhoto, logout, deleteAccount } = useAuth();
+  const { hasAppAccess, hasAiAccess, restore } = useSubscription();
+
+  async function handleRestore() {
+    const res = await restore();
+    Alert.alert(
+      res.success ? t("Purchases restored") : t("Nothing to restore"),
+      res.success
+        ? t("Your subscription has been restored.")
+        : t("We couldn't find an active subscription to restore."),
+    );
+  }
+
+  // Current tier label from active entitlements.
+  const planLabel = hasAiAccess
+    ? t("UDecide Plus")
+    : hasAppAccess
+      ? t("UDecide Standard")
+      : t("No active subscription");
 
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -333,10 +358,65 @@ export default function ProfileScreen() {
             </View>
             <MaterialIcons name="chevron-right" size={20} color={colors.mutedForeground} />
           </Pressable>
-          {/* Subscription status row removed: the app has no paid subscriptions.
-              The legacy backend's is_subscribe flag surfaced here as a label and
-              triggered App Review questions about purchases (guideline 3.1.1). */}
         </View>
+
+        {SUBSCRIPTIONS_ENABLED ? (
+          <View style={[styles.section, { backgroundColor: colors.card, borderColor: colors.border }]}>
+            <View style={styles.sectionHeader}>
+              <Text style={[styles.sectionTitle, { color: colors.foreground }]}>
+                {t("Subscription")}
+              </Text>
+            </View>
+            <View style={[styles.settingsRow, { borderBottomWidth: 1, borderBottomColor: colors.border }]}>
+              <MaterialIcons name="workspace-premium" size={20} color={colors.accent} />
+              <View style={styles.settingsRowText}>
+                <Text style={[styles.settingsRowTitle, { color: colors.foreground }]}>
+                  {t("Current plan")}
+                </Text>
+                <Text style={[styles.settingsRowSubtitle, { color: colors.mutedForeground }]}>
+                  {planLabel}
+                </Text>
+              </View>
+            </View>
+            {!hasAiAccess ? (
+              <Pressable
+                style={({ pressed }) => [styles.settingsRow, { borderBottomWidth: 1, borderBottomColor: colors.border, opacity: pressed ? 0.7 : 1 }]}
+                onPress={() => router.push(("/paywall" + (hasAppAccess ? "?focus=ai" : "")) as never)}
+              >
+                <MaterialIcons name="auto-awesome" size={20} color={colors.accent} />
+                <View style={styles.settingsRowText}>
+                  <Text style={[styles.settingsRowTitle, { color: colors.foreground }]}>
+                    {hasAppAccess ? t("Upgrade to Plus") : t("Choose your plan")}
+                  </Text>
+                </View>
+                <MaterialIcons name="chevron-right" size={20} color={colors.mutedForeground} />
+              </Pressable>
+            ) : null}
+            <Pressable
+              style={({ pressed }) => [styles.settingsRow, { borderBottomWidth: 1, borderBottomColor: colors.border, opacity: pressed ? 0.7 : 1 }]}
+              onPress={() => Linking.openURL(MANAGE_SUBSCRIPTION_URL)}
+            >
+              <MaterialIcons name="settings" size={20} color={colors.accent} />
+              <View style={styles.settingsRowText}>
+                <Text style={[styles.settingsRowTitle, { color: colors.foreground }]}>
+                  {t("Manage Subscription")}
+                </Text>
+              </View>
+              <MaterialIcons name="open-in-new" size={18} color={colors.mutedForeground} />
+            </Pressable>
+            <Pressable
+              style={({ pressed }) => [styles.settingsRow, { opacity: pressed ? 0.7 : 1 }]}
+              onPress={handleRestore}
+            >
+              <MaterialIcons name="restore" size={20} color={colors.accent} />
+              <View style={styles.settingsRowText}>
+                <Text style={[styles.settingsRowTitle, { color: colors.foreground }]}>
+                  {t("Restore Purchases")}
+                </Text>
+              </View>
+            </Pressable>
+          </View>
+        ) : null}
 
         <View style={[styles.section, { backgroundColor: colors.card, borderColor: colors.border }]}>
           <View style={styles.sectionHeader}>
@@ -433,6 +513,7 @@ const styles = StyleSheet.create({
   settingsRow: { flexDirection: "row", gap: 12, alignItems: "center", paddingHorizontal: 16, paddingVertical: 16 },
   settingsRowText: { flex: 1 },
   settingsRowTitle: { fontSize: 15, fontFamily: "Inter_500Medium" },
+  settingsRowSubtitle: { fontSize: 13, fontFamily: "Inter_400Regular", marginTop: 1 },
   settingsRowValue: { fontSize: 12, fontFamily: "Inter_400Regular", marginTop: 2 },
   profileField: { flexDirection: "row", gap: 12, alignItems: "center", padding: 14 },
   profileFieldText: { flex: 1 },
