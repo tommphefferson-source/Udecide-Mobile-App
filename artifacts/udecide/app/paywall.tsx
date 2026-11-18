@@ -28,7 +28,7 @@ import { useColors } from "@/hooks/useColors";
 import { t } from "@/i18n";
 
 /**
- * Two-tier subscription paywall (Standard $1.99 / Plus $3.99 with AI).
+ * Two-tier subscription paywall (Standard $1.99 / Plus $4.99 with AI).
  *
  * Reached automatically when an authenticated user has no active subscription
  * (see the gate in app/_layout.tsx), and opened directly with `?focus=ai` from

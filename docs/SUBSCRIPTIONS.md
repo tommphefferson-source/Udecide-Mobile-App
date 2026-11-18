@@ -6,7 +6,7 @@ app stores via **RevenueCat**:
 | Tier | Price | RevenueCat entitlements | What it unlocks |
 |------|-------|--------------------------|-----------------|
 | **Standard** | $1.99/mo | `app_access` | Full app (voter tools, reps, elections, legislation, polls, guides) — **no AI** |
-| **Plus** | $3.99/mo | `app_access` + `ai_access` | Everything in Standard **plus the AI Fact Checker** |
+| **Plus** | $4.99/mo | `app_access` + `ai_access` | Everything in Standard **plus the AI Fact Checker** |
 
 Using the app requires an active subscription; the AI Fact Checker requires the
 Plus tier specifically.
@@ -42,7 +42,7 @@ Create **one subscription group** ("UDecide") with two auto-renewable products,
 in BOTH stores, using these exact product IDs:
 
 - `standard_monthly_2` — $1.99/mo  *(was `standard_monthly`; Apple reserves a product ID permanently once created, so the ID had to be bumped)*
-- `plus_monthly` — $3.99/mo
+- `plus_monthly` — $4.99/mo
 
 App Store Connect also needs, per subscription: a localized display name &
 description (English + Spanish), a review screenshot, and the price. Add the

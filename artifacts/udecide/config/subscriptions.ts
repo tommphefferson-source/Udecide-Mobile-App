@@ -5,7 +5,7 @@ import { Platform } from "react-native";
  *
  * MODEL (two tiers in one RevenueCat "offering", both auto-renewable monthly):
  *   • Standard — $1.99/mo → grants entitlement `app_access` (use the app, no AI)
- *   • Plus     — $3.99/mo → grants `app_access` AND `ai_access` (adds the
+ *   • Plus     — $4.99/mo → grants `app_access` AND `ai_access` (adds the
  *                Fact Checker)
  * Using the app requires an active subscription; the AI Fact Checker requires
  * the Plus tier specifically.
@@ -66,7 +66,7 @@ export const TIERS = [
   {
     packageId: PACKAGE_PLUS,
     name: "Plus",
-    fallbackPrice: "$3.99",
+    fallbackPrice: "$4.99",
     tagline: "Everything in Standard, plus the AI Fact Checker",
     includesAI: true,
   },
