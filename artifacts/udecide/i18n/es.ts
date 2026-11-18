@@ -169,6 +169,48 @@ export const es: Record<string, string> = {
   "Recent Votes": "Votaciones recientes",
   "Website": "Sitio web",
   "Official Website": "Sitio web oficial",
+  // ── Subscriptions / paywall ───────────────────────────────────────
+  "Choose your plan": "Elige tu plan",
+  "Support nonpartisan civic information and unlock the tools you want.":
+    "Apoya la información cívica imparcial y desbloquea las herramientas que quieras.",
+  "Subscriptions are managed on the iOS and Android apps.":
+    "Las suscripciones se administran en las apps de iOS y Android.",
+  "Standard": "Estándar",
+  "Plus": "Plus",
+  "Includes AI": "Incluye IA",
+  "/month": "/mes",
+  "Full access to UDecide": "Acceso completo a UDecide",
+  "Everything in Standard, plus the AI Fact Checker":
+    "Todo lo de Estándar, más el Verificador de datos con IA",
+  "Representatives, elections & legislation": "Representantes, elecciones y legislación",
+  "Voter tools, polls & civic guides": "Herramientas del votante, encuestas y guías cívicas",
+  "AI Fact Checker": "Verificador de datos con IA",
+  "Subscribe": "Suscribirse",
+  "Restore Purchases": "Restaurar compras",
+  "Auto-renewing subscription. Payment is charged to your store account and renews monthly until canceled in your account settings. Cancel anytime.":
+    "Suscripción de renovación automática. El pago se cargará a tu cuenta de la tienda y se renueva cada mes hasta que lo canceles en la configuración de tu cuenta. Cancela cuando quieras.",
+  "Terms of Use": "Términos de uso",
+  "Subscription unavailable": "Suscripción no disponible",
+  "Please try again in a moment.": "Inténtalo de nuevo en un momento.",
+  "Purchase failed": "No se pudo completar la compra",
+  "Your purchase could not be completed. Please try again.":
+    "No se pudo completar tu compra. Inténtalo de nuevo.",
+  "Purchases restored": "Compras restauradas",
+  "Your subscription has been restored.": "Se restauró tu suscripción.",
+  "Nothing to restore": "No hay nada que restaurar",
+  "We couldn't find an active subscription to restore.":
+    "No encontramos una suscripción activa para restaurar.",
+  "Unlock the AI Fact Checker": "Desbloquea el Verificador de datos con IA",
+  "The nonpartisan AI Fact Checker is part of UDecide Plus. Upgrade to ask questions, fact-check claims, and summarize legislation.":
+    "El Verificador de datos imparcial con IA es parte de UDecide Plus. Mejora tu plan para hacer preguntas, verificar afirmaciones y resumir legislación.",
+  "Upgrade to Plus": "Mejorar a Plus",
+  "Subscription": "Suscripción",
+  "Current plan": "Plan actual",
+  "UDecide Plus": "UDecide Plus",
+  "UDecide Standard": "UDecide Estándar",
+  "No active subscription": "Sin suscripción activa",
+  "Manage Subscription": "Administrar suscripción",
+
   // ── Voting records ────────────────────────────────────────────────
   "Voting Record": "Historial de votaciones",
   "All Votes": "Todas las votaciones",

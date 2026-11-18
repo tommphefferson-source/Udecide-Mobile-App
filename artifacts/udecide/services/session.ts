@@ -45,3 +45,19 @@ export function setUnauthorizedHandler(
 export function notifyUnauthorized(): void {
   unauthorizedHandler?.();
 }
+
+/**
+ * RevenueCat app user id, mirrored here so non-React service modules (the
+ * Fact Checker client) can attach it to requests. The server uses it to verify
+ * the caller's `ai_access` entitlement with RevenueCat before proxying Gemini.
+ * SubscriptionContext sets this on login / entitlement refresh, null on logout.
+ */
+let revenueCatUserId: string | null = null;
+
+export function setRevenueCatUserId(id: string | null): void {
+  revenueCatUserId = id;
+}
+
+export function getRevenueCatUserId(): string | null {
+  return revenueCatUserId;
+}

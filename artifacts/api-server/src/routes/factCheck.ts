@@ -2,8 +2,15 @@ import crypto from "node:crypto";
 import { Router, type IRouter } from "express";
 
 import { tokenFromRequest } from "../lib/requestToken";
+import { hasEntitlement } from "../lib/revenuecat";
 
 const router: IRouter = Router();
+
+// AI Fact Checker is a paid (Plus-tier) feature once subscriptions are live.
+// While this flag is off, the endpoint behaves exactly as before (open),
+// matching the app's own SUBSCRIPTIONS_ENABLED master switch.
+const SUBSCRIPTIONS_ENABLED = process.env.SUBSCRIPTIONS_ENABLED === "true";
+const AI_ENTITLEMENT = "ai_access";
 
 // Server-side rate limit, mirroring the app's 10-questions-per-session cap so
 // the limit can't be bypassed by calling the endpoint directly. Keyed by the
@@ -95,6 +102,23 @@ router.post("/fact-check", async (req, res) => {
   // Optional UI-language hint from the app ("es" → answer in Spanish).
   const language =
     (req.body as { language?: unknown })?.language === "es" ? "es" : "en";
+
+  // Paywall enforcement: when subscriptions are live, require the caller's
+  // `ai_access` entitlement (verified with RevenueCat) before doing any work.
+  // Fails closed — no entitlement, no AI. Off → open, as today.
+  if (SUBSCRIPTIONS_ENABLED) {
+    const rcUserId = req.header("X-RC-User-Id");
+    const entitled = await hasEntitlement(rcUserId, AI_ENTITLEMENT);
+    if (!entitled) {
+      res.status(402).json({
+        text: "",
+        mock: false,
+        error: "The AI Fact Checker requires a UDecide Plus subscription.",
+        requiresUpgrade: true,
+      });
+      return;
+    }
+  }
 
   if (!allowRequest(rateLimitKey(req))) {
     res.status(429).json({

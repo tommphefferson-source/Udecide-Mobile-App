@@ -1,4 +1,5 @@
 import { apiFetch } from "./apiClient";
+import { getRevenueCatUserId } from "./session";
 import { isSpanish, t } from "@/i18n";
 
 export interface GeminiMessage {
@@ -31,9 +32,16 @@ export async function sendGeminiMessage(
   onChunk?: (chunk: string) => void,
 ): Promise<GeminiResponse> {
   try {
+    // When subscriptions are live, the server verifies this user's `ai_access`
+    // entitlement with RevenueCat before proxying Gemini. The app user id is
+    // set by SubscriptionContext; absent when the paywall is off.
+    const rcUserId = getRevenueCatUserId();
     const res = await apiFetch("/fact-check", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        ...(rcUserId ? { "X-RC-User-Id": rcUserId } : {}),
+      },
       // language: the server appends a "respond in Spanish" instruction to the
       // system prompt when the app is running in Spanish.
       body: JSON.stringify({ messages, language: isSpanish ? "es" : "en" }),

@@ -6,7 +6,7 @@ import {
   useFonts,
 } from "@expo-google-fonts/inter";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { Stack } from "expo-router";
+import { Stack, useRouter, useSegments } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import React, { useEffect } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
@@ -14,8 +14,10 @@ import { KeyboardProvider } from "react-native-keyboard-controller";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { SUBSCRIPTIONS_ENABLED } from "@/config/subscriptions";
 import { AddressProvider } from "@/context/AddressContext";
 import { AuthProvider, useAuth } from "@/context/AuthContext";
+import { SubscriptionProvider, useSubscription } from "@/context/SubscriptionContext";
 import { completeGoogleWebPopupIfNeeded } from "@/utils/googleWebAuth";
 
 // On web, when this window is the Google OAuth popup returning with a result,
@@ -26,8 +28,29 @@ SplashScreen.preventAutoHideAsync();
 
 const queryClient = new QueryClient();
 
+/**
+ * When subscriptions are enabled, redirect an authenticated user who has no
+ * active subscription to the paywall. No-op while the feature is off (access is
+ * granted) or before the entitlement state is known, so nothing breaks today.
+ */
+function useSubscriptionGate() {
+  const { isAuthenticated } = useAuth();
+  const { ready, hasAppAccess } = useSubscription();
+  const segments = useSegments();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!SUBSCRIPTIONS_ENABLED || !ready || !isAuthenticated) return;
+    const top = segments[0] as string | undefined;
+    // Don't fight the auth flow or loop on the paywall itself.
+    if (top === "(auth)" || top === "paywall") return;
+    if (!hasAppAccess) router.replace("/paywall");
+  }, [isAuthenticated, ready, hasAppAccess, segments, router]);
+}
+
 function RootLayoutNav() {
   const { user } = useAuth();
+  useSubscriptionGate();
 
   return (
     <AddressProvider
@@ -54,6 +77,7 @@ function RootLayoutNav() {
         <Stack.Screen name="polls" options={{ presentation: "card" }} />
         <Stack.Screen name="poll-results" options={{ presentation: "card" }} />
         <Stack.Screen name="fact-checker" options={{ presentation: "card" }} />
+        <Stack.Screen name="paywall" options={{ presentation: "card", gestureEnabled: false }} />
         <Stack.Screen name="profile" options={{ presentation: "card" }} />
         <Stack.Screen name="address-override" options={{ presentation: "card" }} />
         <Stack.Screen name="article" options={{ presentation: "card" }} />
@@ -90,7 +114,9 @@ export default function RootLayout() {
           <GestureHandlerRootView style={{ flex: 1 }}>
             <KeyboardProvider>
               <AuthProvider>
-                <RootLayoutNav />
+                <SubscriptionProvider>
+                  <RootLayoutNav />
+                </SubscriptionProvider>
               </AuthProvider>
             </KeyboardProvider>
           </GestureHandlerRootView>
