@@ -49,7 +49,8 @@
           "photosPermission": "Allow UDecide to access your photos so you can set a profile picture."
         }
       ],
-      "expo-localization"
+      "expo-localization",
+      "./plugins/withOptionalScreenFeatures"
     ],
     "experiments": {
       "typedRoutes": true,

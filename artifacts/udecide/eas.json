@@ -34,7 +34,7 @@
       },
       "android": {
         "serviceAccountKeyPath": "/Users/andersonlawson/playconsole/play-publisher.json",
-        "track": "internal",
+        "track": "alpha",
         "releaseStatus": "draft"
       }
     }
